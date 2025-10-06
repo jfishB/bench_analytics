@@ -1,0 +1,45 @@
+# ---- OS junk
+.DS_Store
+Thumbs.db
+
+# ---- Environment files
+.env
+.env.local
+.env.*.local
+
+# ---- Local Postgres data & runtime dirs
+pgdata/
+logs/
+tmp/
+
+# ---- Local data files (keep big/raw CSVs out of Git)
+data/
+# If you want to keep a placeholder or small samples:
+#!data/README.md
+#!data/sample/
+
+# ---- Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.venv/
+venv/
+pip-wheel-metadata/
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ---- Node (ignore if you don’t use it; harmless if you do)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ---- Editors/IDEs
+.vscode/
+.idea/

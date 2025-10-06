@@ -1,0 +1,9 @@
+.DS_Store
+# ---- SQLite (if you ever use it for tests/dev)
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.sqlite-shm
+*.sqlite-wal
+db.sqlite3
