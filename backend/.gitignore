@@ -1,4 +1,27 @@
-# ---- OS junk
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django / SQLite
+db.sqlite3
+*.sqlite3
+*.log
+local_settings.py
+
+# Environments
+venv/
+ENV/
+env/
+
+# Config / secrets
+.env
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
+*.swp# ---- OS junk
 .DS_Store
 Thumbs.db
 
