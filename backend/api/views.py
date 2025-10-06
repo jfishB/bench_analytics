@@ -1,15 +1,11 @@
-
-# backend/api/views.py
 from django.http import JsonResponse
+from django.db import connection
 
-def get_item(request, number):
-    items = {
-        1: "Rashu",
-        2: "Lea",
-        3: "Jeevesh",
-        4: "Luke",
-        5: "Ilya"
-    }
-    # default if number not found
-    result = items.get(number, "Unknown number")
-    return JsonResponse({"result": result})
+def db_health(request):
+    try:
+        with connection.cursor() as cur:
+            cur.execute("SELECT 1;")
+            cur.fetchone()
+        return JsonResponse({"db": "ok"})
+    except Exception as e:
+        return JsonResponse({"db": "error", "detail": str(e)}, status=500)

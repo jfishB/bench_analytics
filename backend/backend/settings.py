@@ -12,6 +12,21 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 
+import os
+import environ
+
+# Paths
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load .env from the repo root or project root
+env = environ.Env()
+# Try ../.env first (repo root); fall back to BASE_DIR/.env if needed
+env_file_candidates = [BASE_DIR.parent / ".env", BASE_DIR / ".env"]
+for _candidate in env_file_candidates:
+    if _candidate.exists():
+        environ.Env.read_env(_candidate)
+        break
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -19,13 +34,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-46)0tzzzmczfgn$n1pm2#p2b4m9pdqip-*hwt(j)%en7(9356@"
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+SECRET_KEY = env("SECRET_KEY", default="dev-only-not-secret")
+DEBUG = env.bool("DEBUG", default=True)
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 
 
 # Application definition
@@ -45,12 +56,12 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",         # CORS before CommonMiddleware
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'corsheaders.middleware.CorsMiddleware'
 ]
 
 ROOT_URLCONF = "backend.urls"
@@ -78,8 +89,12 @@ WSGI_APPLICATION = "backend.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": env("POSTGRES_DB", default="appdb"),
+        "USER": env("POSTGRES_USER", default="appuser"),
+        "PASSWORD": env("POSTGRES_PASSWORD", default="secret"),
+        "HOST": env("DB_HOST", default="localhost"),  # use 'db' if Django runs in Docker
+        "PORT": env("DB_PORT", default="5432"),
     }
 }
 

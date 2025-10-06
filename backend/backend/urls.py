@@ -21,5 +21,5 @@ from api import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/number/<int:number>/", views.get_item),  # call get_item view with number parameter
+    path("api/health/db/", views.db_health),                 # <-- health endpoint
 ]
