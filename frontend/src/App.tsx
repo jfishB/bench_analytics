@@ -1,10 +1,8 @@
 import React, { useState } from "react";
-import { Header } from './components/Header';
-
-
+import { Header } from "./components/Header";
 
 export default function App() {
-  const [activeSection, setActiveSection] = useState('home');
+  const [activeSection, setActiveSection] = useState("home");
 
   /*const renderContent = () => {
     switch (activeSection){
@@ -23,7 +21,10 @@ export default function App() {
 
   return (
     <div>
-      <Header activeSection={activeSection} setActiveSection={setActiveSection}/>
+      <Header
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+      />
     </div>
   );
 }
