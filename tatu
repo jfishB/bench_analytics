@@ -1,0 +1,53 @@
+[33mcommit 8d29361ccb4a860a2d32b1ad944641d39d7f719a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mlukeymia[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m
+Merge: 82d1ca2 805e4d9
+Author: IlyaK27 <107894670+IlyaK27@users.noreply.github.com>
+Date:   Tue Oct 7 22:47:45 2025 -0400
+
+    Merge pull request #17 from jfishB/create-header
+    
+    Create header, button. Added frontend dependencies
+
+[33mcommit 82d1ca2c47378c70fa281ee48b8ad1f650670073[m
+Merge: 64af8f8 184a4ce
+Author: IlyaK27 <107894670+IlyaK27@users.noreply.github.com>
+Date:   Mon Oct 6 22:01:31 2025 -0400
+
+    Merge pull request #15 from jfishB/rashu
+    
+    setup frontend wireframe
+
+[33mcommit 805e4d959930b52d0310af000ce7b96c0d177429[m[33m ([m[1;31morigin/create-header[m[33m)[m
+Author: Rashu <shardarashu@gmail.com>
+Date:   Mon Oct 6 21:09:00 2025 -0400
+
+    Create button.tsx; styling pending.
+
+[33mcommit 4a0aff990d686ac8d0d5df776c12d28284cfa9b4[m
+Author: Rashu <shardarashu@gmail.com>
+Date:   Mon Oct 6 21:08:47 2025 -0400
+
+    Loaded logo, fixed dependencies, loaded buttons on main page,
+
+[33mcommit 184a4ce39f2fbba781b672e69a192eb99a061ae3[m[33m ([m[1;31morigin/rashu[m[33m)[m
+Author: Rashu <shardarashu@gmail.com>
+Date:   Mon Oct 6 20:11:58 2025 -0400
+
+    Remove files related to backend to facilitate merging.
+
+[33mcommit 33a67d744f2cedd2b9ad767585cefa41d4b8eeff[m
+Author: Rashu <shardarashu@gmail.com>
+Date:   Sun Oct 5 19:03:18 2025 -0400
+
+    set up basic wireframe for frontend
+
+[33mcommit 7333ecbe6ac197c98442d9b0b32b079e05b2def4[m
+Author: Rashu <shardarashu@gmail.com>
+Date:   Tue Sep 30 22:15:50 2025 -0400
+
+    Added front & back end - connected them.
+
+[33mcommit 64af8f8cb8e3fe92088de28ce6a287119e876b5e[m
+Author: IlyaK27 <ilyakononov2714@gmail.com>
+Date:   Fri Sep 26 22:28:30 2025 -0400
+
+    Created frontend/backend folder
