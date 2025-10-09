@@ -1,30 +1,24 @@
-import React, { useState } from "react";
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Home from "./pages/Home";
+import Lineup from "./pages/Lineup";
 import { Header } from "./components/Header";
 
-export default function App() {
-  const [activeSection, setActiveSection] = useState("home");
-
-  /*const renderContent = () => {
-    switch (activeSection){
-      case 'home':
-        return <Home setActiveSection={setActiveSection}/>;
-      case 'optimizer':
-        return <LineupOptimizer />;
-      case 'guide':
-        return <HowToGuide />;
-      case 'about':
-        return <About />;
-      default:
-        return <Home setActiveSection={setActiveSection}/>; 
-    }
-  }*/
-
+function App() {
   return (
-    <div>
-      <Header
-        activeSection={activeSection}
-        setActiveSection={setActiveSection}
-      />
-    </div>
+    <BrowserRouter>
+      {/* Header always visible */}
+      <Header />
+      <h1>Hello React!</h1>
+      {/* Main content with spacing so it appears below the header */}
+      <main className="mt-24 px-4">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/lineup" element={<Lineup />} />
+        </Routes>
+      </main>
+    </BrowserRouter>
   );
 }
+
+export default App;
