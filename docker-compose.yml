@@ -1,19 +1,36 @@
-version: "3.9"
-
 services:
   db:
     image: postgres:16
     container_name: ${COMPOSE_PROJECT_NAME:-lineups}_db
     ports:
-      - "${DB_PORT:-5432}:5432"
+      - "${DB_PORT:-5433}:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-appuser}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
-      POSTGRES_DB: ${POSTGRES_DB:-appdb}
+      POSTGRES_DB: ${POSTGRES_DB:-bench_analytics}
     volumes:
-      - ./pgdata:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-appuser} -d ${POSTGRES_DB:-appdb}"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-appuser} -d ${POSTGRES_DB:-bench_analytics}",
+        ]
       interval: 5s
       timeout: 3s
       retries: 10
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: bench_pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@bench.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
