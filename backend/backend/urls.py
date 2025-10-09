@@ -21,5 +21,6 @@ from api import views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/health/db/", views.db_health),                 # <-- health endpoint
+    path("api/health/db/", views.db_health),  # <-- health endpoint
+    path("api/players/", views.players),  # <-- players endpoint
 ]
