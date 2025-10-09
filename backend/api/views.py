@@ -58,3 +58,18 @@ def players(request):
             return JsonResponse({"error": "Invalid JSON"}, status=400)
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=400)
+
+
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def player_detail(request, player_id):
+    """API endpoint to delete a specific player."""
+    try:
+        player = Player.objects.get(id=player_id)
+        player_name = player.name
+        player.delete()
+        return JsonResponse({"message": f"Player '{player_name}' deleted successfully"})
+    except Player.DoesNotExist:
+        return JsonResponse({"error": "Player not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
