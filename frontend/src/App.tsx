@@ -1,23 +1,18 @@
 import React, { useState } from "react";
 import { Header } from "./components/Header";
+import { Home } from "./components/Home";
 
 export default function App() {
   const [activeSection, setActiveSection] = useState("home");
 
-  /*const renderContent = () => {
+  const renderContent = () => {
     switch (activeSection){
       case 'home':
         return <Home setActiveSection={setActiveSection}/>;
-      case 'optimizer':
-        return <LineupOptimizer />;
-      case 'guide':
-        return <HowToGuide />;
-      case 'about':
-        return <About />;
       default:
         return <Home setActiveSection={setActiveSection}/>; 
     }
-  }*/
+  }
 
   return (
     <div>
@@ -25,6 +20,7 @@ export default function App() {
         activeSection={activeSection}
         setActiveSection={setActiveSection}
       />
+      {renderContent()}
     </div>
   );
 }

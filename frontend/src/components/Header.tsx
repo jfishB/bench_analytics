@@ -1,6 +1,4 @@
 import React from "react";
-import logo from "../assets/logo.png";
-import { Button } from "./ui/button";
 
 interface HeaderProps {
   activeSection: string;
@@ -16,37 +14,31 @@ export function Header({ activeSection, setActiveSection }: HeaderProps) {
   ];
 
   return (
-    <header className="border-b bg-card shadow-sm">
-      <div className="container mx-auto px-4">
-        <div className="flex h-18 items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <img src={logo} alt="Bench Analytics" className="h-14 w-auto" />
-            </div>
-            <div className="hidden sm:block">
-              <h1 className="text-xl text-primary">Bench Analytics</h1>
-            </div>
-          </div>
-          <nav className="hidden md:flex items-center space-x-1">
-            {navItems.map((item) => (
-              <Button
-                key={item.id}
-                variant={activeSection === item.id ? "default" : "ghost"}
-                onClick={() => setActiveSection(item.id)}
-                className="px-4"
-              >
-                {item.label}
-              </Button>
-            ))}
-          </nav>
-
-          {/* Mobile menu button */}
-          <div className="md:hidden">
-            <Button variant="ghost" size="sm">
-              Menu
-            </Button>
-          </div>
+    <header style={{ borderBottom: '1px solid #ddd', padding: '1rem', backgroundColor: '#f8f9fa' }}>
+      <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#333' }}>Bench Analytics</h1>
         </div>
+        <nav style={{ display: 'flex', gap: '0.5rem' }}>
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveSection(item.id)}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: activeSection === item.id ? '#007bff' : 'transparent',
+                color: activeSection === item.id ? 'white' : '#333',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: activeSection === item.id ? 'bold' : 'normal'
+              }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+      </div>
 
         {/* Mobile navigation */}
         <div className="md:hidden pb-4">
