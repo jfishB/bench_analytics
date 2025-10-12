@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Lineup from "./pages/Lineup";
 import { Header } from "./components/Header";
-
+// THIS IS NOT THE FILE FOR THE APP THIS IS JUST A TEMPLATE WE CAN DELETE THIS LATER
 function App() {
   return (
     <BrowserRouter>

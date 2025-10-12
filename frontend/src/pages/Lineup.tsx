@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "../components/ui/button";
 
-const API_BASE_URL = "http://localhost:8001/api";
+const API_BASE_URL = "http://localhost:8000/api";
 
 interface Player {
   id: number;
@@ -129,6 +129,7 @@ export default function Lineup() {
                   {player.name} (ID: {player.id})
                 </span>
                 <Button
+                  className="text-red-600 hover:text-red-700"
                   variant="destructive"
                   size="sm"
                   onClick={() => handleDelete(player.id, player.name)}
