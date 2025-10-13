@@ -6,9 +6,9 @@ Bench Analytics is a web application that helps baseball coaches optimize their 
 
 ## Tech stack
 
-- Backend: Django 5, Django REST Framework (installed), psycopg (Postgres driver).
+- Backend: Django 5.
   - See [requirements.txt](requirements.txt) and [backend/backend/settings.py](backend/backend/settings.py).
-- Frontend: React (Create React App), TypeScript support, Tailwind CSS.
+- Frontend: React, TypeScript support, Tailwind CSS.
   - See [frontend/package.json](frontend/package.json) and [frontend/tailwind.config.js](frontend/tailwind.config.js).
 - Local DB for development: Postgres (containerized via [docker-compose.yml](docker-compose.yml)).
 
