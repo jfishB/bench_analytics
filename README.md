@@ -2,9 +2,9 @@
 
 Bench Analytics is a web application that helps baseball coaches optimize their team lineup against a selected opponent. Coaches can maintain a player roster, add or remove players, and run lineup optimization.
 
-Features
+## Features
 
-Tech stack
+## Tech stack
 
 - Backend: Django 5, Django REST Framework (installed), psycopg (Postgres driver).
   - See [requirements.txt](requirements.txt) and [backend/backend/settings.py](backend/backend/settings.py).
@@ -12,7 +12,7 @@ Tech stack
   - See [frontend/package.json](frontend/package.json) and [frontend/tailwind.config.js](frontend/tailwind.config.js).
 - Local DB for development: Postgres (containerized via [docker-compose.yml](docker-compose.yml)).
 
-Contributors
+## Contributors
 
 - Jeevesh Balendra
 - Lea Josephine
