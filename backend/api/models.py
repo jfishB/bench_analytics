@@ -56,8 +56,8 @@ class Player(models.Model):
     name = models.CharField(max_length=100, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="players")
-    position = models.CharField(max_length=3)  # e.g., SS/CF/DH
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="players", default=1)
+    position = models.CharField(max_length=3, default="DH")  # e.g., SS/CF/DH
 
     class Meta:
         db_table = "players"
