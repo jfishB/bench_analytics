@@ -95,6 +95,7 @@ DATABASES = {
         "PASSWORD": env("POSTGRES_PASSWORD", default="secret"),
         "HOST": env("DB_HOST", default="localhost"),  # use 'db' if Django runs in Docker
         "PORT": env("DB_PORT", default="5432"),
+        "OPTIONS": {"options": "-c search_path=app,public"},
     }
 }
 
