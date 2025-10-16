@@ -79,10 +79,10 @@ Backend API: `http://localhost:8000`
 
 ## 👥 Contributors
 
-Jeevesh Balendra
-Lea Josephine
-Ilya Kononov
-Luke Pan
+Jeevesh Balendra,
+Lea Palme,
+Ilya Kononov,
+Luke Pan,
 Rashu Sharda
 
 ## 📄 License
