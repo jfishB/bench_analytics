@@ -6,19 +6,11 @@ export default function Home({ setActiveSection }) {
   const features = [
     {
       title: "Smart Lineup Generation",
-      description: "AI-powered algorithms analyze player stats to suggest optimal batting orders"
+      description: "Data-powered algorithms analyze player stats to suggest optimal batting orders"
     },
     {
       title: "Player Analytics",
       description: "Comprehensive player performance tracking and statistical analysis"
-    },
-    {
-      title: "Matchup Optimization", 
-      description: "Consider opposing pitcher stats and historical matchup data"
-    },
-    {
-      title: "Injury Management",
-      description: "Track player health status and adjust lineups accordingly"
     }
   ]
 
