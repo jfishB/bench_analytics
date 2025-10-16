@@ -16,7 +16,7 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from api import views
 from api.views import LineupCreateView
 
@@ -29,4 +29,5 @@ urlpatterns = [
         "api/players/<int:player_id>/", views.player_detail
     ),  # <-- individual player endpoint
     path("api/v1/lineups/", LineupCreateView.as_view(), name="lineup-create"),  # <-- lineup saving endpoint
+    path('api/', include('api.urls')),
 ]
