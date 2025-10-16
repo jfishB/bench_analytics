@@ -1,7 +1,7 @@
 """
 Models for the lineup feature.
-Inclues: 
-- Team:            A baseball team 
+Inclues:
+- Team:            A baseball team
 - Player:          A rostered player belonging to a Team (with a short position code).
 - Lineup:          A saved batting lineup for a Team, optionally tied to an opponent pitcher/team/date.
 - LineupPlayer:    One batting slot (1–9) in a Lineup linking to a specific Player,
@@ -40,11 +40,13 @@ These models are used by the API endpoint that saves a lineup. The endpoint:
 from django.db import models
 from django.conf import settings
 
+
 class Team(models.Model):
     name = models.CharField(max_length=100, unique=True)
+
     class Meta:
         db_table = "teams"
-        ordering = ["name"]   # alphabetical order              
+        ordering = ["name"]  # alphabetical order
 
     def __str__(self):
         return self.name
@@ -56,24 +58,30 @@ class Player(models.Model):
     name = models.CharField(max_length=100, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="players", default=1)
+    team = models.ForeignKey(
+        Team, on_delete=models.CASCADE, related_name="players", null=True, blank=True
+    )
     position = models.CharField(max_length=3, default="DH")  # e.g., SS/CF/DH
 
     # Baseball Savant (2025) batter stats snapshot — optional, filled via CSV import
     # Note: These are per-season aggregates; if you later want multi-year history,
     # consider a separate PlayerSeasonStats model instead of widening Player.
-    savant_player_id = models.PositiveIntegerField(null=True, blank=True)  # external player_id
-    year = models.PositiveIntegerField(null=True, blank=True)              # season year (e.g., 2025)
-    pa = models.PositiveIntegerField(null=True, blank=True)                # plate appearances
-    k_percent = models.FloatField(null=True, blank=True)                   # strikeout %
-    bb_percent = models.FloatField(null=True, blank=True)                  # walk %
-    woba = models.FloatField(null=True, blank=True)                        # weighted on-base average
-    xwoba = models.FloatField(null=True, blank=True)                       # expected wOBA
+    savant_player_id = models.PositiveIntegerField(
+        null=True, blank=True
+    )  # external player_id
+    year = models.PositiveIntegerField(
+        null=True, blank=True
+    )  # season year (e.g., 2025)
+    pa = models.PositiveIntegerField(null=True, blank=True)  # plate appearances
+    k_percent = models.FloatField(null=True, blank=True)  # strikeout %
+    bb_percent = models.FloatField(null=True, blank=True)  # walk %
+    woba = models.FloatField(null=True, blank=True)  # weighted on-base average
+    xwoba = models.FloatField(null=True, blank=True)  # expected wOBA
     sweet_spot_percent = models.FloatField(null=True, blank=True)
     barrel_batted_rate = models.FloatField(null=True, blank=True)
     hard_hit_percent = models.FloatField(null=True, blank=True)
-    avg_best_speed = models.FloatField(null=True, blank=True)              # mph
-    avg_hyper_speed = models.FloatField(null=True, blank=True)             # mph
+    avg_best_speed = models.FloatField(null=True, blank=True)  # mph
+    avg_hyper_speed = models.FloatField(null=True, blank=True)  # mph
     whiff_percent = models.FloatField(null=True, blank=True)
     swing_percent = models.FloatField(null=True, blank=True)
 
@@ -84,13 +92,20 @@ class Player(models.Model):
     def __str__(self):
         return f"{self.name} ({self.position})"
 
+
 class Lineup(models.Model):  # each instance is a saved batting lineup for a team
-    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="lineups")  # the team this lineup is for last part is 
+    team = models.ForeignKey(
+        Team, on_delete=models.CASCADE, related_name="lineups"
+    )  # the team this lineup is for last part is
     # is for reverse lookup, e.g. team.lineups.all()
-    name = models.CharField(max_length=120) # coach-entered name for the lineup
-    opponent_pitcher = models.ForeignKey(Player, on_delete=models.PROTECT, related_name="+")  # the opposing pitcher protected from deletion if referenced in a lineup
+    name = models.CharField(max_length=120)  # coach-entered name for the lineup
+    opponent_pitcher = models.ForeignKey(
+        Player, on_delete=models.PROTECT, related_name="+"
+    )  # the opposing pitcher protected from deletion if referenced in a lineup
     # related_name="+" means no reverse relation from opponent_pitcher to Lineup
-    opponent_team = models.ForeignKey(Team, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    opponent_team = models.ForeignKey(
+        Team, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -99,23 +114,28 @@ class Lineup(models.Model):  # each instance is a saved batting lineup for a tea
         ordering = ["-created_at", "name"]  # newest first, then name
 
     def __str__(self):
-        when = self.game_date.isoformat() if self.game_date else self.created_at.date().isoformat()
+        when = (
+            self.game_date.isoformat()
+            if self.game_date
+            else self.created_at.date().isoformat()
+        )
         return f"{self.team.name} — {self.name} ({when})"
 
 
 class LineupPlayer(models.Model):
     lineup = models.ForeignKey(Lineup, on_delete=models.CASCADE, related_name="players")
     player = models.ForeignKey(Player, on_delete=models.PROTECT)
-    position = models.CharField(max_length=3)            
-    batting_order = models.PositiveSmallIntegerField()    
+    position = models.CharField(max_length=3)
+    batting_order = models.PositiveSmallIntegerField()
 
     class Meta:
         db_table = "lineup_players"
-        ordering = ["batting_order"]        # 1..9 by default
+        ordering = ["batting_order"]  # 1..9 by default
 
     def __str__(self):
         return f"{self.batting_order}. {self.player.name} ({self.position})"
-    
+
+
 class Login(models.Model):
     """
     Stores login-related information for users.
