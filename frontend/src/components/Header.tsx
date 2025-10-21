@@ -5,8 +5,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 export function Header() {
   const location = useLocation();
-  const navigate = useNavigate(); 
-  
+  const navigate = useNavigate();
+
   const navItems = [
     { id: "home", label: "Home", path: "/" },
     { id: "optimizer", label: "Lineup Optimizer", path: "/lineup" },
@@ -14,7 +14,9 @@ export function Header() {
     { id: "about", label: "About Us", path: "/about" },
   ];
 
-  const activeSection = navItems.find(item => item.path === location.pathname)?.id;
+  const activeSection = navItems.find(
+    (item) => item.path === location.pathname
+  )?.id;
 
   return (
     <header className="border-b bg-card shadow-sm">
@@ -23,9 +25,6 @@ export function Header() {
           <div className="flex items-center space-x-4">
             <div className="relative">
               <img src={logo} alt="Bench Analytics" className="h-14 w-auto" />
-            </div>
-            <div className="hidden sm:block">
-              <h1 className="text-xl text-primary">Bench Analytics</h1>
             </div>
           </div>
           <nav className="hidden md:flex items-center space-x-1">
@@ -50,7 +49,7 @@ export function Header() {
             </Button>
           </div>
           */}
-        </div>  
+        </div>
         {/* Mobile navigation
         <div className="md:hidden pb-4">
           <div className="flex flex-wrap gap-2">
