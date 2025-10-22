@@ -1,11 +1,11 @@
-# ⚾ Bench Analytics
+# Bench Analytics
 
 **Bench Analytics** is a web application that helps **baseball coaches** build the most effective **team lineup** against a chosen opponent.  
 By analyzing player data and opponent characteristics, the app provides **data-driven lineup recommendations** that improve strategic decision-making.
 
 ---
 
-## 🚀 Overview
+## Overview
 
 Coaches can:
 
@@ -18,7 +18,7 @@ This project is designed for **sports analytics enthusiasts and coaching staff**
 
 ---
 
-## 🧠 Features
+## Features
 
 - **Player Management:** Add, update, and remove players from your roster.
 - **Opponent Selection:** Choose an opposing team for analysis.
@@ -29,7 +29,7 @@ This project is designed for **sports analytics enthusiasts and coaching staff**
 
 ---
 
-## 🧩 Tech Stack
+## Tech Stack
 
 **Frontend**
 
@@ -54,7 +54,7 @@ This project is designed for **sports analytics enthusiasts and coaching staff**
 
 ---
 
-## ⚙️ Getting Started
+## Getting Started
 
 ### 1. Clone the Repository
 
@@ -77,7 +77,7 @@ Frontend: `http://localhost:3000`
 
 Backend API: `http://localhost:8000`
 
-## 👥 Contributors
+## Contributors
 
 Jeevesh Balendra,
 Lea Palme,
@@ -85,11 +85,11 @@ Ilya Kononov,
 Luke Pan,
 Rashu Sharda
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
 
-## 💡 Future Improvements
+## Future Improvements
 
 Integration with live player statistics APIs.
 
