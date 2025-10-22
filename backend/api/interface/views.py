@@ -17,9 +17,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework import status
-from api.contracts.lineups_contract import LineupCreate, LineupOut
-from .models import Team, Player, Lineup, LineupPlayer
-from .models import Player
+from api.interface.contracts.lineups_contract import LineupCreate, LineupOut
+from ..models import Team, Player, Lineup, LineupPlayer
+from ..models import Player
 
 
 def db_health(request):
