@@ -7,8 +7,8 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0004_merge_0003_add_savant_batter_stats_0003_login"),
-    ]
+    ("lineups", "0004_merge_0003_add_savant_batter_stats_0003_login"),
+]
 
     operations = [
         migrations.AlterField(
@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="players",
-                to="api.team",
+                to="lineups.team",
             ),
         ),
     ]

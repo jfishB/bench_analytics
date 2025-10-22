@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
-from api.models import Player
-from api.utils.sort_sample import sort_players_by_wos, calculate_wos
+from lineups.models import Player
+from lineups.utils.sort_sample import sort_players_by_wos, calculate_wos
 
 
 class Command(BaseCommand):

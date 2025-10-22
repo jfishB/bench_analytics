@@ -8,9 +8,9 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0001_initial"),
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-    ]
+    ("lineups", "0001_initial"),
+    migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+]
 
     operations = [
         migrations.CreateModel(
@@ -63,7 +63,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.PROTECT,
                         related_name="+",
-                        to="api.player",
+                        to="lineups.player",
                     ),
                 ),
                 (
@@ -73,7 +73,7 @@ class Migration(migrations.Migration):
                         null=True,
                         on_delete=django.db.models.deletion.SET_NULL,
                         related_name="+",
-                        to="api.team",
+                        to="lineups.team",
                     ),
                 ),
                 (
@@ -81,7 +81,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="lineups",
-                        to="api.team",
+                        to="lineups.team",
                     ),
                 ),
             ],
@@ -109,13 +109,13 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="players",
-                        to="api.lineup",
+                        to="lineups.lineup",
                     ),
                 ),
                 (
                     "player",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.PROTECT, to="api.player"
+                        on_delete=django.db.models.deletion.PROTECT, to="lineups.player"
                     ),
                 ),
             ],
@@ -131,7 +131,7 @@ class Migration(migrations.Migration):
                 default=1,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="players",
-                to="api.team",
+                to="lineups.team",
             ),
         ),
     ]

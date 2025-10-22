@@ -1,6 +1,5 @@
 from django.apps import AppConfig
 
-
-class ApiConfig(AppConfig):
+class LineupsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "api"
+    name = "lineups"        

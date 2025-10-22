@@ -52,12 +52,13 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
-    'api',
+    "lineups",
 ]
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     )
 }
 
@@ -71,8 +72,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
-
-ROOT_URLCONF = "backend.urls"
 
 TEMPLATES = [
     {
@@ -89,7 +88,9 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "backend.wsgi.application"
+ROOT_URLCONF = "config.urls"
+WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = "config.asgi.application"
 
 
 # Database
@@ -101,12 +102,11 @@ DATABASES = {
         "NAME": env("POSTGRES_DB", default="appdb"),
         "USER": env("POSTGRES_USER", default="appuser"),
         "PASSWORD": env("POSTGRES_PASSWORD", default="secret"),
-        "HOST": env("DB_HOST", default="localhost"),  # use 'db' if Django runs in Docker
+        "HOST": env("DB_HOST", default="localhost"),
         "PORT": env("DB_PORT", default="5432"),
-        "OPTIONS": {"options": "-c search_path=app,public"},
+        "OPTIONS": {"options": "-c search_path=public"},  # <- change
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

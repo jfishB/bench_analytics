@@ -6,8 +6,8 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("api", "0002_team_player_position_lineup_lineupplayer_player_team"),
-    ]
+    ("lineups", "0002_team_player_position_lineup_lineupplayer_player_team"),
+]
 
     operations = [
         migrations.CreateModel(
