@@ -3,7 +3,7 @@ services:
     image: postgres:16
     container_name: ${COMPOSE_PROJECT_NAME:-lineups}_db
     ports:
-      - "5432:5432"
+      - "${DB_PORT:-5433}:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-appuser}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
