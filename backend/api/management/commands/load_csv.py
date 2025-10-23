@@ -85,12 +85,12 @@ class Command(BaseCommand):
                 # integer fields
                 try:
                     savant_id = int(r.get('player_id')) if r.get('player_id') else None
-                except Exception:
+                except ValueError:
                     savant_id = None
 
                 try:
                     pa = int(r.get('pa')) if r.get('pa') else None
-                except Exception:
+                except ValueError:
                     pa = None
 
                 # pick year override if provided
