@@ -10,7 +10,7 @@ export function Header() {
   const navItems = [
     { id: "home", label: "Home", path: "/" },
     { id: "optimizer", label: "Lineup Optimizer", path: "/lineup" },
-    { id: "guide", label: "How-to Guide", path: "/guide" },
+    { id: "guide", label: "How-to Guide", path: "/how-to-guide" },
     { id: "about", label: "About Us", path: "/about" },
   ];
 

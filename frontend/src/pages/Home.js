@@ -1,8 +1,11 @@
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
+import HowToGuide from "./HowToGuide";
+import { useNavigate } from "react-router-dom";
 
 
-export default function Home({ setActiveSection }) {
+export default function Home() {
+  const navigate = useNavigate();
   const features = [
     {
       title: "Smart Lineup Generation",
@@ -29,19 +32,21 @@ export default function Home({ setActiveSection }) {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               size="lg" 
-              onClick={() => setActiveSection('optimizer')}
+              onClick={() => navigate("/lineup")} // use React Router navigation
               className="px-8 bg-[var(--accent-red)] text-[var(--accent-red-foreground)] hover:bg-[var(--accent-red)]/90"
             >
               Start Optimizing
             </Button>
+  
             <Button 
               variant="outline" 
               size="lg"
-              onClick={() => setActiveSection('guide')}
+              onClick={() => navigate("/how-to-guide")} 
               className="px-8"
             >
               Learn How
             </Button>
+
           </div>
         </div>
       </section>
