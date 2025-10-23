@@ -79,7 +79,7 @@ class Command(BaseCommand):
                     # strip quotes and percent signs
                     try:
                         return float(str(v).replace('"','').replace('%','').strip())
-                    except Exception:
+                    except ValueError:
                         return None
 
                 # integer fields
