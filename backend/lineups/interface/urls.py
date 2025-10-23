@@ -7,17 +7,15 @@ app_name = "lineups"
 
 urlpatterns = [
     # health endpoint
-    path("health/db/", views.db_health),  # <-- health endpoint
+    path("health/db/", views.db_health),
     
     # players endpoint
-    path("players/", views.players),  # <-- players endpoint
-    path("players/<int:player_id>/", views.player_detail),  # <-- individual player endpoint
     path('players/', views.players, name='players'),
     path('players/<int:player_id>/', views.player_detail, name='player_detail'),
     path('players/ranked/', views.players_ranked, name='players_ranked'),
 
     # lineups endpoint
-    path("lineups/", LineupCreateView.as_view(), name="lineup-create"),  # <-- lineup saving endpoint
+    path("lineups/", LineupCreateView.as_view(), name="lineup-create"), 
     
     path('register/', views.register, name='register'),
     path('login/', views.login, name='login'),
