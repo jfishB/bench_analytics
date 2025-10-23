@@ -6,141 +6,127 @@ const API_BASE_URL = "http://localhost:8000/api";
 interface Player {
   id: number;
   name: string;
-  created_at: string;
-  updated_at: string;
+  xwoba: number;
+  bb_percent: number;
+  k_percent: number;
+  barrel_batted_rate: number;
+  wos_score?: number;
 }
 
 export default function Lineup() {
-  const [playerName, setPlayerName] = useState("");
-  const [message, setMessage] = useState("");
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(false);
+  const [isSorted, setIsSorted] = useState(false);
 
   const fetchPlayers = async () => {
+    setLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/players/`);
       const data = await response.json();
       setPlayers(data.players || []);
+      setIsSorted(false);
     } catch (error) {
       console.error("Error fetching players:", error);
-      setMessage("Error fetching players");
-    }
-  };
-
-  const handleAdd = async () => {
-    if (playerName.trim() === "") {
-      setMessage("Please enter a name first");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await fetch(`${API_BASE_URL}/players/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name: playerName }),
-      });
-
-      if (response.ok) {
-        const newPlayer = await response.json();
-        setMessage(`Player "${newPlayer.name}" added successfully!`);
-        setPlayerName(""); // clear input
-        fetchPlayers(); // refresh the list
-      } else {
-        const error = await response.json();
-        setMessage(`Error: ${error.error}`);
-      }
-    } catch (error) {
-      console.error("Error adding player:", error);
-      setMessage("Error connecting to server");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (playerId: number, playerName: string) => {
-    if (!window.confirm(`Are you sure you want to delete "${playerName}"?`)) {
-      return;
-    }
-
+  const optimizeLineup = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/players/${playerId}/`, {
-        method: "DELETE",
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        setMessage(
-          result.message || `Player "${playerName}" deleted successfully!`
-        );
-        fetchPlayers(); // refresh the list
-      } else {
-        const error = await response.json();
-        setMessage(`Error: ${error.error}`);
-      }
+      const response = await fetch(`${API_BASE_URL}/players/ranked/`);
+      const data = await response.json();
+      setPlayers(data.players || []);
+      setIsSorted(true);
     } catch (error) {
-      console.error("Error deleting player:", error);
-      setMessage("Error connecting to server");
+      console.error("Error optimizing lineup:", error);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex flex-col items-center mt-10 space-y-4">
-      <h2 className="text-2xl">Lineup Optimizer Page</h2>
+    <div className="flex flex-col items-center mt-10 space-y-4 px-4">
+      <h2 className="text-3xl font-bold">Lineup Optimizer</h2>
+      
+      <div className="max-w-2xl text-center text-sm text-gray-600 bg-blue-50 border border-blue-200 rounded p-3">
+        <p className="font-semibold mb-1">Weighted Offensive Score (WOS) - Placeholder Algorithm</p>
+        <p className="text-xs">
+          Formula: <code className="bg-white px-1 py-0.5 rounded">1000 × xwOBA + 2 × BB% + Barrel% - 0.5 × K%</code>
+        </p>
+        <p className="text-xs mt-1">
+          This is a simplified scoring method used for demonstration purposes.
+        </p>
+      </div>
 
-      {/* Fetch players button */}
-      <Button onClick={fetchPlayers} variant="outline">
-        Load Players
-      </Button>
+      <div className="flex gap-4">
+        <Button onClick={fetchPlayers} disabled={loading} variant="outline">
+          {loading ? "Loading..." : "Load All Players"}
+        </Button>
+        
+        {players.length > 0 && !isSorted && (
+          <Button onClick={optimizeLineup} disabled={loading} variant="outline">
+            Optimize Lineup
+          </Button>
+        )}
+      </div>
 
-      {/* Input box */}
-      <input
-        type="text"
-        value={playerName}
-        onChange={(e) => setPlayerName(e.target.value)}
-        placeholder="Enter player name"
-        className="border rounded px-3 py-2 w-64"
-      />
-
-      {/* Add player button */}
-      <Button onClick={handleAdd} disabled={loading}>
-        {loading ? "Adding..." : "Add Player"}
-      </Button>
-
-      {/* Feedback message */}
-      {message && <p className="mt-4 text-lg">{message}</p>}
-
-      {/* Players list */}
-      {players.length > 0 && (
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-2">Current Players:</h3>
-          <ul className="space-y-2">
-            {players.map((player) => (
-              <li
-                key={player.id}
-                className="flex items-center justify-between bg-gray-50 p-3 rounded-lg"
-              >
-                <span className="text-sm">
-                  {player.name} (ID: {player.id})
-                </span>
-                <Button
-                  className="text-red-600 hover:text-red-700"
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDelete(player.id, player.name)}
-                  disabled={loading}
-                >
-                  Delete
-                </Button>
-              </li>
-            ))}
-          </ul>
+      {isSorted && (
+        <div className="bg-gray-50 border border-gray-200 text-gray-700 px-4 py-2 rounded text-sm">
+          Sorted by WOS
         </div>
+      )}
+
+      {players.length > 0 && (
+        <div className="w-full max-w-6xl overflow-x-auto">
+          <table className="min-w-full bg-white border border-gray-300 text-sm">
+            <thead className="bg-gray-100">
+              <tr>
+                {isSorted && <th className="px-4 py-2 border">Rank</th>}
+                <th className="px-4 py-2 border">Player Name</th>
+                <th className="px-4 py-2 border">xwOBA</th>
+                <th className="px-4 py-2 border">BB%</th>
+                <th className="px-4 py-2 border">K%</th>
+                <th className="px-4 py-2 border">Barrel%</th>
+                {isSorted && <th className="px-4 py-2 border">WOS Score</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {players.map((player, idx) => (
+                <tr key={player.id} className="hover:bg-gray-50">
+                  {isSorted && (
+                    <td className="px-4 py-2 border text-center font-semibold">
+                      {idx + 1}
+                    </td>
+                  )}
+                  <td className="px-4 py-2 border">{player.name}</td>
+                  <td className="px-4 py-2 border text-center">
+                    {player.xwoba?.toFixed(3) || "—"}
+                  </td>
+                  <td className="px-4 py-2 border text-center">
+                    {player.bb_percent?.toFixed(1) || "—"}
+                  </td>
+                  <td className="px-4 py-2 border text-center">
+                    {player.k_percent?.toFixed(1) || "—"}
+                  </td>
+                  <td className="px-4 py-2 border text-center">
+                    {player.barrel_batted_rate?.toFixed(1) || "—"}
+                  </td>
+                  {isSorted && (
+                    <td className="px-4 py-2 border text-center font-bold text-blue-600">
+                      {player.wos_score?.toFixed(2) || "—"}
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {players.length === 0 && !loading && (
+        <p className="text-gray-500">Click "Load All Players" to get started</p>
       )}
     </div>
   );
