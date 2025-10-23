@@ -94,7 +94,7 @@ class Command(BaseCommand):
                     pa = None
 
                 # pick year override if provided
-                year = options.get('year') or (int(r.get('year')) if r.get('year') else None)
+                year = options.get('year') if options.get('year') is not None else (int(r.get('year')) if r.get('year') else None)
 
                 # set model fields
                 player.savant_player_id = savant_id
