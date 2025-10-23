@@ -20,6 +20,7 @@ from rest_framework import status
 from api.contracts.lineups_contract import LineupCreate, LineupOut
 from .models import Team, Player, Lineup, LineupPlayer
 from .models import Player
+from .utils.sort_sample import sort_players_by_wos, calculate_wos
 
 
 def db_health(request):
@@ -37,17 +38,12 @@ def db_health(request):
 def players(request):
     """API endpoint to list and create players."""
     if request.method == "GET":
-        # List all players
-        players = Player.objects.all()
-        player_data = [
-            {
-                "id": player.id,
-                "name": player.name,
-                "created_at": player.created_at.isoformat(),
-                "updated_at": player.updated_at.isoformat(),
-            }
-            for player in players
-        ]
+        # List all players with stats
+        players = Player.objects.all().values(
+            "id", "name", "xwoba", "bb_percent", "k_percent", "barrel_batted_rate", 
+            "pa", "year", "created_at", "updated_at"
+        )
+        player_data = list(players)
         return JsonResponse({"players": player_data})
 
     elif request.method == "POST":
@@ -89,6 +85,33 @@ def player_detail(request, player_id):
         return JsonResponse({"error": "Player not found"}, status=404)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def players_ranked(request):
+    """API endpoint to get players ranked by WOS score."""
+    try:
+        # Fetch all players with stats
+        players = Player.objects.all().values(
+            "id", "name", "xwoba", "bb_percent", "k_percent", "barrel_batted_rate", "pa", "year"
+        )
+        players_list = list(players)
+
+        # Sort by WOS
+        sorted_players = sort_players_by_wos(players_list, ascending=False)
+
+        # Add WOS score to each player
+        result = []
+        for player in sorted_players:
+            player_data = dict(player)
+            player_data["wos_score"] = round(calculate_wos(player), 2)
+            result.append(player_data)
+
+        return JsonResponse({"players": result})
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
     
 
 #############################################################################
