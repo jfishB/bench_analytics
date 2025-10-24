@@ -1,2 +1,1 @@
-export * from "./hooks/usePlayers";
-export * from "./components/PlayerCard";
+export * from "../../components/PlayerCard";
