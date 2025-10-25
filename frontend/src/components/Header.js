@@ -16,14 +16,20 @@ export function Header() {
 
   const authItems = [
     { id: "login", label: "Login", path: "/login", variant: "outline" },
-    { id: "register", label: "Register", path: "/register", variant: "default" },
+    {
+      id: "register",
+      label: "Register",
+      path: "/register",
+      variant: "default",
+    },
   ];
 
   const activeSection = navItems.find(
-    item => item.path === location.pathname
-    )?.id;
-
-  const activeAuth = authItems.find(item => item.path === location.pathname)?.id;
+    (item) => item.path === location.pathname
+  )?.id;
+  const activeAuth = authItems.find(
+    (item) => item.path === location.pathname
+  )?.id;
 
   return (
     <header className="border-b bg-card shadow-sm">
@@ -34,20 +40,22 @@ export function Header() {
               <img src={logo} alt="Bench Analytics" className="h-14 w-auto" />
             </div>
           </div>
+
           <nav className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => (
               <Button
                 key={item.id}
                 variant={activeSection === item.id ? "default" : "ghost"}
-                onClick={() => {navigate(item.path);}}
+                onClick={() => navigate(item.path)}
                 className="px-4"
               >
                 {item.label}
               </Button>
             ))}
 
-             {/* Divider */}
-            <span className="text-muted-foreground mx-2 select-none text-lg">|</span>
+            <span className="text-muted-foreground mx-2 select-none text-lg">
+              |
+            </span>
 
             <div className="flex items-center space-x-2">
               {authItems.map((item) => (
@@ -61,33 +69,8 @@ export function Header() {
                 </Button>
               ))}
             </div>
-
           </nav>
-
-          {/* Mobile menu button
-          <div className="md:hidden">
-            <Button variant="ghost" size="sm">
-              Menu
-            </Button>
-          </div>
-          */}
         </div>
-        {/* Mobile navigation
-        <div className="md:hidden pb-4">
-          <div className="flex flex-wrap gap-2">
-            {navItems.map((item) => (
-              <Button
-                key={item.id}
-                variant={activeSection === item.id ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setActiveSection(item.id)}
-              >
-                {item.label}
-              </Button>
-            ))}
-          </div>
-        </div>
-        */}
       </div>
     </header>
   );

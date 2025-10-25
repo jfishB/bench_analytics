@@ -1,6 +1,5 @@
 import * as React from "react";
-import { Label } from "./ui/label";
-import PrettySelect from "./ui/pretty-select";
+import { PrettySelect, Label } from "@/components/ui";
 
 type Strategy = "balanced" | "power" | "contact" | "obp";
 type PitcherHand = "righty" | "lefty" | "unknown";
@@ -11,13 +10,13 @@ export default function LineupOptimizer() {
 
   return (
     <div className="flex flex-col items-center mt-10 space-y-6">
-      <h2 className="text-2xl">Lineup Optimizer</h2>
+      <h2 className="text-2xl font-semibold">Lineup Optimizer</h2>
 
       {/* Optimization Strategy */}
       <div className="w-80 space-y-2">
-        <Label id="strategy-label">Optimization Strategy</Label>
+        <Label htmlFor="strategy-select">Optimization Strategy</Label>
         <PrettySelect
-          labelId="strategy-label"
+          id="strategy-select"
           value={strategy}
           onValueChange={(v) => setStrategy(v as Strategy)}
           options={[
@@ -31,9 +30,9 @@ export default function LineupOptimizer() {
 
       {/* Opposing Pitcher */}
       <div className="w-80 space-y-2">
-        <Label id="opp-label">Opposing Pitcher</Label>
+        <Label htmlFor="opponent-select">Opposing Pitcher</Label>
         <PrettySelect
-          labelId="opp-label"
+          id="opponent-select"
           value={opponent}
           onValueChange={(v) => setOpponent(v as PitcherHand)}
           options={[
