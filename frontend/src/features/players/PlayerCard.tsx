@@ -1,12 +1,9 @@
 import React from "react";
 import { Card } from "@/components/ui";
 
+import type { Player } from "@/shared/types";
 interface PlayerCardProps {
-  player: {
-    name: string;
-    team: string;
-    position: string;
-  };
+  player: Pick<Player, "name" | "team" | "position">;
 }
 
 /**
