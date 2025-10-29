@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Button } from "../components/ui/button";
 
-const API_BASE_URL = "http://localhost:8000/api";
+const ROSTER_BASE = "http://localhost:8000/api/v1/roster";
+const LINEUPS_BASE = "http://localhost:8000/api/v1/lineups";
 
 interface Player {
   id: number;
@@ -21,7 +22,7 @@ export default function Lineup() {
   const fetchPlayers = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/players/`);
+      const response = await fetch(`${ROSTER_BASE}/players/`);
       const data = await response.json();
       setPlayers(data.players || []);
       setIsSorted(false);
@@ -35,7 +36,7 @@ export default function Lineup() {
   const optimizeLineup = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/players/ranked/`);
+      const response = await fetch(`${ROSTER_BASE}/players/ranked/`);
       const data = await response.json();
       setPlayers(data.players || []);
       setIsSorted(true);
