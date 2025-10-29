@@ -23,11 +23,7 @@ class Lineup(models.Model):  # each instance is a saved batting lineup for a tea
         ordering = ["-created_at", "name"]  # newest first, then name
 
     def __str__(self):
-        when = (
-            self.game_date.isoformat()
-            if self.game_date
-            else self.created_at.date().isoformat()
-        )
+        when = self.created_at.date().isoformat()
         return f"{self.team.name} — {self.name} ({when})"
   
 class LineupPlayer(models.Model):
