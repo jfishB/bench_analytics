@@ -5,79 +5,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
+    # No-op migration: these Player fields were moved into the `roster` app's
+    # initial migration during the refactor. Keep a placeholder migration to
+    # preserve historical migration numbering and avoid applying duplicate
+    # operations.
     dependencies = [
-    ("lineups", "0002_team_player_position_lineup_lineupplayer_player_team"),
-]
-
-    operations = [
-        migrations.AddField(
-            model_name="player",
-            name="avg_best_speed",
-            field=models.FloatField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name="player",
-            name="avg_hyper_speed",
-            field=models.FloatField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name="player",
-            name="barrel_batted_rate",
-            field=models.FloatField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name="player",
-            name="bb_percent",
-            field=models.FloatField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name="player",
-            name="hard_hit_percent",
-            field=models.FloatField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name="player",
-            name="k_percent",
-            field=models.FloatField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name="player",
-            name="pa",
-            field=models.PositiveIntegerField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name="player",
-            name="savant_player_id",
-            field=models.PositiveIntegerField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name="player",
-            name="sweet_spot_percent",
-            field=models.FloatField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name="player",
-            name="swing_percent",
-            field=models.FloatField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name="player",
-            name="whiff_percent",
-            field=models.FloatField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name="player",
-            name="woba",
-            field=models.FloatField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name="player",
-            name="xwoba",
-            field=models.FloatField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name="player",
-            name="year",
-            field=models.PositiveIntegerField(blank=True, null=True),
-        ),
+        ("lineups", "0002_team_player_position_lineup_lineupplayer_player_team"),
     ]
+
+    operations = []
