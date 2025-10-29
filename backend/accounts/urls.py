@@ -2,7 +2,7 @@ from . import views
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.urls import path
 
-app_name = "auth"
+app_name = "accounts"
 
 urlpatterns = [
     # users endpoint
