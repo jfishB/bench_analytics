@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+// API base for auth endpoints. Use environment variable when available.
+const AUTH_BASE = process.env.REACT_APP_API_BASE || "http://127.0.0.1:8000/api/v1/auth";
+
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -11,7 +14,7 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/token/", {
+  const response = await fetch(`${AUTH_BASE}/token/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
