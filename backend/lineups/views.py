@@ -10,7 +10,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import LineupCreate, LineupOut
-from roster.models import Team, Player, Lineup, LineupPlayer
+from roster.models import Team, Player
+from .models import Lineup, LineupPlayer
 
 #############################################################################
 # lineups endpoint using DRF and contracts
