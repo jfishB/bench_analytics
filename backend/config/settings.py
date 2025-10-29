@@ -53,6 +53,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     "lineups",
+    "auth",
+    "roster",
 ]
 
 REST_FRAMEWORK = {

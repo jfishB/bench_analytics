@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class LineupsConfig(AppConfig):
+class AuthConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "lineups"
+    name = "auth"
