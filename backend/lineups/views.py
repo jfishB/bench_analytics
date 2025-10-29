@@ -4,11 +4,8 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from django.db import transaction
 from django.contrib.auth import get_user_model
-from rest_framework import permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.response import Response
-from rest_framework import status
 from .serializers import LineupCreate, LineupOut
 from roster.models import Team, Player
 from .models import Lineup, LineupPlayer
