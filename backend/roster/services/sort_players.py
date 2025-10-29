@@ -11,9 +11,9 @@ from .sort_sample import sort_players_by_wos, calculate_wos
 def get_sorted_players(top: int = 10, ascending: bool = False) -> List[dict]:
     """Return top N players sorted by WOS as a list of dicts.
 
-Each dict contains the fields selected from the DB query, plus a computed
-WOS score key where needed.
-"""
+    Each dict contains the fields selected from the DB query, plus a computed
+    WOS score key where needed.
+    """
     players = Player.objects.all().values(
         "name", "savant_player_id", "xwoba", "bb_percent", "barrel_batted_rate", "k_percent"
     )
