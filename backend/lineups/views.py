@@ -1,17 +1,127 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, permissions
-from django.db import transaction
-from django.contrib.auth import get_user_model
-from .serializers import LineupCreate, LineupOut
-from roster.models import Team, Player
-from .models import Lineup, LineupPlayer
+from rest_framework import permissions, status
 
+from .serializers import LineupCreate, LineupOut
+from .services.save_lineup import (
+    CreateLineupInput, LineupPlayerInput,
+    TeamNotFound, PlayersNotFound, PlayersWrongTeam, BadBattingOrder,
+    OpponentPitcherNotFound, OpponentTeamMismatch, PitcherInBatters, NoCreator,
+)
+from .services.lineup_algorithm import algorithm_create_lineup
+from .services.auth_user import authorize_lineup_deletion
+from django.shortcuts import get_object_or_404
+from .models import Lineup, LineupPlayer
 #############################################################################
-# lineups endpoint using DRF and contracts
+# lineups endpoint 
 #############################################################################   
-class LineupCreateView(APIView):
+class LineupCreateView(APIView):    
     permission_classes = [permissions.AllowAny] # adjust as needed
+    
+    def post(self, request):
+         # Validate the body against the request contract 
+        req = LineupCreate(data=request.data) # takes client data and sends to the serializer
+        req.is_valid(raise_exception=True) # checks that the input data is valid is build in in django rest framework
+        data = req.validated_data  # the validated data from the request which is now safe to use
+
+        payload = CreateLineupInput(
+            team_id=data["team_id"],
+            name=data["name"],
+            opponent_pitcher_id=data["opponent_pitcher_id"],
+            opponent_team_id=data.get("opponent_team_id"),
+            players=[
+                LineupPlayerInput(
+                    player_id=p["player_id"],
+                    position=p["position"],
+                )
+                for p in data["players"]
+            ],
+            requested_user_id=request.user.id if request.user.is_authenticated else None,
+        )
+
+        try:
+            lineup = algorithm_create_lineup(payload)
+        except TeamNotFound:
+            return Response({"team_id": ["Unknown team."]}, status=404)
+        except PlayersNotFound:
+            return Response({"players": ["Players not found."]}, status=400)
+        except PlayersWrongTeam:
+            return Response({"players": ["Players must belong to the same team."]}, status=400)
+        except BadBattingOrder:
+            return Response({"players": ["Batting orders must be unique and between 1 and n."]}, status=400)
+        except OpponentPitcherNotFound:
+            return Response({"opponent_pitcher_id": ["Opponent pitcher not found."]}, status=404)
+        except OpponentTeamMismatch:
+            return Response({"opponent_team_id": ["Does not match opponent_pitcher’s team."]}, status=400)
+        except PitcherInBatters:
+            return Response({"players": ["Opponent pitcher cannot appear in batting lineup."]}, status=400)
+        except NoCreator as e:
+            return Response({"detail": str(e)}, status=400)
+        
+        out = LineupOut({
+            "id": lineup.id,
+            "team_id": lineup.team_id,
+            "name": lineup.name,
+            "opponent_pitcher_id": lineup.opponent_pitcher_id,
+            "opponent_team_id": lineup.opponent_team_id,
+            "players": [
+                {"player_id": lp.player_id, "position": lp.position, "batting_order": lp.batting_order}
+                for lp in lineup.players.order_by("batting_order")
+            ],
+            "created_by": request.user.id if request.user.is_authenticated else None,
+            "created_at": lineup.created_at,
+        })
+        return Response(out.data, status=status.HTTP_201_CREATED)
+
+
+class LineupDetailView(APIView):
+    """Retrieve or delete a saved lineup by id.
+
+    URL:
+      GET /api/v1/lineups/<pk>/   -> return lineup
+      DELETE /api/v1/lineups/<pk>/ -> delete lineup (only creator or superuser)
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, pk: int):
+        lineup = get_object_or_404(Lineup, pk=pk)
+
+        out = LineupOut({
+            "id": lineup.id,
+            "team_id": lineup.team_id,
+            "name": lineup.name,
+            "opponent_pitcher_id": lineup.opponent_pitcher_id,
+            "opponent_team_id": lineup.opponent_team_id,
+            "players": [
+                {"player_id": lp.player_id, "position": lp.position, "batting_order": lp.batting_order}
+                for lp in lineup.players.order_by("batting_order")
+            ],
+            "created_by": lineup.created_by_id,
+            "created_at": lineup.created_at,
+        })
+
+        return Response(out.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, pk: int):
+        """Delete a lineup. Allowed only for the creator or a superuser.
+
+        Returns 204 No Content on success, 403 if not permitted, 404 if not found.
+        """
+        lineup = get_object_or_404(Lineup, pk=pk)
+
+        user = request.user
+
+        # Authorize deletion via service helper. The helper returns a Response
+        # (forbidden) when deletion is not allowed, or None when allowed.
+        auth_response = authorize_lineup_deletion(user, lineup, Response, status)
+        if auth_response is not None:
+            # authorization helper decided deletion is not allowed (returns a Response)
+            return auth_response
+
+        # authorized — perform delete
+        lineup.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
     def post(self, request):
         # Validate the body against the request contract
