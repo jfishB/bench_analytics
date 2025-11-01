@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Button } from "../components/ui/button";
 
-const ROSTER_BASE = "http://localhost:8000/api/v1/roster";
-const LINEUPS_BASE = "http://localhost:8000/api/v1/lineups";
+const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000/api/v1";
+const ROSTER_BASE = `${API_BASE}/roster`;
+const LINEUPS_BASE = `${API_BASE}/lineups`;
 
 interface Player {
   id: number;
