@@ -15,7 +15,7 @@ export default function Register() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-  const response = await fetch(`${AUTH_BASE}/register/`, {
+      const response = await fetch(`${AUTH_BASE}/register/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
