@@ -1,14 +1,25 @@
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from . import views
-from django.urls import path
 
 app_name = "roster"
 
-# When included under /api/v1/roster/, the endpoints below map to:
-# - GET/POST /api/v1/roster/players/
-# - DELETE /api/v1/roster/players/<id>/
-# - GET /api/v1/roster/players/ranked/
+# DRF Router automatically generates URL patterns
+router = DefaultRouter()
+router.register(r'teams', views.TeamViewSet, basename='team')
+router.register(r'players', views.PlayerViewSet, basename='player')
+
+# Router generates these URLs:
+# GET    /teams/          -> list teams
+# POST   /teams/          -> create team
+# GET    /teams/{id}/     -> retrieve team
+# PUT    /teams/{id}/     -> update team
+# PATCH  /teams/{id}/     -> partial update team
+# DELETE /teams/{id}/     -> delete team
+#
+# Same pattern for /players/
+# Plus custom: GET /players/ranked/
+
 urlpatterns = [
-    path("players/", views.players, name="players"),
-    path("players/<int:player_id>/", views.player_detail, name="player_detail"),
-    path("players/ranked/", views.players_ranked, name="players_ranked"),
+    path('', include(router.urls)),
 ]
