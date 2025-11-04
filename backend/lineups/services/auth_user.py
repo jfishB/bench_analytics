@@ -17,7 +17,7 @@ def authorize_lineup_deletion(user, lineup, Response, status) -> Response | None
         status: DRF status module for HTTP status codes.
 
     Returns:
-        A DRF Response indicating success or failure of authorization.
+        None if authorized, or a DRF Response with error details if not authorized.
     """
     if not user or not user.is_authenticated:
         return Response({"detail": "Authentication required."}, status=status.HTTP_403_FORBIDDEN)
