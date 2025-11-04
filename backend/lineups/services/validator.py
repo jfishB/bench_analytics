@@ -5,7 +5,6 @@
 """
 ###########################################
 
-from rest_framework.exceptions import ValidationError, NotFound
 from django.contrib.auth import get_user_model
 
 from .exceptions import (
