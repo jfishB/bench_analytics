@@ -1,33 +1,106 @@
 import React from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
-import { Badge } from "./ui/badge"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
+import { Badge } from "../components/ui/badge"
 
 export function About() {
   const teamMembers = [
     {
       name: "Jeevesh Balendra",
-      background:
-        "Former college softball coach with 15 years of experience and a passion for analytics",
+      background: "Former college softball coach with 15 years of experience and a passion for analytics",
     },
     {
       name: "Lea Palme",
-      background:
-        "PhD in Statistics, formerly with MLB Advanced Media developing player evaluation models",
+      background: "PhD in Statistics, formerly with MLB Advanced Media developing player evaluation models",
     },
     {
       name: "Ilya Kononov",
-      background:
-        "20+ years coaching at high school and college levels, expert in lineup strategy",
+      background: "20+ years coaching at high school and college levels, expert in lineup strategy",
     },
     {
       name: "Luke Pan",
-      background:
-        "Full-stack engineer with expertise in sports analytics and machine learning",
+      background: "Full-stack engineer with expertise in sports analytics and machine learning",
     },
     {
       name: "Rashu Sharda",
-      background:
-        "Full-stack engineer with expertise in sports analytics and machine learning",
+      background: "Full-stack engineer with expertise in sports analytics and machine learning",
     },
   ]
+
+  return (
+    <div className="space-y-8">
+      <div className="text-center">
+        <h1 className="text-3xl mb-2 text-primary">About Bench Analytics</h1>
+        <p className="text-muted-foreground max-w-2xl mx-auto">
+          We're passionate about helping coaches make data-driven decisions that lead to more wins
+          on the field.
+        </p>
+      </div>
+
+      {/* Mission statement */}
+      <section className="text-center py-8">
+        <div className="max-w-3xl mx-auto space-y-6">
+          <h2 className="text-2xl text-primary">Our Mission</h2>
+          <p className="text-lg text-muted-foreground">
+            To democratize advanced baseball analytics and give every coach, regardless of budget or
+            technical expertise, access to the same data-driven insights used by professional teams.
+          </p>
+        </div>
+      </section>
+
+      {/* Team section */}
+      <section className="space-y-6">
+        <h2 className="text-2xl text-primary">Meet Our Team</h2>
+        <div className="grid md:grid-cols-2 gap-6">
+          {teamMembers.map((member, index) => (
+            <Card key={index}>
+              <CardHeader>
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-primary-foreground">
+                    {member.name
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">{member.name}</CardTitle>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm">{member.background}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* Contact info */}
+      <section className="space-y-6">
+        <h2 className="text-2xl text-primary">Get in Touch</h2>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-medium mb-2">Support</h4>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Need help or have questions? Our team is here to support you.
+                </p>
+                <p className="text-sm">support@benchanalytics.com</p>
+              </div>
+              <div>
+                <h4 className="font-medium mb-2">Partnerships</h4>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Interested in partnering with us or bulk licensing?
+                </p>
+                <p className="text-sm">partnerships@benchanalytics.com</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+    </div>
+  )
 }
+
+export default About
+
