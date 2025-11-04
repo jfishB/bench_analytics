@@ -6,7 +6,7 @@
 ###########################################
 
 class TeamNotFound(Exception):
-     def __init__(self, detail: str = "Unknown team."):
+    def __init__(self, detail: str = "Unknown team."):
         super().__init__(detail)
         self.detail = detail
 
