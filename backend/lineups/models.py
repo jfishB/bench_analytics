@@ -28,7 +28,7 @@ class LineupPlayer(models.Model):
     player = models.ForeignKey(Player, on_delete=models.PROTECT)
     position = models.CharField(max_length=3)
     batting_order = models.PositiveSmallIntegerField(
-        null=True, validators=[MinValueValidator(1), MaxValueValidator(9)]
+        null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(9)]
     )
 
     class Meta:
