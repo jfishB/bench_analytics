@@ -103,7 +103,7 @@ class LineupDetailView(APIView):
         user = request.user
 
         # Authorize deletion via service authorization function
-        auth_response = authorize_lineup_deletion(user, lineup, Response, status)
+        auth_response = authorize_lineup_deletion(user, lineup)
         if auth_response is not None:
             return auth_response
 

@@ -6,18 +6,10 @@ authenticating and authorizing users
 """
 ###########################################
 from rest_framework.response import Response
+from rest_framework import status
 
-def authorize_lineup_deletion(user, lineup, Response, status) -> Response | None:
+def authorize_lineup_deletion(user, lineup) -> Response | None:
     """Authorize a user to delete a lineup.
-
-    parameters:
-        user: The user attempting the deletion.
-        lineup: The lineup to be deleted.
-        Response: DRF Response class for returning HTTP responses.
-        status: DRF status module for HTTP status codes.
-
-    Returns:
-        A DRF Response indicating success or failure of authorization.
     """
     if not user or not user.is_authenticated:
         return Response({"detail": "Authentication required."}, status=status.HTTP_403_FORBIDDEN)
