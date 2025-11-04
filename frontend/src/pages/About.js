@@ -1,6 +1,5 @@
 import React from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card"
-import { Badge } from "../components/ui/badge"
 
 export function About() {
   const teamMembers = [
@@ -27,7 +26,7 @@ export function About() {
   ]
 
   return (
-    <div className="space-y-8">
+    <div className="px-4 md:px-12 lg:px-24 space-y-8">
       <div className="text-center">
         <h1 className="text-3xl mb-2 text-primary">About Bench Analytics</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
