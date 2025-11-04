@@ -1,5 +1,10 @@
-# backend/lineups/services/auth_user.py
-# Service functions for authenticating and authorizing users in lineup operations.
+##########################################
+"""
+-This file defines Service functions for 
+authenticating and authorizing users
+- used in views
+"""
+###########################################
 from rest_framework.response import Response
 
 def authorize_lineup_deletion(user, lineup, Response, status) -> Response | None:
