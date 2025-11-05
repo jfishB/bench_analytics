@@ -42,4 +42,6 @@ class PlayerRankedSerializer(PlayerSerializer):
     wos_score = serializers.FloatField(read_only=True)
     
     class Meta(PlayerSerializer.Meta):
-        fields = '__all__'
+        fields = [
+            'id', 'name', 'team', 'team_name', 'position', 'xwoba', 'bb_percent', 'k_percent', 'barrel_batted_rate', 'wos_score'
+        ]
