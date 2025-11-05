@@ -56,13 +56,22 @@ export function Footer() {
               Support
             </h4>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li className="hover:text-gray-700 cursor-pointer">
+              <li
+                className="hover:text-gray-700 cursor-pointer"
+                onClick={() => navigate("/how-to-guide")}
+              >
                 How-to Guide
               </li>
-              <li className="hover:text-gray-700 cursor-pointer">
+              <li
+                className="hover:text-gray-700 cursor-pointer"
+                onClick={() => navigate("/how-to-guide")}
+              >
                 Documentation
               </li>
-              <li className="hover:text-gray-700 cursor-pointer">
+              <li
+                className="hover:text-gray-700 cursor-pointer"
+                onClick={() => navigate("/how-to-guide")}
+              >
                 Contact Support
               </li>
             </ul>
