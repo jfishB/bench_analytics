@@ -67,7 +67,7 @@ def create_player_with_stats(name: str, **stats) -> Player:
     Returns:
         Created Player instance
     """
-    return Player.objects.create(name=name.strip(), **stats)
+    return Player.objects.create(name=name, **stats)
 
 
 def update_player_stats(player_id: int, **stats) -> Player:
