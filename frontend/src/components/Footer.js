@@ -29,13 +29,22 @@ export function Footer() {
               Product
             </h4>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li className="hover:text-gray-700 cursor-pointer">
+              <li
+                className="hover:text-gray-700 cursor-pointer"
+                onClick={() => navigate("/lineup")}
+              >
                 Lineup Optimizer
               </li>
-              <li className="hover:text-gray-700 cursor-pointer">
+              <li
+                className="hover:text-gray-700 cursor-pointer"
+                onClick={() => navigate("/lineup")}
+              >
                 Player Analytics
               </li>
-              <li className="hover:text-gray-700 cursor-pointer">
+              <li
+                className="hover:text-gray-700 cursor-pointer"
+                onClick={() => navigate("/lineup")}
+              >
                 Team Management
               </li>
             </ul>
