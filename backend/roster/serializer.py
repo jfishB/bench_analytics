@@ -17,7 +17,7 @@ class PlayerSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Player
-        fields = '__all__'
+        fields = ['id', 'name', 'team', 'team_name', 'position', 'xwoba', 'bb_percent', 'k_percent', 'barrel_batted_rate']
     
     def validate_name(self, value: str) -> str:
         """Ensure player name is not empty after stripping whitespace."""
