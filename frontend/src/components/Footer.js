@@ -83,11 +83,22 @@ export function Footer() {
               Company
             </h4>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li className="hover:text-gray-700 cursor-pointer">About Us</li>
-              <li className="hover:text-gray-700 cursor-pointer">
+              <li
+                className="hover:text-gray-700 cursor-pointer"
+                onClick={() => navigate("/about")}
+              >
+                About Us
+              </li>
+              <li
+                className="hover:text-gray-700 cursor-pointer"
+                onClick={() => navigate("/about")}
+              >
                 Privacy Policy
               </li>
-              <li className="hover:text-gray-700 cursor-pointer">
+              <li
+                className="hover:text-gray-700 cursor-pointer"
+                onClick={() => navigate("/about")}
+              >
                 Terms of Service
               </li>
             </ul>
