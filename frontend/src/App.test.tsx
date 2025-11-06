@@ -1,8 +1,12 @@
-// Basic smoke test
-test('smoke test', () => {
-  expect(1 + 1).toBe(2);
-});
+import { describe, it, expect } from '@jest/globals';
 
-test('environment is set up correctly', () => {
-  expect(true).toBe(true);
+// Basic smoke test
+describe('App', () => {
+  it('should pass smoke test', () => {
+    expect(1 + 1).toBe(2);
+  });
+
+  it('should have environment set up correctly', () => {
+    expect(true).toBe(true);
+  });
 });
