@@ -1,8 +1,10 @@
 import React from "react";
 import logo from "../assets/logo.png";
+import { useNavigate } from "react-router-dom";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const navigate = useNavigate();
 
   return (
     <footer className="bg-gray-50 border-t border-gray-200 mt-16">
@@ -10,7 +12,12 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* Logo + Description */}
           <div className="space-y-3">
-            <img src={logo} alt="Bench Analytics" className="h-10 w-auto" />
+            <img
+              src={logo}
+              alt="Bench Analytics"
+              className="h-10 w-auto"
+              onClick={() => navigate("/")}
+            />
             <p className="text-sm text-gray-500 max-w-xs leading-relaxed">
               Advanced lineup optimization for baseball and softball coaches.
             </p>
@@ -22,13 +29,22 @@ export function Footer() {
               Product
             </h4>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li className="hover:text-gray-700 cursor-pointer">
+              <li
+                className="hover:text-gray-700 cursor-pointer"
+                onClick={() => navigate("/lineup")}
+              >
                 Lineup Optimizer
               </li>
-              <li className="hover:text-gray-700 cursor-pointer">
+              <li
+                className="hover:text-gray-700 cursor-pointer"
+                onClick={() => navigate("/lineup")}
+              >
                 Player Analytics
               </li>
-              <li className="hover:text-gray-700 cursor-pointer">
+              <li
+                className="hover:text-gray-700 cursor-pointer"
+                onClick={() => navigate("/lineup")}
+              >
                 Team Management
               </li>
             </ul>
@@ -40,13 +56,22 @@ export function Footer() {
               Support
             </h4>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li className="hover:text-gray-700 cursor-pointer">
+              <li
+                className="hover:text-gray-700 cursor-pointer"
+                onClick={() => navigate("/how-to-guide")}
+              >
                 How-to Guide
               </li>
-              <li className="hover:text-gray-700 cursor-pointer">
+              <li
+                className="hover:text-gray-700 cursor-pointer"
+                onClick={() => navigate("/how-to-guide")}
+              >
                 Documentation
               </li>
-              <li className="hover:text-gray-700 cursor-pointer">
+              <li
+                className="hover:text-gray-700 cursor-pointer"
+                onClick={() => navigate("/how-to-guide")}
+              >
                 Contact Support
               </li>
             </ul>
@@ -58,11 +83,22 @@ export function Footer() {
               Company
             </h4>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li className="hover:text-gray-700 cursor-pointer">About Us</li>
-              <li className="hover:text-gray-700 cursor-pointer">
+              <li
+                className="hover:text-gray-700 cursor-pointer"
+                onClick={() => navigate("/about")}
+              >
+                About Us
+              </li>
+              <li
+                className="hover:text-gray-700 cursor-pointer"
+                onClick={() => navigate("/about")}
+              >
                 Privacy Policy
               </li>
-              <li className="hover:text-gray-700 cursor-pointer">
+              <li
+                className="hover:text-gray-700 cursor-pointer"
+                onClick={() => navigate("/about")}
+              >
                 Terms of Service
               </li>
             </ul>
