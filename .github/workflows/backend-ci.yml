@@ -15,9 +15,24 @@ on:
       - '.github/workflows/backend-ci.yml'
 
 jobs:
-  lint:
+  backend-ci:
     runs-on: ubuntu-latest
     
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER || 'appuser' }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'secret' }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB || 'appdb' }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -48,34 +63,6 @@ jobs:
       run: |
         isort --check-only backend
 
-  test:
-    runs-on: ubuntu-latest
-    
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER || 'appuser' }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'secret' }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB || 'appdb' }}
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-        cache: 'pip'
-
     - name: Create .env file
       run: |
         cat > .env << EOF
@@ -92,9 +79,8 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install pytest pytest-django pytest-cov
+        pip install pytest pytest-django pytest-cov safety bandit
 
     - name: Run migrations
       working-directory: backend
@@ -106,31 +92,6 @@ jobs:
       run: |
         pytest --cov=. --cov-report=xml --cov-report=term-missing
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
-      with:
-        file: ./backend/coverage.xml
-        flags: backend
-        name: backend-coverage
-      if: github.event_name == 'push'
-
-  security:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-
-    - name: Install security tools
-      run: |
-        python -m pip install --upgrade pip
-        pip install safety bandit
-
     - name: Check for security vulnerabilities in dependencies
       run: |
         safety check --file requirements.txt --continue-on-error
@@ -138,3 +99,11 @@ jobs:
     - name: Run Bandit security linter
       run: |
         bandit -r backend -ll
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./backend/coverage.xml
+        flags: backend
+        name: backend-coverage
+      if: github.event_name == 'push'
