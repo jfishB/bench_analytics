@@ -10,9 +10,7 @@ class Lineup(models.Model):  # each instance is a saved batting lineup for a tea
     name = models.CharField(max_length=120)  # coach-entered name for the lineup
     opponent_pitcher = models.ForeignKey(Player, on_delete=models.PROTECT, related_name="+")
 
-    opponent_team = models.ForeignKey(
-        Team, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
-    )
+    opponent_team = models.ForeignKey(Team, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -6,21 +6,24 @@ from .services.auth_user import authorize_lineup_deletion
 from django.shortcuts import get_object_or_404
 from .models import Lineup
 from .services.input_data import (
-    CreateLineupInput, LineupPlayerInput,
+    CreateLineupInput,
+    LineupPlayerInput,
 )
 from .services.validator import validate_data
 from .services.algorithm_logic import algorithm_create_lineup
 from .services.validator import validate_lineup_model
+
+
 #############################################################################
-# lineups endpoint 
-#############################################################################   
-class LineupCreateView(APIView):    
-    permission_classes = [permissions.AllowAny] # adjust as needed
-    
+# lineups endpoint
+#############################################################################
+class LineupCreateView(APIView):
+    permission_classes = [permissions.AllowAny]  # adjust as needed
+
     def post(self, request):
-         # Validate the body against the request contract 
-        req = LineupCreate(data=request.data) # takes client data and sends to the serializer
-        req.is_valid(raise_exception=True) # checks that the input data is valid; this is built into Django REST Framework
+        # Validate the body against the request contract
+        req = LineupCreate(data=request.data)  # takes client data and sends to the serializer
+        req.is_valid(raise_exception=True)  # checks that the input data is valid; this is built into Django REST Framework
         data = req.validated_data  # the validated data from the request which is now safe to use
 
         payload = CreateLineupInput(
@@ -41,7 +44,7 @@ class LineupCreateView(APIView):
         # Validate the input payload defined in validator.
         validate_data(payload)
 
-        # Run the algorithm to create the lineup. 
+        # Run the algorithm to create the lineup.
         lineup = algorithm_create_lineup(payload)
 
         # Validate the produced Lineup model to ensure algorithm output is valid
@@ -49,19 +52,21 @@ class LineupCreateView(APIView):
         validate_lineup_model(lineup)
 
         # Build response from the returned Lineup model.
-        out = LineupOut({
-            "id": lineup.id,
-            "team_id": lineup.team_id,
-            "name": lineup.name,
-            "opponent_pitcher_id": lineup.opponent_pitcher_id,
-            "opponent_team_id": lineup.opponent_team_id,
-            "players": [
-                {"player_id": lp.player_id, "position": lp.position, "batting_order": lp.batting_order}
-                for lp in lineup.players.order_by("batting_order")
-            ],
-            "created_by": lineup.created_by_id,
-            "created_at": lineup.created_at,
-        })
+        out = LineupOut(
+            {
+                "id": lineup.id,
+                "team_id": lineup.team_id,
+                "name": lineup.name,
+                "opponent_pitcher_id": lineup.opponent_pitcher_id,
+                "opponent_team_id": lineup.opponent_team_id,
+                "players": [
+                    {"player_id": lp.player_id, "position": lp.position, "batting_order": lp.batting_order}
+                    for lp in lineup.players.order_by("batting_order")
+                ],
+                "created_by": lineup.created_by_id,
+                "created_at": lineup.created_at,
+            }
+        )
         return Response(out.data, status=status.HTTP_201_CREATED)
 
 
@@ -72,24 +77,27 @@ class LineupDetailView(APIView):
       GET /api/v1/lineups/<pk>/   -> return lineup
       DELETE /api/v1/lineups/<pk>/ -> delete lineup (only creator or superuser)
     """
+
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, pk: int):
         lineup = get_object_or_404(Lineup, pk=pk)
 
-        out = LineupOut({
-            "id": lineup.id,
-            "team_id": lineup.team_id,
-            "name": lineup.name,
-            "opponent_pitcher_id": lineup.opponent_pitcher_id,
-            "opponent_team_id": lineup.opponent_team_id,
-            "players": [
-                {"player_id": lp.player_id, "position": lp.position, "batting_order": lp.batting_order}
-                for lp in lineup.players.order_by("batting_order")
-            ],
-            "created_by": lineup.created_by_id,
-            "created_at": lineup.created_at,
-        })
+        out = LineupOut(
+            {
+                "id": lineup.id,
+                "team_id": lineup.team_id,
+                "name": lineup.name,
+                "opponent_pitcher_id": lineup.opponent_pitcher_id,
+                "opponent_team_id": lineup.opponent_team_id,
+                "players": [
+                    {"player_id": lp.player_id, "position": lp.position, "batting_order": lp.batting_order}
+                    for lp in lineup.players.order_by("batting_order")
+                ],
+                "created_by": lineup.created_by_id,
+                "created_at": lineup.created_at,
+            }
+        )
 
         return Response(out.data, status=status.HTTP_200_OK)
 

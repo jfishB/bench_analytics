@@ -8,13 +8,20 @@
 from django.contrib.auth import get_user_model
 
 from .exceptions import (
-    TeamNotFound, PlayersNotFound, PlayersWrongTeam, BadBattingOrder,
-    OpponentPitcherNotFound, OpponentTeamMismatch, NoCreator,
+    TeamNotFound,
+    PlayersNotFound,
+    PlayersWrongTeam,
+    BadBattingOrder,
+    OpponentPitcherNotFound,
+    OpponentTeamMismatch,
+    NoCreator,
 )
 from roster.models import Team, Player
 
+
 def validate_data(payload):
     """Validate the lineup data for creating a lineup."""
+
     # Helper to read either dataclass attributes or dict keys
     def _get(obj, name, default=None):
         if obj is None:
@@ -45,7 +52,7 @@ def validate_data(payload):
     if any(p.team_id != team_obj.id for p in players_qs):
         raise PlayersWrongTeam()
 
-    # Batting order: optional on input only check if all players have it 
+    # Batting order: optional on input only check if all players have it
     orders = []
     all_orders_present = True
     for p in _get(payload, "players", []):
@@ -94,8 +101,12 @@ def validate_lineup_model(lineup):
     """
     # Import here to avoid import cycles
     from .exceptions import (
-        PlayersNotFound, PlayersWrongTeam, BadBattingOrder,
-        OpponentPitcherNotFound, OpponentTeamMismatch, PitcherInBatters,
+        PlayersNotFound,
+        PlayersWrongTeam,
+        BadBattingOrder,
+        OpponentPitcherNotFound,
+        OpponentTeamMismatch,
+        PitcherInBatters,
     )
 
     if lineup is None:
@@ -134,10 +145,10 @@ def validate_lineup_model(lineup):
     opp_team_id = getattr(lineup, "opponent_team_id", None)
     if opp_team_id is not None:
         from roster.models import Player as RosterPlayer
+
         pitcher = RosterPlayer.objects.filter(pk=opp_pid).first()
         if pitcher and pitcher.team_id != opp_team_id:
             raise OpponentTeamMismatch()
 
     # All checks passed — return True for convenience
     return True
-    

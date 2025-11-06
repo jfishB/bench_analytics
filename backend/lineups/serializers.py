@@ -14,7 +14,7 @@ class LineupPlayerIn(serializers.Serializer):
     """This is one batting slot in the lineup."""
 
     player_id = serializers.IntegerField()
-    position = serializers.CharField(max_length=3)    
+    position = serializers.CharField(max_length=3)
     # bating order is optional because the algorithm may assign it
     batting_order = serializers.IntegerField(min_value=1, max_value=9, required=False, allow_null=True)
 
