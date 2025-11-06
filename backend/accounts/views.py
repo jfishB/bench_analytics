@@ -1,8 +1,10 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from rest_framework import status
 
 from .services import register_user, login_user
+from .exceptions import DomainError
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -12,18 +14,47 @@ def protected_view(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
-    username = request.data.get("username")
-    email = request.data.get("email")
-    password = request.data.get("password")
+    """
+    Handles user registration requests.
+    """
+    try:
+        username = request.data.get("username")
+        email = request.data.get("email")
+        password = request.data.get("password")
 
-    data, status_code = register_user(username, email, password)
-    return Response(data, status=status_code)
+        user = register_user(username, email, password)
+
+        return Response(
+            {"message": "User created successfully!", "username": user.username},
+            status=status.HTTP_201_CREATED,
+        )
+
+    except DomainError as e:
+        return Response({"error": str(e)}, status=e.status_code)
+    except Exception:
+        return Response(
+            {"error": "Unexpected server error."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login(request):
-    username = request.data.get("username")
-    password = request.data.get("password")
+    """
+    Handles user login requests and token generation.
+    """
+    try:
+        username = request.data.get("username")
+        password = request.data.get("password")
 
-    data, status_code = login_user(username, password)
-    return Response(data, status=status_code)
+        tokens = login_user(username, password)
+
+        return Response(tokens, status=status.HTTP_200_OK)
+
+    except DomainError as e:
+        return Response({"error": str(e)}, status=e.status_code)
+    except Exception:
+        return Response(
+            {"error": "Unexpected server error."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
