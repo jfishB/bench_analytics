@@ -1,9 +1,8 @@
-from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.models import User
 from rest_framework import status
-
 from rest_framework_simplejwt.tokens import RefreshToken
+
 
 def register_user(username, email, password):
     if not username or not email or not password:

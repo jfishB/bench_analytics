@@ -1,9 +1,12 @@
+import json
+
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-import json
+
 from .models import Player
-from .services.sort_sample import sort_players_by_wos, calculate_wos
+from .services.sort_sample import calculate_wos, sort_players_by_wos
+
 
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
@@ -12,8 +15,16 @@ def players(request):
     if request.method == "GET":
         # List all players with stats
         players = Player.objects.all().values(
-            "id", "name", "xwoba", "bb_percent", "k_percent", "barrel_batted_rate", 
-            "pa", "year", "created_at", "updated_at"
+            "id",
+            "name",
+            "xwoba",
+            "bb_percent",
+            "k_percent",
+            "barrel_batted_rate",
+            "pa",
+            "year",
+            "created_at",
+            "updated_at",
         )
         player_data = list(players)
         return JsonResponse({"players": player_data})
@@ -66,7 +77,14 @@ def players_ranked(request):
     try:
         # Fetch all players with stats
         players = Player.objects.all().values(
-            "id", "name", "xwoba", "bb_percent", "k_percent", "barrel_batted_rate", "pa", "year"
+            "id",
+            "name",
+            "xwoba",
+            "bb_percent",
+            "k_percent",
+            "barrel_batted_rate",
+            "pa",
+            "year",
         )
         players_list = list(players)
 
@@ -84,4 +102,3 @@ def players_ranked(request):
 
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-    

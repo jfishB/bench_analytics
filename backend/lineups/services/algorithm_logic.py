@@ -1,9 +1,10 @@
 ##########################################
 """
-- This file contains the core algorithm 
+- This file contains the core algorithm
 logic for creating batting lineups.
 """
 ###########################################
+
 
 def algorithm_create_lineup(payload):
     """Create a batting lineup based on the provided payload.
@@ -16,4 +17,3 @@ def algorithm_create_lineup(payload):
         payload (CreateLineupInput): The input data for creating the lineup."""
     # --- Implementation of the lineup creation algorithm goes here ---
     pass
-

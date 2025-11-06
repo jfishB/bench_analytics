@@ -4,7 +4,7 @@ This module intentionally keeps the implementation small and dependency-free so
 it can be used by both Django tests and plain pytest runs.
 """
 
-from typing import List, Any
+from typing import Any, List
 
 
 def simple_sort(items: List[Any]) -> List[Any]:
@@ -50,10 +50,10 @@ def calculate_wos(player: dict) -> float:
     Returns:
         WOS score (float). Returns 0.0 if required fields are missing.
     """
-    xwoba = player.get('xwoba', 0) or 0
-    bb_percent = player.get('bb_percent', 0) or 0
-    barrel_rate = player.get('barrel_batted_rate', 0) or 0
-    k_percent = player.get('k_percent', 0) or 0
+    xwoba = player.get("xwoba", 0) or 0
+    bb_percent = player.get("bb_percent", 0) or 0
+    barrel_rate = player.get("barrel_batted_rate", 0) or 0
+    k_percent = player.get("k_percent", 0) or 0
 
     wos = (1000 * xwoba) + (2 * bb_percent) + barrel_rate - (0.5 * k_percent)
     return wos
@@ -71,5 +71,5 @@ def sort_players_by_wos(players: List[dict], ascending: bool = False) -> List[di
     """
     if players is None:
         raise ValueError("players must be a list, got None")
-    
+
     return sorted(players, key=lambda p: calculate_wos(p), reverse=not ascending)

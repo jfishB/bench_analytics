@@ -3,7 +3,6 @@ import { Button } from "../components/ui/button";
 
 const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000/api/v1";
 const ROSTER_BASE = `${API_BASE}/roster`;
-const LINEUPS_BASE = `${API_BASE}/lineups`;
 
 interface Player {
   id: number;

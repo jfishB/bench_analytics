@@ -7,12 +7,14 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
+
 # Input data structures for saving a lineup
 @dataclass
 class LineupPlayerInput:
     player_id: int
     position: str
     batting_order: Optional[int] = None
+
 
 @dataclass
 class CreateLineupInput:

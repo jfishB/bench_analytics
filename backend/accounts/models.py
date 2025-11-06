@@ -1,5 +1,6 @@
 from django.db import models
 
+
 class Login(models.Model):
     """
     Stores login-related information for users.

@@ -8,19 +8,22 @@ for saving a lineup
 
 from rest_framework import serializers
 
+
 # ---- Request schema (client -> server) ----
 class LineupPlayerIn(serializers.Serializer):
     """This is one batting slot in the lineup."""
+
     player_id = serializers.IntegerField()
-    position = serializers.CharField(max_length=3)    
+    position = serializers.CharField(max_length=3)
     # bating order is optional because the algorithm may assign it
     batting_order = serializers.IntegerField(min_value=1, max_value=9, required=False, allow_null=True)
 
 
 class LineupCreate(serializers.Serializer):
     """This is the entire request body to save a lineup."""
+
     team_id = serializers.IntegerField()
-    name = serializers.CharField(max_length=120)            # the coach-entered the name
+    name = serializers.CharField(max_length=120)  # the coach-entered the name
     opponent_pitcher_id = serializers.IntegerField()
     opponent_team_id = serializers.IntegerField(required=False, allow_null=True)
     players = LineupPlayerIn(many=True, min_length=9, max_length=9)  # calls LineupPlayerIn from above
@@ -29,6 +32,7 @@ class LineupCreate(serializers.Serializer):
 # ---- Response schema (server -> client) ----
 class LineupPlayerOut(serializers.Serializer):
     """This is a saved batting slot returned to the client."""
+
     player_id = serializers.IntegerField()
     position = serializers.CharField(max_length=3)
     batting_order = serializers.IntegerField()
@@ -36,6 +40,7 @@ class LineupPlayerOut(serializers.Serializer):
 
 class LineupOut(serializers.Serializer):
     """This is the entire response body returned by the API after saving."""
+
     id = serializers.IntegerField()
     team_id = serializers.IntegerField()
     name = serializers.CharField()

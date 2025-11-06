@@ -10,10 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-from pathlib import Path
-from datetime import timedelta
-
 import os
+from datetime import timedelta
+from pathlib import Path
+
 import environ
 
 # Paths
@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "corsheaders",
     "lineups",
-    "accounts",     # was "auth"
+    "accounts",  # was "auth"
     "roster",
 ]
 
@@ -67,7 +67,7 @@ REST_FRAMEWORK = {
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "corsheaders.middleware.CorsMiddleware",         # CORS before CommonMiddleware
+    "corsheaders.middleware.CorsMiddleware",  # CORS before CommonMiddleware
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
