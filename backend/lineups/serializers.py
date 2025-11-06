@@ -1,10 +1,9 @@
 ##########################################
-"""contracts/lineups_contract.py
--This file defines the API "contract" for saving a lineup:
-- Request schema (what the frontend sends)
-- Response schema (what the backend returns)
-- Example payloads
-- It does NOT create models or endpoints."""
+"""
+-This file defines the API "contract"
+for saving a lineup
+-used in lineup services and validation.
+"""
 ###########################################
 
 from rest_framework import serializers
@@ -15,8 +14,9 @@ class LineupPlayerIn(serializers.Serializer):
     """This is one batting slot in the lineup."""
 
     player_id = serializers.IntegerField()
-    position = serializers.CharField(max_length=3)
-    batting_order = serializers.IntegerField(min_value=1, max_value=9)
+    position = serializers.CharField(max_length=3)    
+    # bating order is optional because the algorithm may assign it
+    batting_order = serializers.IntegerField(min_value=1, max_value=9, required=False, allow_null=True)
 
 
 class LineupCreate(serializers.Serializer):
