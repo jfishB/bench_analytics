@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from .services import login_user, register_user
-
+from .exceptions import DomainError
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
