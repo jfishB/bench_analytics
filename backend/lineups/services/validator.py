@@ -7,16 +7,17 @@
 
 from django.contrib.auth import get_user_model
 
+from roster.models import Player, Team
+
 from .exceptions import (
-    TeamNotFound,
-    PlayersNotFound,
-    PlayersWrongTeam,
     BadBattingOrder,
+    NoCreator,
     OpponentPitcherNotFound,
     OpponentTeamMismatch,
-    NoCreator,
+    PlayersNotFound,
+    PlayersWrongTeam,
+    TeamNotFound,
 )
-from roster.models import Team, Player
 
 
 def validate_data(payload):
@@ -101,12 +102,12 @@ def validate_lineup_model(lineup):
     """
     # Import here to avoid import cycles
     from .exceptions import (
-        PlayersNotFound,
-        PlayersWrongTeam,
         BadBattingOrder,
         OpponentPitcherNotFound,
         OpponentTeamMismatch,
         PitcherInBatters,
+        PlayersNotFound,
+        PlayersWrongTeam,
     )
 
     if lineup is None:

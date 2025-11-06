@@ -5,8 +5,8 @@ authenticating and authorizing users
 - used in views
 """
 ###########################################
-from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.response import Response
 
 
 def authorize_lineup_deletion(user, lineup) -> Response | None:

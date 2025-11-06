@@ -1,17 +1,14 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import permissions, status
-from .serializers import LineupCreate, LineupOut
-from .services.auth_user import authorize_lineup_deletion
 from django.shortcuts import get_object_or_404
+from rest_framework import permissions, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from .models import Lineup
-from .services.input_data import (
-    CreateLineupInput,
-    LineupPlayerInput,
-)
-from .services.validator import validate_data
+from .serializers import LineupCreate, LineupOut
 from .services.algorithm_logic import algorithm_create_lineup
-from .services.validator import validate_lineup_model
+from .services.auth_user import authorize_lineup_deletion
+from .services.input_data import CreateLineupInput, LineupPlayerInput
+from .services.validator import validate_data, validate_lineup_model
 
 
 #############################################################################

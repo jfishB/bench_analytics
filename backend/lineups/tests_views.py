@@ -1,10 +1,11 @@
-from django.test import TestCase
-from rest_framework.test import APIClient
-from django.contrib.auth import get_user_model
 from unittest.mock import patch
 
-from roster.models import Team, Player
+from django.contrib.auth import get_user_model
+from django.test import TestCase
+from rest_framework.test import APIClient
+
 from lineups.models import Lineup, LineupPlayer
+from roster.models import Player, Team
 
 
 class LineupViewsTests(TestCase):

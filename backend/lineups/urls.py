@@ -1,7 +1,6 @@
-from .views import LineupCreateView, LineupDetailView
 from django.urls import path
 
-from .views import LineupCreateView
+from .views import LineupCreateView, LineupDetailView
 
 app_name = "lineups"
 

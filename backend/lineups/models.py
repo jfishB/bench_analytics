@@ -1,8 +1,8 @@
 from django.conf import settings
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from roster.models import Team, Player
+from roster.models import Player, Team
 
 
 class Lineup(models.Model):  # each instance is a saved batting lineup for a team
