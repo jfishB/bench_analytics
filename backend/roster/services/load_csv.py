@@ -4,11 +4,14 @@ This was converted from the previous management command to a callable
 service function so it can be invoked from code, tests or a lightweight
 management wrapper if desired.
 """
-from typing import Tuple
-from django.db import transaction
-from roster.models import Player
+
 import csv
 from pathlib import Path
+from typing import Tuple
+
+from django.db import transaction
+
+from roster.models import Player
 
 
 def load_csv_file(file: str | Path, year: int | None = None, dry_run: bool = False) -> Tuple[int, int, int]:
@@ -48,7 +51,7 @@ def load_csv_file(file: str | Path, year: int | None = None, dry_run: bool = Fal
                 if v is None or v == "":
                     return None
                 try:
-                    return float(str(v).replace('"', '').replace('%', '').strip())
+                    return float(str(v).replace('"', "").replace("%", "").strip())
                 except ValueError:
                     return None
 

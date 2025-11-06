@@ -1,0 +1,22 @@
+[tool.black]
+line-length = 127
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | venv
+  | env
+  | \.env
+  | __pycache__
+  | migrations
+  | node_modules
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 127
+skip = ["venv", "env", ".venv", ".env", "migrations", "node_modules", "__pycache__"]
+skip_gitignore = true

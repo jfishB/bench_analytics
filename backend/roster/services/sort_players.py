@@ -3,9 +3,12 @@
 Expose a function to compute and return the sorted players by WOS so callers
 can print, test or re-use the results.
 """
+
 from typing import List
+
 from roster.models import Player
-from .sort_sample import sort_players_by_wos, calculate_wos
+
+from .sort_sample import calculate_wos, sort_players_by_wos
 
 
 def get_sorted_players(top: int = 10, ascending: bool = False) -> List[dict]:
@@ -15,7 +18,12 @@ def get_sorted_players(top: int = 10, ascending: bool = False) -> List[dict]:
     WOS score key where needed.
     """
     players = Player.objects.all().values(
-        "name", "savant_player_id", "xwoba", "bb_percent", "barrel_batted_rate", "k_percent"
+        "name",
+        "savant_player_id",
+        "xwoba",
+        "bb_percent",
+        "barrel_batted_rate",
+        "k_percent",
     )
     players_list = list(players)
     if not players_list:
