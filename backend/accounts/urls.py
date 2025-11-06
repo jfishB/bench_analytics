@@ -1,17 +1,16 @@
-from . import views
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.urls import path
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+from . import views
 
 app_name = "accounts"
 
 urlpatterns = [
     # users endpoint
-    path('register/', views.register, name='register'),
-    path('login/', views.login, name='login'),
-    path('protected/', views.protected_view, name='protected'),
-
+    path("register/", views.register, name="register"),
+    path("login/", views.login, name="login"),
+    path("protected/", views.protected_view, name="protected"),
     # JWT token routes
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-
+    path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 ]
