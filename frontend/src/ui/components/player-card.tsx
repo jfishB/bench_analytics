@@ -1,7 +1,7 @@
 import React from "react";
 
 interface PlayerCardProps {
-  id?: number | string;
+  id?: string | number;
   name: string;
   teamName?: string;
   battingPosition?: string | number | null;
