@@ -1,5 +1,5 @@
 import React from "react";
-import { Card } from "@/components/ui";
+import { Card } from "../../../ui/components/card";
 
 import type { Player } from "@/shared/types";
 interface PlayerCardProps {

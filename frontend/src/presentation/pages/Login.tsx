@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 // API base for auth endpoints. Use environment variable when available.
-const AUTH_BASE = process.env.REACT_APP_API_BASE || "http://127.0.0.1:8000/api/v1/auth";
+const AUTH_BASE =
+  process.env.REACT_APP_API_BASE || "http://127.0.0.1:8000/api/v1/auth";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -40,11 +41,11 @@ export default function Login() {
 
   return (
     <div className="flex flex-col items-center mt-10">
-      <form 
-        onSubmit={handleLogin} 
+      <form
+        onSubmit={handleLogin}
         className="bg-white p-8 rounded-2xl shadow-md w-96"
       >
-      <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
         <input
           type="text"
           placeholder="Username"
@@ -69,7 +70,7 @@ export default function Login() {
         >
           Log In
         </button>
-        
+
         {message && (
           <p className="text-center mt-4 text-sm text-gray-700">{message}</p>
         )}

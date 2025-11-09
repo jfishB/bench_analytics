@@ -1,37 +1,53 @@
-import React from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
+import React from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../ui/components/card";
 
-export function About() {
-  const teamMembers = [
+// Define a type for team members
+interface TeamMember {
+  name: string;
+  background: string;
+}
+
+export const About: React.FC = () => {
+  const teamMembers: TeamMember[] = [
     {
       name: "Jeevesh Balendra",
-      background: "Former college softball coach with 15 years of experience and a passion for analytics",
+      background:
+        "Former college softball coach with 15 years of experience and a passion for analytics",
     },
     {
       name: "Lea Palme",
-      background: "PhD in Statistics, formerly with MLB Advanced Media developing player evaluation models",
+      background:
+        "PhD in Statistics, formerly with MLB Advanced Media developing player evaluation models",
     },
     {
       name: "Ilya Kononov",
-      background: "20+ years coaching at high school and college levels, expert in lineup strategy",
+      background:
+        "20+ years coaching at high school and college levels, expert in lineup strategy",
     },
     {
       name: "Luke Pan",
-      background: "Full-stack engineer with expertise in sports analytics and machine learning",
+      background:
+        "Full-stack engineer with expertise in sports analytics and machine learning",
     },
     {
       name: "Rashu Sharda",
-      background: "Full-stack engineer with expertise in sports analytics and machine learning",
+      background:
+        "Full-stack engineer with expertise in sports analytics and machine learning",
     },
-  ]
+  ];
 
   return (
     <div className="px-4 md:px-12 lg:px-24 space-y-8">
       <div className="text-center">
         <h1 className="text-3xl mb-2 text-primary">About Bench Analytics</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          We're passionate about helping coaches make data-driven decisions that lead to more wins
-          on the field.
+          We're passionate about helping coaches make data-driven decisions that
+          lead to more wins on the field.
         </p>
       </div>
 
@@ -40,8 +56,9 @@ export function About() {
         <div className="max-w-3xl mx-auto space-y-6">
           <h2 className="text-2xl text-primary">Our Mission</h2>
           <p className="text-lg text-muted-foreground">
-            To democratize advanced baseball analytics and give every coach, regardless of budget or
-            technical expertise, access to the same data-driven insights used by professional teams.
+            To democratize advanced baseball analytics and give every coach,
+            regardless of budget or technical expertise, access to the same
+            data-driven insights used by professional teams.
           </p>
         </div>
       </section>
@@ -98,8 +115,7 @@ export function About() {
         </Card>
       </section>
     </div>
-  )
-}
+  );
+};
 
-export default About
-
+export default About;

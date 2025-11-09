@@ -1,20 +1,27 @@
-import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
+import React from "react";
+import { Button } from "../../ui/components/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../ui/components/card";
 import { useNavigate } from "react-router-dom";
 
+// Define a type for features
+interface Feature {
+  title: string;
+  description: string;
+}
 
-export default function Home() {
+const Home: React.FC = () => {
   const navigate = useNavigate();
-  const features = [
+
+  const features: Feature[] = [
     {
       title: "Smart Lineup Generation",
-      description: "Data-powered algorithms analyze player stats to suggest optimal batting orders"
+      description: "Data-powered algorithms analyze player stats to suggest optimal batting orders",
     },
     {
       title: "Player Analytics",
-      description: "Comprehensive player performance tracking and statistical analysis"
-    }
-  ]
+      description: "Comprehensive player performance tracking and statistical analysis",
+    },
+  ];
 
   return (
     <div className="space-y-12">
@@ -31,21 +38,20 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               size="lg" 
-              onClick={() => navigate("/lineup")} // use React Router navigation
+              onClick={() => navigate("/lineup")}
               className="px-8 bg-[var(--accent-red)] text-[var(--accent-red-foreground)] hover:bg-[var(--accent-red)]/90"
             >
               Start Optimizing
             </Button>
-  
+
             <Button 
               variant="outline" 
               size="lg"
-              onClick={() => navigate("/how-to-guide")} 
+              onClick={() => navigate("/how-to-guide")}
               className="px-8"
             >
               Learn How
             </Button>
-
           </div>
         </div>
       </section>
@@ -68,5 +74,7 @@ export default function Home() {
         ))}
       </section>
     </div>
-  )
-}
+  );
+};
+
+export default Home;
