@@ -10,7 +10,7 @@ interface PlayersOrderedListProps {
 /**
  * Feature component: sorts players by `batting_order` (ascending) and
  * renders the UI primitive `PlayerList`.
- * ordering is not business logic, just nicer UI.
+ * Ordering is not business logic, just nicer UI.
  */
 export function PlayersOrderedList({ players, className = "" }: PlayersOrderedListProps) {
   // Copy and sort: players with undefined/null batting_order go to the end.
