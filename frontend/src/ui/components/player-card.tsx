@@ -1,5 +1,7 @@
 import React from "react";
 
+import { cn } from "../../utils";
+
 interface PlayerCardProps {
   id?: number | string;
   name: string;
@@ -26,10 +28,10 @@ export default function PlayerCard({
   return (
     <article
       data-player-id={id}
-      className={
-        "bg-white shadow-sm border border-gray-100 rounded-lg p-4 w-full max-w-xs " +
+      className={cn(
+        "bg-white shadow-sm border border-gray-100 rounded-lg p-4 w-full max-w-xs",
         className
-      }
+      )}
     >
       <header className="mb-2">
         <h3 className="text-lg font-semibold text-gray-900 truncate" title={name}>
