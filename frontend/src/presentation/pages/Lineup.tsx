@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Button } from "../components/ui/button";
+import { Button } from "../../ui/components/button";
 
-const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000/api/v1";
+const API_BASE =
+  process.env.REACT_APP_API_BASE || "http://localhost:8000/api/v1";
 const ROSTER_BASE = `${API_BASE}/roster`;
 
 interface Player {
@@ -50,11 +51,16 @@ export default function Lineup() {
   return (
     <div className="flex flex-col items-center mt-10 space-y-4 px-4">
       <h2 className="text-3xl font-bold">Lineup Optimizer</h2>
-      
+
       <div className="max-w-2xl text-center text-sm text-gray-600 bg-blue-50 border border-blue-200 rounded p-3">
-        <p className="font-semibold mb-1">Weighted Offensive Score (WOS) - Placeholder Algorithm</p>
+        <p className="font-semibold mb-1">
+          Weighted Offensive Score (WOS) - Placeholder Algorithm
+        </p>
         <p className="text-xs">
-          Formula: <code className="bg-white px-1 py-0.5 rounded">1000 × xwOBA + 2 × BB% + Barrel% - 0.5 × K%</code>
+          Formula:{" "}
+          <code className="bg-white px-1 py-0.5 rounded">
+            1000 × xwOBA + 2 × BB% + Barrel% - 0.5 × K%
+          </code>
         </p>
         <p className="text-xs mt-1">
           This is a simplified scoring method used for demonstration purposes.
@@ -65,7 +71,7 @@ export default function Lineup() {
         <Button onClick={fetchPlayers} disabled={loading} variant="outline">
           {loading ? "Loading..." : "Load All Players"}
         </Button>
-        
+
         {players.length > 0 && !isSorted && (
           <Button onClick={optimizeLineup} disabled={loading} variant="outline">
             Optimize Lineup

@@ -9,8 +9,8 @@ function cn(...a: Array<string | false | null | undefined>) {
 type Option = { label: string; value: string };
 
 type PrettySelectProps = {
-  id?: string;                 // optional id (for testing)
-  labelId?: string;            // pass the <Label id="..."> here for a11y
+  id?: string; // optional id (for testing)
+  labelId?: string; // pass the <Label id="..."> here for a11y
   value: string;
   onValueChange: (v: string) => void;
   options: Option[];
@@ -19,7 +19,7 @@ type PrettySelectProps = {
   disabled?: boolean;
 };
 
-export default function PrettySelect({
+export function PrettySelect({
   id,
   labelId,
   value,
@@ -30,7 +30,11 @@ export default function PrettySelect({
   disabled,
 }: PrettySelectProps) {
   return (
-    <Select.Root value={value} onValueChange={onValueChange} disabled={disabled}>
+    <Select.Root
+      value={value}
+      onValueChange={onValueChange}
+      disabled={disabled}
+    >
       <Select.Trigger
         id={id}
         aria-labelledby={labelId}
