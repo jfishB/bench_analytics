@@ -15,8 +15,7 @@ from .serializer import (
 from .services.player_ranking import (
     get_ranked_players,
     create_player_with_stats,
-    update_player_stats,
-    get_team_by_id
+    update_player_stats
 )
 
 

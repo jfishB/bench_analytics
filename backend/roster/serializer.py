@@ -54,19 +54,13 @@ class PlayerCreateSerializer(serializers.ModelSerializer):
         model = Player
         fields = ['name', 'team', 'position', 'xwoba', 'bb_percent', 'k_percent', 'barrel_batted_rate', 
                   'pa', 'year', 'savant_player_id', 'sweet_spot_percent', 'hard_hit_percent', 
-                  'avg_best_speed', 'avg_hyper_speed', 'whiff_percent', 'swing_percent', 'woba', 'xwoba']
+                  'avg_best_speed', 'avg_hyper_speed', 'whiff_percent', 'swing_percent', 'woba']
     
     def validate_name(self, value: str) -> str:
         """Ensure player name is not empty after stripping whitespace."""
         if not value.strip():
             raise serializers.ValidationError("Player name cannot be empty.")
         return value.strip()
-    
-    def validate_team(self, value):
-        """Validate that team exists if provided."""
-        if value and not Team.objects.filter(id=value.id).exists():
-            raise serializers.ValidationError("Team does not exist.")
-        return value
 
 
 class PlayerPartialUpdateSerializer(serializers.ModelSerializer):
@@ -76,7 +70,7 @@ class PlayerPartialUpdateSerializer(serializers.ModelSerializer):
         model = Player
         fields = ['name', 'team', 'position', 'xwoba', 'bb_percent', 'k_percent', 'barrel_batted_rate',
                   'pa', 'year', 'savant_player_id', 'sweet_spot_percent', 'hard_hit_percent',
-                  'avg_best_speed', 'avg_hyper_speed', 'whiff_percent', 'swing_percent', 'woba', 'xwoba']
+                  'avg_best_speed', 'avg_hyper_speed', 'whiff_percent', 'swing_percent', 'woba']
         extra_kwargs = {
             'name': {'required': False},
             'team': {'required': False},
@@ -95,9 +89,3 @@ class PlayerRankQuerySerializer(serializers.Serializer):
     
     ascending = serializers.BooleanField(default=False, required=False)
     top = serializers.IntegerField(min_value=1, required=False, allow_null=True)
-    
-    def validate_top(self, value):
-        """Ensure top is positive if provided."""
-        if value is not None and value < 1:
-            raise serializers.ValidationError("'top' must be a positive integer.")
-        return value
