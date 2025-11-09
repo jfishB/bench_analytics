@@ -1,5 +1,4 @@
 import React from "react";
-import { BrowserRouter } from "react-router-dom";
 import AppRoutes from "./app/router/routes"; // TSX routes
 import { Header } from "./ui/layout/Header";
 import { Footer } from "./ui/layout/Footer";
