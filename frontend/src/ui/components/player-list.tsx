@@ -17,7 +17,15 @@ interface PlayerListProps {
  * Renders an ordered list of player tiles. The UI primitive expects
  * items already ordered by batting order; it will not sort them.
  */
-export default function PlayerList({ items, className = "" }: PlayerListProps) {
+export function PlayerList({ items, className = "" }: PlayerListProps) {
+  if (!items || items.length === 0) {
+    return (
+      <div className={cn("text-sm text-gray-500 italic py-4", className)}>
+        No players found.
+      </div>
+    );
+  }
+
   return (
     <ol className={cn("space-y-2", className)}>
       {items.map((it) => (
@@ -42,3 +50,4 @@ export default function PlayerList({ items, className = "" }: PlayerListProps) {
     </ol>
   );
 }
+export default PlayerList;

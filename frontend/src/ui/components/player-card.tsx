@@ -18,7 +18,7 @@ interface PlayerCardProps {
  *
  * added comment where to add more fields.
  */
-export default function PlayerCard({
+export function PlayerCard({
   id,
   name,
   teamName,
@@ -63,3 +63,4 @@ export default function PlayerCard({
     </article>
   );
 }
+export default PlayerCard;
