@@ -1,9 +1,12 @@
 """
 Service module for player ranking and WOS calculations.
 Separates business logic from views.
+
+NOTE: This is a PLACEHOLDER algorithm.
+The ranking logic will be replaced by the algorithm in lineups/services/algorithm_logic.py
 """
-from typing import List, Dict, Any
-from roster.models import Player
+from typing import List, Dict, Any, Optional
+from roster.models import Player, Team
 from .sort_sample import calculate_wos, sort_players_by_wos
 
 
@@ -92,3 +95,19 @@ def update_player_stats(player_id: int, **stats) -> Player:
     
     player.save()
     return player
+
+
+def get_team_by_id(team_id: int) -> Optional[Team]:
+    """
+    Retrieve a team by its ID.
+    
+    Args:
+        team_id: Team ID
+    
+    Returns:
+        Team instance or None if not found
+    """
+    try:
+        return Team.objects.get(id=team_id)
+    except Team.DoesNotExist:
+        return None

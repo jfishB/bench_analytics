@@ -7,12 +7,16 @@ from .serializer import (
     TeamSerializer, 
     PlayerSerializer, 
     PlayerListSerializer,
-    PlayerRankedSerializer
+    PlayerRankedSerializer,
+    PlayerCreateSerializer,
+    PlayerPartialUpdateSerializer,
+    PlayerRankQuerySerializer
 )
 from .services.player_ranking import (
     get_ranked_players,
     create_player_with_stats,
-    update_player_stats
+    update_player_stats,
+    get_team_by_id
 )
 
 
@@ -29,35 +33,46 @@ class PlayerViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Player model.
     Provides CRUD operations plus custom ranking endpoint.
+    Keeps views thin - delegates business logic to services.
     """
     queryset = Player.objects.select_related('team').all()
     
     def get_serializer_class(self):
         """Return appropriate serializer based on action."""
-        if self.action == 'list':
+        if self.action == 'create':
+            return PlayerCreateSerializer
+        elif self.action == 'partial_update':
+            return PlayerPartialUpdateSerializer
+        elif self.action == 'list':
             return PlayerListSerializer
         elif self.action == 'ranked':
             return PlayerRankedSerializer
         return PlayerSerializer
     
     def create(self, request, *args, **kwargs):
-        """Create a new player with validation."""
+        """
+        Create a new player with validation.
+        Delegates to service layer for business logic.
+        """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        # Use service layer for creation
+        # Service layer handles creation
         player = create_player_with_stats(**serializer.validated_data)
         
         output_serializer = PlayerSerializer(player)
         return Response(output_serializer.data, status=status.HTTP_201_CREATED)
     
     def partial_update(self, request, *args, **kwargs):
-        """Update player stats using service layer."""
+        """
+        Update player stats.
+        Delegates to service layer for business logic.
+        """
         player = self.get_object()
         serializer = self.get_serializer(player, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         
-        # Use service layer for updates
+        # Service layer handles updates
         updated_player = update_player_stats(player.id, **serializer.validated_data)
         
         output_serializer = PlayerSerializer(updated_player)
@@ -69,23 +84,17 @@ class PlayerViewSet(viewsets.ModelViewSet):
         Custom endpoint: GET /api/v1/roster/players/ranked/
         Returns players sorted by WOS score.
         
-        Query params:
-            - ascending: bool (default=false)
-            - top: int (optional limit)
+        Query params validated via PlayerRankQuerySerializer.
+        Business logic delegated to service layer.
         """
-        ascending = request.query_params.get('ascending', 'false').lower() == 'true'
-        top_n = request.query_params.get('top', None)
+        # Validate query parameters
+        query_serializer = PlayerRankQuerySerializer(data=request.query_params)
+        query_serializer.is_valid(raise_exception=True)
         
-        if top_n:
-            try:
-                top_n = int(top_n)
-            except ValueError:
-                return Response(
-                    {"error": "Invalid 'top' parameter. Must be an integer."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+        ascending = query_serializer.validated_data.get('ascending', False)
+        top_n = query_serializer.validated_data.get('top', None)
         
-        # Use service layer for ranking logic
+        # Service layer handles ranking logic
         ranked_players = get_ranked_players(ascending=ascending, top_n=top_n)
         
         serializer = PlayerRankedSerializer(ranked_players, many=True)
