@@ -1,4 +1,5 @@
 import React from "react";
+import { cn } from "../../utils";
 
 interface PlayerListItem {
   id?: string | number;
@@ -18,7 +19,7 @@ interface PlayerListProps {
  */
 export default function PlayerList({ items, className = "" }: PlayerListProps) {
   return (
-    <ol className={"space-y-2 " + className}>
+    <ol className={cn("space-y-2", className)}>
       {items.map((it) => (
         <li key={it.id ?? it.name}>
           <div className="flex items-center bg-white border border-gray-100 rounded-lg p-3 shadow-sm">
