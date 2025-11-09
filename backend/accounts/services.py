@@ -10,6 +10,7 @@ from .exceptions import (
     MissingFieldsError,
 )
 
+
 def register_user(username, email, password) -> User:
     """
     Handles user registration logic.
