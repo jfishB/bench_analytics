@@ -7,7 +7,7 @@ import Register from "presentation/pages/Register";
 import About from "presentation/pages/About";
 import HowToGuide from "presentation/pages/HowToGuide";
 
-const Lineup = lazy(() => import("../../presentation/pages/Lineup"));
+const Lineup = lazy(() => import("presentation/pages/Lineup"));
 
 const AppRoutes: React.FC = () => {
   return (
