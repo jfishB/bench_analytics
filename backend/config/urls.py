@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
 
 # API v1 root: all public endpoints are namespaced under /api/v1/
 urlpatterns = [

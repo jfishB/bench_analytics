@@ -1,4 +1,4 @@
-import { apiRequest } from "@/shared/api";
+import { apiRequest } from "../../../services/api";
 
 
 /**

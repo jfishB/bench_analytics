@@ -1,5 +1,5 @@
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from django.urls import path
+
 from . import views
 
 app_name = "roster"
@@ -21,5 +21,7 @@ router.register(r'players', views.PlayerViewSet, basename='player')
 # Plus custom: GET /players/ranked/
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path("players/", views.players, name="players"),
+    path("players/<int:player_id>/", views.player_detail, name="player_detail"),
+    path("players/ranked/", views.players_ranked, name="players_ranked"),
 ]

@@ -52,7 +52,10 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("position", models.CharField(default="DH", max_length=3)),
-                ("savant_player_id", models.PositiveIntegerField(null=True, blank=True)),
+                (
+                    "savant_player_id",
+                    models.PositiveIntegerField(null=True, blank=True),
+                ),
                 ("year", models.PositiveIntegerField(null=True, blank=True)),
                 ("pa", models.PositiveIntegerField(null=True, blank=True)),
                 ("k_percent", models.FloatField(null=True, blank=True)),

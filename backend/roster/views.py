@@ -1,22 +1,33 @@
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.response import Response
+import json
 
-from .models import Team, Player
-from .serializer import (
-    TeamSerializer, 
-    PlayerSerializer, 
-    PlayerListSerializer,
-    PlayerRankedSerializer,
-    PlayerCreateSerializer,
-    PlayerPartialUpdateSerializer,
-    PlayerRankQuerySerializer
-)
-from .services.player_ranking import (
-    get_ranked_players,
-    create_player_with_stats,
-    update_player_stats
-)
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+
+from .models import Player
+from .services.sort_sample import calculate_wos, sort_players_by_wos
+
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def players(request):
+    """API endpoint to list and create players."""
+    if request.method == "GET":
+        # List all players with stats
+        players = Player.objects.all().values(
+            "id",
+            "name",
+            "xwoba",
+            "bb_percent",
+            "k_percent",
+            "barrel_batted_rate",
+            "pa",
+            "year",
+            "created_at",
+            "updated_at",
+        )
+        player_data = list(players)
+        return JsonResponse({"players": player_data})
 
 
 class TeamViewSet(viewsets.ModelViewSet):
@@ -28,74 +39,56 @@ class TeamViewSet(viewsets.ModelViewSet):
     serializer_class = TeamSerializer
 
 
-class PlayerViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet for Player model.
-    Provides CRUD operations plus custom ranking endpoint.
-    Keeps views thin - delegates business logic to services.
-    """
-    queryset = Player.objects.select_related('team').all()
-    
-    def get_serializer_class(self):
-        """Return appropriate serializer based on action."""
-        if self.action == 'create':
-            return PlayerCreateSerializer
-        elif self.action == 'partial_update':
-            return PlayerPartialUpdateSerializer
-        elif self.action == 'list':
-            return PlayerListSerializer
-        elif self.action == 'ranked':
-            return PlayerRankedSerializer
-        return PlayerSerializer
-    
-    def create(self, request, *args, **kwargs):
-        """
-        Create a new player with validation.
-        Delegates to service layer for business logic.
-        """
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        
-        # Service layer handles creation
-        player = create_player_with_stats(**serializer.validated_data)
-        
-        output_serializer = PlayerSerializer(player)
-        return Response(output_serializer.data, status=status.HTTP_201_CREATED)
-    
-    def partial_update(self, request, *args, **kwargs):
-        """
-        Update player stats.
-        Delegates to service layer for business logic.
-        """
-        player = self.get_object()
-        serializer = self.get_serializer(player, data=request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        
-        # Service layer handles updates
-        updated_player = update_player_stats(player.id, **serializer.validated_data)
-        
-        output_serializer = PlayerSerializer(updated_player)
-        return Response(output_serializer.data)
-    
-    @action(detail=False, methods=['get'], url_path='ranked')
-    def ranked(self, request):
-        """
-        Custom endpoint: GET /api/v1/roster/players/ranked/
-        Returns players sorted by WOS score.
-        
-        Query params validated via PlayerRankQuerySerializer.
-        Business logic delegated to service layer.
-        """
-        # Validate query parameters
-        query_serializer = PlayerRankQuerySerializer(data=request.query_params)
-        query_serializer.is_valid(raise_exception=True)
-        
-        ascending = query_serializer.validated_data.get('ascending', False)
-        top_n = query_serializer.validated_data.get('top', None)
-        
-        # Service layer handles ranking logic
-        ranked_players = get_ranked_players(ascending=ascending, top_n=top_n)
-        
-        serializer = PlayerRankedSerializer(ranked_players, many=True)
-        return Response({"players": serializer.data})
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON"}, status=400)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
 
+
+@csrf_exempt
+@require_http_methods(["DELETE"])
+def player_detail(request, player_id):
+    """API endpoint to delete a specific player."""
+    try:
+        player = Player.objects.get(id=player_id)
+        player_name = player.name
+        player.delete()
+        return JsonResponse({"message": f"Player '{player_name}' deleted successfully"})
+    except Player.DoesNotExist:
+        return JsonResponse({"error": "Player not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+def players_ranked(request):
+    """API endpoint to get players ranked by WOS score."""
+    try:
+        # Fetch all players with stats
+        players = Player.objects.all().values(
+            "id",
+            "name",
+            "xwoba",
+            "bb_percent",
+            "k_percent",
+            "barrel_batted_rate",
+            "pa",
+            "year",
+        )
+        players_list = list(players)
+
+        # Sort by WOS
+        sorted_players = sort_players_by_wos(players_list, ascending=False)
+
+        # Add WOS score to each player
+        result = []
+        for player in sorted_players:
+            player_data = dict(player)
+            player_data["wos_score"] = round(calculate_wos(player), 2)
+            result.append(player_data)
+
+        return JsonResponse({"players": result})
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
