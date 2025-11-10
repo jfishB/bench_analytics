@@ -1,7 +1,10 @@
 import * as React from "react";
-
 import { cn } from "../../utils";
 
+/**
+ * Card Component
+ * Base container with border, rounded corners, and flexible layout.
+ */
 function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -15,6 +18,11 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/**
+ * CardHeader
+ * Contains the title and optional action elements.
+ * Uses CSS grid for layout.
+ */
 function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -28,7 +36,15 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function CardTitle({ className, children, ...props }: React.ComponentProps<"div">) {
+/**
+ * CardTitle
+ * Primary heading for the card.
+ */
+function CardTitle({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<"div">) {
   return (
     <h4
       data-slot="card-title"
@@ -40,6 +56,10 @@ function CardTitle({ className, children, ...props }: React.ComponentProps<"div"
   );
 }
 
+/**
+ * CardDescription
+ * Secondary text or description below the title.
+ */
 function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <p
@@ -50,6 +70,10 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/**
+ * CardAction
+ * Container for buttons or interactive elements in the header.
+ */
 function CardAction({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -63,6 +87,10 @@ function CardAction({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/**
+ * CardContent
+ * Main body content of the card.
+ */
 function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -73,6 +101,10 @@ function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+/**
+ * CardFooter
+ * Container for footer actions or notes, typically buttons or metadata.
+ */
 function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
