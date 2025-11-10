@@ -2,6 +2,16 @@ from rest_framework import serializers
 from .models import Team, Player
 
 
+class PlayerNameValidationMixin:
+    """Mixin to provide shared player name validation."""
+    
+    def validate_name(self, value: str) -> str:
+        """Ensure player name is not empty after stripping whitespace."""
+        if not value.strip():
+            raise serializers.ValidationError("Player name cannot be empty.")
+        return value.strip()
+
+
 class TeamSerializer(serializers.ModelSerializer):
     """Serializer for Team model."""
     
@@ -10,7 +20,7 @@ class TeamSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class PlayerSerializer(serializers.ModelSerializer):
+class PlayerSerializer(PlayerNameValidationMixin, serializers.ModelSerializer):
     """Serializer for Player model with nested team information."""
     
     team_name = serializers.CharField(source='team.name', read_only=True)
@@ -18,12 +28,6 @@ class PlayerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Player
         fields = ['id', 'name', 'team', 'team_name', 'position', 'xwoba', 'bb_percent', 'k_percent', 'barrel_batted_rate']
-    
-    def validate_name(self, value: str) -> str:
-        """Ensure player name is not empty after stripping whitespace."""
-        if not value.strip():
-            raise serializers.ValidationError("Player name cannot be empty.")
-        return value.strip()
 
 
 class PlayerListSerializer(serializers.ModelSerializer):
@@ -47,7 +51,7 @@ class PlayerRankedSerializer(PlayerSerializer):
         ]
 
 
-class PlayerCreateSerializer(serializers.ModelSerializer):
+class PlayerCreateSerializer(PlayerNameValidationMixin, serializers.ModelSerializer):
     """Serializer for creating a new player with validation."""
     
     class Meta:
@@ -55,12 +59,6 @@ class PlayerCreateSerializer(serializers.ModelSerializer):
         fields = ['name', 'team', 'position', 'xwoba', 'bb_percent', 'k_percent', 'barrel_batted_rate', 
                   'pa', 'year', 'savant_player_id', 'sweet_spot_percent', 'hard_hit_percent', 
                   'avg_best_speed', 'avg_hyper_speed', 'whiff_percent', 'swing_percent', 'woba']
-    
-    def validate_name(self, value: str) -> str:
-        """Ensure player name is not empty after stripping whitespace."""
-        if not value.strip():
-            raise serializers.ValidationError("Player name cannot be empty.")
-        return value.strip()
 
 
 class PlayerPartialUpdateSerializer(serializers.ModelSerializer):
