@@ -100,8 +100,7 @@ def update_player_stats(player_id: int, **stats) -> Player:
     player = Player.objects.get(id=player_id)
 
     for field, value in stats.items():
-        if hasattr(player, field):
-            setattr(player, field, value)
+        setattr(player, field, value)
 
     player.save()
     return player
