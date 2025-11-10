@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.db import IntegrityError
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .exceptions import (
@@ -24,10 +25,13 @@ def register_user(username, email, password) -> User:
     if User.objects.filter(email=email).exists():
         raise EmailAlreadyExistsError("Email already exists.")
 
-    user = User.objects.create_user(username=username, email=email, password=password)
-    user.save()
+    try:  # To handle cases where several of a similar user is trying to be created within a short time frame
+        user = User.objects.create_user(username=username, email=email, password=password)
 
-    return user
+        return user
+
+    except IntegrityError:
+        raise UserAlreadyExistsError("Username already exists.")
 
 
 def login_user(username, password) -> dict:

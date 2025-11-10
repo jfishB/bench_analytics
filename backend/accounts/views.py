@@ -1,3 +1,5 @@
+import logging
+
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -5,6 +7,8 @@ from rest_framework.response import Response
 
 from .exceptions import DomainError
 from .services import login_user, register_user
+
+logger = logging.getLogger(__name__)
 
 
 @api_view(["GET"])
@@ -33,9 +37,10 @@ def register(request):
 
     except DomainError as e:
         return Response({"error": str(e)}, status=e.status_code)
-    except Exception:
+    except Exception as e:
+        logger.exception("Unexpected error in register")
         return Response(
-            {"error": "Unexpected server error."},
+            {"error": "Unexpecte\erver error."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
@@ -56,7 +61,8 @@ def login(request):
 
     except DomainError as e:
         return Response({"error": str(e)}, status=e.status_code)
-    except Exception:
+    except Exception as e:
+        logger.exception("Unexpected error in register")
         return Response(
             {"error": "Unexpected server error."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
