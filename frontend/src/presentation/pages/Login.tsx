@@ -32,7 +32,9 @@ export default function Login() {
       localStorage.setItem("access", data.access);
       localStorage.setItem("refresh", data.refresh);
 
+      // After a successful login, redirect to lineup page
       setMessage("Login successful!");
+      setTimeout(() => navigate("/lineup"), 1000);
     } catch (err) {
       console.error(err);
       setMessage("Something went wrong.");
