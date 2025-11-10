@@ -64,9 +64,9 @@ class AccountServiceTests(TestCase):
 class AccountViewTests(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.register_url = "/api/accounts/register/"
-        self.login_url = "/api/accounts/login/"
-        self.protected_url = "/api/accounts/protected/"
+        self.register_url = "/api/v1/auth/register/"
+        self.login_url = "/api/v1/auth/login/"
+        self.protected_url = "/api/v1/auth/protected/"
 
         # Create a sample user for login tests
         self.user = User.objects.create_user(username="testuser", email="test@example.com", password="test123")
