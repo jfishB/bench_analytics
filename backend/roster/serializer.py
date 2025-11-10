@@ -37,7 +37,7 @@ class PlayerListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Player
-        fields = ['id', 'name', 'team', 'team_name', 'position', 'xwoba', 'bb_percent', 'k_percent', 'barrel_batted_rate']
+        fields = ['id', 'name', 'team', 'team_name', 'position']
 
 
 class PlayerRankedSerializer(PlayerSerializer):
