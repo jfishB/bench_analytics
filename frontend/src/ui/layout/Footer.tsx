@@ -19,7 +19,7 @@ export const Footer: React.FC = () => {
               onClick={() => navigate("/")}
             />
             <p className="text-sm text-gray-500 max-w-xs leading-relaxed">
-              Advanced lineup optimization for baseball and softball coaches.
+              Advanced lineup optimization for baseball coaches.
             </p>
           </div>
 
