@@ -17,27 +17,26 @@ export const About: React.FC = () => {
     {
       name: "Jeevesh Balendra",
       background:
-        "Former college softball coach with 15 years of experience and a passion for analytics",
+        "Computer Science Specialist passionate about problem-solving and innovation.",
     },
     {
       name: "Lea Palme",
       background:
-        "PhD in Statistics, formerly with MLB Advanced Media developing player evaluation models",
+        "Computer Science Specialist and Cognitive Science major exploring ",
     },
     {
       name: "Ilya Kononov",
-      background:
-        "20+ years coaching at high school and college levels, expert in lineup strategy",
+      background: "Computer Science and Mathematics major focused on",
     },
     {
       name: "Luke Pan",
       background:
-        "Full-stack engineer with expertise in sports analytics and machine learning",
+        "Computer Science Specialist with an interest in full-stack development.",
     },
     {
       name: "Rashu Sharda",
       background:
-        "Full-stack engineer with expertise in sports analytics and machine learning",
+        "Computer Science Specialist with a Math minor, passionate about software development.",
     },
   ];
 
