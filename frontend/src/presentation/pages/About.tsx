@@ -22,7 +22,7 @@ export const About: React.FC = () => {
     {
       name: "Lea Palme",
       background:
-        "Computer Science Specialist and Cognitive Science major exploring ",
+        "Computer Science Specialist and Cognitive Science major exploring Cyber security and sustainable technology.",
     },
     {
       name: "Ilya Kononov",
