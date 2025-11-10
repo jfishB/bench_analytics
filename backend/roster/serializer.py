@@ -88,4 +88,4 @@ class PlayerRankQuerySerializer(serializers.Serializer):
     """Serializer for validating query parameters for ranked endpoint."""
     
     ascending = serializers.BooleanField(default=False, required=False)
-    top = serializers.IntegerField(min_value=1, required=False, allow_null=True)
+    top = serializers.IntegerField(min_value=1, required=False)
