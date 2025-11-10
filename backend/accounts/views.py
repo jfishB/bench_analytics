@@ -40,7 +40,7 @@ def register(request):
     except Exception as e:
         logger.exception("Unexpected error in register")
         return Response(
-            {"error": "Unexpecte\erver error."},
+            {"error": "Unexpected server error."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
