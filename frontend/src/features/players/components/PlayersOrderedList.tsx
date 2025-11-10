@@ -8,12 +8,19 @@ interface PlayersOrderedListProps {
 }
 
 /**
- * Feature component: sorts players by `batting_order` (ascending) and
- * renders the UI primitive `PlayerList`.
- * Ordering is not business logic, just nicer UI.
+ * PlayersOrderedList (Feature component)
+ *
+ * - Sorts the provided players by `batting_order` in ascending order.
+ *   - Players without a batting_order are pushed to the end.
+ * - Maps the sorted data to the `PlayerList` UI primitive.
+ * - Handles missing names by defaulting to `"Unnamed"`.
+ * - Purely a UI convenience; does not modify business logic.
  */
-export function PlayersOrderedList({ players, className = "" }: PlayersOrderedListProps) {
-  // Copy and sort: players with undefined/null batting_order go to the end.
+export function PlayersOrderedList({
+  players,
+  className = "",
+}: PlayersOrderedListProps) {
+  // Create a sorted copy; players with null/undefined batting_order go last
   const sorted = [...players].sort((a, b) => {
     const ao = a.batting_order;
     const bo = b.batting_order;
@@ -23,6 +30,7 @@ export function PlayersOrderedList({ players, className = "" }: PlayersOrderedLi
     return ao - bo;
   });
 
+  // Map to the UI primitive's expected structure
   const items = sorted.map((p) => ({
     id: p.id,
     name: p.name ?? "Unnamed",
@@ -33,4 +41,3 @@ export function PlayersOrderedList({ players, className = "" }: PlayersOrderedLi
 }
 
 export default PlayersOrderedList;
-
