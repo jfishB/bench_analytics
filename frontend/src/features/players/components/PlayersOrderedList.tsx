@@ -1,10 +1,12 @@
 import React from "react";
 import PlayerList from "../../../ui/components/player-list";
-import type { Player } from "../../../shared/types";
+import type { Player } from "../../../shared/types"; // QUESTION: which player type here?
 
 interface PlayersOrderedListProps {
   players: Array<Partial<Player> & { batting_order?: number | null }>;
   className?: string;
+  onItemClick?: (player: Player) => void;
+  badgeClassName?: string;
 }
 
 /**
@@ -12,7 +14,7 @@ interface PlayersOrderedListProps {
  * renders the UI primitive `PlayerList`.
  * Ordering is not business logic, just nicer UI.
  */
-export function PlayersOrderedList({ players, className = "" }: PlayersOrderedListProps) {
+export function PlayersOrderedList({ players, className = "", onItemClick, badgeClassName }: PlayersOrderedListProps) {
   // Copy and sort: players with undefined/null batting_order go to the end.
   const sorted = [...players].sort((a, b) => {
     const ao = a.batting_order;
@@ -24,12 +26,20 @@ export function PlayersOrderedList({ players, className = "" }: PlayersOrderedLi
   });
 
   const items = sorted.map((p) => ({
-    id: p.id,
+    id: p.id ?? "",
     name: p.name ?? "Unnamed",
     battingOrder: p.batting_order ?? null,
+    payload: p as Player,
   }));
 
-  return <PlayerList items={items} className={className} />;
+  return (
+    <PlayerList
+      items={items}
+      className={className}
+      onItemClick={(it) => onItemClick && onItemClick(it.payload as Player)}
+      badgeClassName={badgeClassName}
+    />
+  );
 }
 
 export default PlayersOrderedList;
