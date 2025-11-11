@@ -92,12 +92,14 @@ def players_ranked(request):
         sorted_players = sort_players_by_wos(players_list, ascending=False)
 
         # Add WOS score to each player
-        result = []
+        """
+        """
         for player in sorted_players:
             player_data = dict(player)
             player_data["wos_score"] = round(calculate_wos(player), 2)
             result.append(player_data)
         """
+        result = []
 
         return JsonResponse({"players": result})
 
