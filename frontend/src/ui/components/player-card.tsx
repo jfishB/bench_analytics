@@ -29,7 +29,7 @@ export function PlayerCard({
     <article
       data-player-id={id}
       className={cn(
-        "bg-white shadow-sm border border-gray-100 rounded-lg p-4 w-full max-w-xs",
+        "bg-white shadow-sm border border-gray-100 rounded-lg p-4 w-full",
         className
       )}
     >
