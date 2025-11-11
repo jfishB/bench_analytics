@@ -5,8 +5,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from .models import Player
-from .services.sort_sample import calculate_wos, sort_players_by_wos
-
 
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
