@@ -10,7 +10,42 @@ from typing import Any, Dict, List, Optional
 
 from roster.models import Player, Team
 
-from .sort_sample import calculate_wos, sort_players_by_wos
+
+def calculate_wos(player: Dict[str, Any]) -> float:
+    """
+    Calculate WOS (Weighted On-base Score) for a player.
+    
+    PLACEHOLDER: This is a simple weighted formula.
+    Will be replaced by the algorithm in lineups/services/algorithm_logic.py
+    
+    Args:
+        player: Dictionary with player stats
+        
+    Returns:
+        WOS score as a float
+    """
+    xwoba = player.get("xwoba") or 0
+    bb_percent = player.get("bb_percent") or 0
+    k_percent = player.get("k_percent") or 0
+    barrel_rate = player.get("barrel_batted_rate") or 0
+    
+    # Simple weighted formula (placeholder)
+    wos = (xwoba * 10) + (bb_percent * 0.5) - (k_percent * 0.3) + (barrel_rate * 0.8)
+    return wos
+
+
+def sort_players_by_wos(players: List[Dict[str, Any]], ascending: bool = True) -> List[Dict[str, Any]]:
+    """
+    Sort players by their WOS score.
+    
+    Args:
+        players: List of player dictionaries
+        ascending: Sort order (True = lowest first, False = highest first)
+        
+    Returns:
+        Sorted list of players
+    """
+    return sorted(players, key=lambda p: calculate_wos(p), reverse=not ascending)
 
 
 def get_all_players_with_stats() -> List[Dict[str, Any]]:
