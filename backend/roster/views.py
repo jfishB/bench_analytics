@@ -39,12 +39,6 @@ class TeamViewSet(viewsets.ModelViewSet):
     serializer_class = TeamSerializer
 
 
-        except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON"}, status=400)
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=400)
-
-
 @csrf_exempt
 @require_http_methods(["DELETE"])
 def player_detail(request, player_id):
