@@ -7,6 +7,11 @@ logic for creating batting lineups.
 
 from typing import Dict, List
 
+from django.contrib.auth import get_user_model
+from django.db import transaction
+
+from lineups.models import Lineup, LineupPlayer
+from lineups.services.validator import validate_data
 from roster.models import Player
 
 
@@ -130,6 +135,73 @@ def algorithm_create_lineup(payload):
     the created lineup.
 
     Args:
-        payload (CreateLineupInput): The input data for creating the lineup."""
-    # --- Implementation of the lineup creation algorithm goes here ---
-    pass
+        payload (CreateLineupInput): The input data for creating the lineup.
+
+    Returns:
+        Lineup: The created Lineup model instance with assigned batting orders.
+    """
+    # Validate and get processed data
+    validated = validate_data(payload)
+    team_obj = validated["team"]
+    players_list = validated["players"]
+    opp_pitcher = validated["opp_pitcher"]
+    created_by_id = validated["created_by_id"]
+
+    # Build position mapping from payload
+    position_map = {p.player_id: p.position for p in payload.players}
+
+    # Greedy assignment algorithm
+    available_indices = set(range(len(players_list)))
+    assignments = {}  # batting_order -> player_index
+
+    for spot in range(1, 10):  # Spots 1 through 9
+        # Calculate scores for all available players for this spot
+        scores = calculate_spot_scores(players_list, spot)
+
+        # Find the best available player for this spot
+        best_idx = None
+        best_score = -float("inf") if spot != 9 else float("inf")
+
+        for idx in available_indices:
+            if spot == 9:
+                # For spot 9, we want the LOWEST score (worst hitter)
+                if scores[idx] < best_score:
+                    best_score = scores[idx]
+                    best_idx = idx
+            else:
+                # For spots 1-8, we want the HIGHEST score
+                if scores[idx] > best_score:
+                    best_score = scores[idx]
+                    best_idx = idx
+
+        # Assign this player to this spot
+        if best_idx is not None:
+            assignments[spot] = best_idx
+            available_indices.remove(best_idx)
+
+    # Create the Lineup and LineupPlayer objects in a transaction
+    with transaction.atomic():
+        User = get_user_model()
+        created_by = User.objects.get(pk=created_by_id)
+
+        lineup = Lineup.objects.create(
+            team=team_obj,
+            name=payload.name,
+            opponent_pitcher=opp_pitcher,
+            opponent_team_id=payload.opponent_team_id,
+            created_by=created_by,
+        )
+
+        # Create LineupPlayer entries
+        for batting_order, player_idx in assignments.items():
+            player = players_list[player_idx]
+            position = position_map.get(player.id, player.position)
+
+            LineupPlayer.objects.create(
+                lineup=lineup,
+                player=player,
+                position=position,
+                batting_order=batting_order,
+            )
+
+    return lineup
