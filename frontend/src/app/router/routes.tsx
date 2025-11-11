@@ -1,13 +1,17 @@
 import React, { Suspense, lazy } from "react";
 import { Routes, Route } from "react-router-dom";
 
-import Home from "presentation/pages/Home";
-import Login from "presentation/pages/Login";
-import Register from "presentation/pages/Register";
-import About from "presentation/pages/About";
-import HowToGuide from "presentation/pages/HowToGuide";
+import Home from "presentation/pages/HomePage";
+import Login from "presentation/pages/LoginPage";
+import Register from "presentation/pages/RegisterPage";
+import About from "presentation/pages/AboutPage";
+import HowToGuide from "presentation/pages/HowToGuidePage";
 
-const Lineup = lazy(() => import("presentation/pages/LineupOptimizer").then((m) => ({ default: m.LineupOptimizer })));
+const Lineup = lazy(() =>
+  import("presentation/pages/LineupOptimizerPage").then((m) => ({
+    default: m.LineupOptimizer,
+  }))
+);
 
 const AppRoutes: React.FC = () => {
   return (
