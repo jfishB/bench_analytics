@@ -5,7 +5,7 @@ import type { Player } from "../../shared/types";
 export interface PlayerListItem {
   id?: string;
   name: string;
-  battingOrder: number | null;
+  battingOrder?: number | null;
   payload: Player;
 }
 
