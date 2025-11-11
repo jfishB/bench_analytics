@@ -3,11 +3,11 @@
  */
 
 export type Player = {
-  id: string;
+  id: number;
   name: string;
   team?: string;
   position: string;
-  average?: number;
+  avg?: number;
   obp?: number;
   ops?: number;
   batting_order?: number;
