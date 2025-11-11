@@ -2,23 +2,36 @@ import * as React from "react";
 import * as Select from "@radix-ui/react-select";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
 
+/**
+ * Utility function to combine class names conditionally.
+ */
 function cn(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
 }
 
+/**
+ * Option type for select dropdown
+ */
 type Option = { label: string; value: string };
 
+/**
+ * Props for PrettySelect component
+ */
 type PrettySelectProps = {
-  id?: string; // optional id (for testing)
-  labelId?: string; // pass the <Label id="..."> here for a11y
-  value: string;
-  onValueChange: (v: string) => void;
-  options: Option[];
-  placeholder?: string;
-  className?: string;
-  disabled?: boolean;
+  id?: string; // optional id for testing
+  labelId?: string; // for linking with a <Label> component for accessibility
+  value: string; // current selected value
+  onValueChange: (v: string) => void; // callback when selection changes
+  options: Option[]; // array of options
+  placeholder?: string; // placeholder text when no option is selected
+  className?: string; // additional class names for styling
+  disabled?: boolean; // disables the select
 };
 
+/**
+ * PrettySelect
+ * A styled dropdown/select component using Radix UI for accessibility and animation.
+ */
 export function PrettySelect({
   id,
   labelId,
@@ -35,6 +48,7 @@ export function PrettySelect({
       onValueChange={onValueChange}
       disabled={disabled}
     >
+      {/* Trigger button for the select dropdown */}
       <Select.Trigger
         id={id}
         aria-labelledby={labelId}
@@ -53,6 +67,7 @@ export function PrettySelect({
         </Select.Icon>
       </Select.Trigger>
 
+      {/* Dropdown content rendered in a portal for proper layering */}
       <Select.Portal>
         <Select.Content
           position="popper"
@@ -62,10 +77,12 @@ export function PrettySelect({
             "animate-in fade-in-0 zoom-in-95"
           )}
         >
+          {/* Scroll up button */}
           <Select.ScrollUpButton className="flex items-center justify-center py-1 text-gray-600">
             <ChevronUp size={16} />
           </Select.ScrollUpButton>
 
+          {/* Options viewport */}
           <Select.Viewport className="p-1">
             {options.map((opt) => (
               <Select.Item
@@ -77,6 +94,7 @@ export function PrettySelect({
                 )}
               >
                 <Select.ItemText>{opt.label}</Select.ItemText>
+                {/* Check icon when option is selected */}
                 <Select.ItemIndicator className="absolute right-2 text-blue-600">
                   <Check size={16} />
                 </Select.ItemIndicator>
@@ -84,6 +102,7 @@ export function PrettySelect({
             ))}
           </Select.Viewport>
 
+          {/* Scroll down button */}
           <Select.ScrollDownButton className="flex items-center justify-center py-1 text-gray-600">
             <ChevronDown size={16} />
           </Select.ScrollDownButton>

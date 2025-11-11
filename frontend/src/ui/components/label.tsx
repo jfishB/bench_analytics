@@ -1,11 +1,21 @@
-
 import * as React from "react";
 import * as LabelPrimitive from "@radix-ui/react-label";
 
+/**
+ * Utility function to merge class names conditionally
+ */
 function cn(...a: Array<string | false | null | undefined>) {
   return a.filter(Boolean).join(" ");
 }
 
+/**
+ * Label (UI primitive)
+ *
+ * Wraps Radix's Label component with custom styling.
+ * - Supports standard HTML label props
+ * - Respects disabled state via peer/group for accessibility
+ * - Flexible for use with forms and inputs
+ */
 export const Label = React.forwardRef<
   React.ElementRef<typeof LabelPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>

@@ -2,15 +2,19 @@ import React from "react";
 import logo from "../assets/logo.png";
 import { useNavigate } from "react-router-dom";
 
+/**
+ * Footer Component
+ * Displays site-wide footer with navigation links, support info, and company details.
+ */
 export const Footer: React.FC = () => {
-  const currentYear = new Date().getFullYear();
-  const navigate = useNavigate();
+  const currentYear = new Date().getFullYear(); // Dynamic year for copyright
+  const navigate = useNavigate(); // Used for client-side navigation
 
   return (
     <footer className="bg-gray-50 border-t border-gray-200 mt-16">
       <div className="max-w-7xl mx-auto px-6 py-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-          {/* Logo + Description */}
+          {/* --- Logo + Description --- */}
           <div className="space-y-3">
             <img
               src={logo}
@@ -23,7 +27,7 @@ export const Footer: React.FC = () => {
             </p>
           </div>
 
-          {/* Product */}
+          {/* --- Product Links --- */}
           <div>
             <h4 className="text-sm font-semibold text-gray-900 mb-3">
               Product
@@ -50,7 +54,7 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Support */}
+          {/* --- Support Links --- */}
           <div>
             <h4 className="text-sm font-semibold text-gray-900 mb-3">
               Support
@@ -77,7 +81,7 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Company */}
+          {/* --- Company Links --- */}
           <div>
             <h4 className="text-sm font-semibold text-gray-900 mb-3">
               Company
@@ -105,7 +109,7 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Divider + Copyright */}
+        {/* --- Divider + Copyright --- */}
         <div className="border-t border-gray-200 mt-10 pt-6 text-center text-sm text-gray-500">
           © {currentYear} Bench Analytics. All rights reserved.
         </div>

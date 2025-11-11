@@ -8,7 +8,11 @@ interface PlayerCardProps {
 }
 
 /**
- * Feature wrapper around the UI primitive `PlayerCard`.
+ * PlayerCard wrapper (Feature layer)
+ *
+ * - Wraps the UI primitive `PlayerCard` with data from the Player type.
+ * - Maps `player.team` → `teamName` and `player.position` → `battingPosition`.
+ * - Adds spacing or any feature-specific props here.
  */
 export function PlayerCard({ player }: PlayerCardProps) {
   return (
