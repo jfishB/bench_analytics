@@ -73,16 +73,18 @@ def calculate_spot_scores(players_list: List[Player], spot: int) -> List[float]:
     hard_hit_pct = normalize_stat([p.hard_hit_percent for p in players_list])
     sprint_speed = normalize_stat([p.sprint_speed for p in players_list])
     hr_rate = normalize_stat([p.home_run for p in players_list])
+    sb = normalize_stat([p.r_total_stolen_base for p in players_list])
 
     scores = []
 
     for i in range(n):
         if spot == 1:
-            # Leadoff: High OBP, speed, walks
+            # Leadoff: High OBP, speed, stolen bases, walks
             score = (
-                0.55 * obp[i]
-                + 0.25 * sprint_speed[i]
-                + 0.15 * bb_pct[i]
+                0.50 * obp[i]
+                + 0.20 * sprint_speed[i]
+                + 0.15 * sb[i]
+                + 0.10 * bb_pct[i]
                 + 0.05 * k_pct[i]
             )
 
@@ -111,8 +113,10 @@ def calculate_spot_scores(players_list: List[Player], spot: int) -> List[float]:
             )
 
         elif spot == 6:
-            # Decent hitter with speed: OBP, sprint speed, wOBA
-            score = 0.4 * obp[i] + 0.3 * sprint_speed[i] + 0.3 * woba[i]
+            # Decent hitter with speed and baserunning: OBP, sprint speed, stolen bases, wOBA
+            score = (
+                0.35 * obp[i] + 0.25 * sprint_speed[i] + 0.20 * sb[i] + 0.20 * woba[i]
+            )
 
         elif spot in [7, 8]:
             # Average hitters: wOBA as primary metric
