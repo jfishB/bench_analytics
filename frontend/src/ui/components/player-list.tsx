@@ -58,7 +58,10 @@ export function PlayerList({
                   }
                 : undefined
             }
-            className="flex items-center bg-white border border-gray-100 rounded-lg p-3 shadow-sm cursor-pointer"
+            className={cn(
+              "flex items-center bg-white border border-gray-100 rounded-lg p-3 shadow-sm",
+              onItemClick && "cursor-pointer"
+            )}
           >
             <div className="w-10 flex-shrink-0">
               <div
