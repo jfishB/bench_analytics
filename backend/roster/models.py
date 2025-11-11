@@ -35,10 +35,18 @@ class Player(models.Model):
     isolated_power = models.FloatField(null=True, blank=True)  # Isolated power (SLG − AVG)
     r_total_stolen_base = models.FloatField(null=True, blank=True)  # Stolen bases
     woba = models.FloatField(null=True, blank=True)  # weighted on-base average
-    xwoba = models.FloatField(null=True, blank=True)  # expected xwOBA: formulated using exit velocity, launch angle and, on certain types of batted balls, Sprint Speed.
-    barrel_batted_rate = models.FloatField(null=True, blank=True) # A batted ball with the perfect combination of exit velocity and launch angle
-    hard_hit_percent = models.FloatField(null=True, blank=True) # Statcast defines a 'hard-hit ball' as one hit with an exit velocity of 95 mph or higher.
-    sprint_speed = models.FloatField(null=True, blank=True) # A measurement of a player's top running speed, expressed in "feet per second in a player's fastest one-second window."
+    xwoba = models.FloatField(
+        null=True, blank=True
+    )  # expected xwOBA: formulated using exit velocity, launch angle and, on certain types of batted balls, Sprint Speed.
+    barrel_batted_rate = models.FloatField(
+        null=True, blank=True
+    )  # A batted ball with the perfect combination of exit velocity and launch angle
+    hard_hit_percent = models.FloatField(
+        null=True, blank=True
+    )  # Statcast defines a 'hard-hit ball' as one hit with an exit velocity of 95 mph or higher.
+    sprint_speed = models.FloatField(
+        null=True, blank=True
+    )  # A measurement of a player's top running speed, expressed in "feet per second in a player's fastest one-second window."
 
     class Meta:
         db_table = "players"
