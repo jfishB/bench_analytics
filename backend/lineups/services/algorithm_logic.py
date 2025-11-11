@@ -48,6 +48,21 @@ def normalize_stat(values: List[float], invert: bool = False) -> Dict[int, float
     return normalized
 
 
+def blend_woba_xwoba(
+    woba_norm: Dict[int, float], xwoba_norm: Dict[int, float]
+) -> Dict[int, float]:
+    """Blend woba (60%) and xwoba (40%) for predictive accuracy.
+
+    Args:
+        woba_norm: Normalized wOBA values
+        xwoba_norm: Normalized xwOBA values
+
+    Returns:
+        Dictionary mapping index to blended wOBA value
+    """
+    return {i: 0.6 * woba_norm[i] + 0.4 * xwoba_norm[i] for i in woba_norm}
+
+
 def calculate_spot_scores(players_list: List[Player], spot: int) -> List[float]:
     """Calculate scores for each player for a specific lineup spot.
 
@@ -65,6 +80,8 @@ def calculate_spot_scores(players_list: List[Player], spot: int) -> List[float]:
     slg = normalize_stat([p.slg_percent for p in players_list])
     iso = normalize_stat([p.isolated_power for p in players_list])
     woba = normalize_stat([p.woba for p in players_list])
+    xwoba = normalize_stat([p.xwoba for p in players_list])
+    combined_woba = blend_woba_xwoba(woba, xwoba)
     bb_pct = normalize_stat([p.bb_percent for p in players_list])
     k_pct = normalize_stat(
         [p.k_percent for p in players_list], invert=True
@@ -90,11 +107,18 @@ def calculate_spot_scores(players_list: List[Player], spot: int) -> List[float]:
 
         elif spot == 2:
             # Elite balanced hitter: wOBA, OBP, walks, avoid strikeouts
-            score = 0.4 * woba[i] + 0.3 * obp[i] + 0.2 * bb_pct[i] + 0.1 * k_pct[i]
+            score = (
+                0.4 * combined_woba[i] + 0.3 * obp[i] + 0.2 * bb_pct[i] + 0.1 * k_pct[i]
+            )
 
         elif spot == 3:
             # Strong consistent hitter: wOBA, SLG, walks
-            score = 0.45 * woba[i] + 0.25 * slg[i] + 0.2 * bb_pct[i] + 0.1 * k_pct[i]
+            score = (
+                0.45 * combined_woba[i]
+                + 0.25 * slg[i]
+                + 0.2 * bb_pct[i]
+                + 0.1 * k_pct[i]
+            )
 
         elif spot == 4:
             # Cleanup (power hitter): ISO, SLG, barrels, hard hits, HR rate
@@ -109,22 +133,28 @@ def calculate_spot_scores(players_list: List[Player], spot: int) -> List[float]:
         elif spot == 5:
             # Secondary power hitter: SLG, ISO, wOBA, barrels
             score = (
-                0.35 * slg[i] + 0.25 * iso[i] + 0.25 * woba[i] + 0.15 * barrel_pct[i]
+                0.35 * slg[i]
+                + 0.25 * iso[i]
+                + 0.25 * combined_woba[i]
+                + 0.15 * barrel_pct[i]
             )
 
         elif spot == 6:
             # Decent hitter with speed and baserunning: OBP, sprint speed, stolen bases, wOBA
             score = (
-                0.35 * obp[i] + 0.25 * sprint_speed[i] + 0.20 * sb[i] + 0.20 * woba[i]
+                0.35 * obp[i]
+                + 0.25 * sprint_speed[i]
+                + 0.20 * sb[i]
+                + 0.20 * combined_woba[i]
             )
 
         elif spot in [7, 8]:
             # Average hitters: wOBA as primary metric
-            score = woba[i]
+            score = combined_woba[i]
 
         else:  # spot == 9
             # Weakest hitter: wOBA (will select lowest)
-            score = woba[i]
+            score = combined_woba[i]
 
         scores.append(score)
 
