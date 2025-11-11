@@ -18,9 +18,14 @@ export interface PlayerListProps {
 
 /**
  * PlayerList (UI primitive)
- * Renders an ordered list of player tiles. The UI primitive expects
- * items already ordered by batting order; it will not sort them.
+ *
+ * Renders an ordered list of player tiles.
+ * - Expects items already sorted by batting order; does not sort internally.
+ * - Displays batting order, player name, and optional meta/actions area.
+ * - Shows fallback text if the list is empty.
  */
+export function PlayerList({ items, className = "" }: PlayerListProps) {
+  // Empty state: display friendly fallback
 export function PlayerList({ items, className = "", onItemClick, badgeClassName = "bg-primary text-white dark:bg-primary" }: PlayerListProps) {
   if (!items || items.length === 0) {
     return (
@@ -30,6 +35,7 @@ export function PlayerList({ items, className = "", onItemClick, badgeClassName 
     );
   }
 
+  // Render ordered list of players
   return (
     <ol className={cn("space-y-2", className)}>
       {items.map((it) => (
@@ -57,12 +63,16 @@ export function PlayerList({ items, className = "", onItemClick, badgeClassName 
             </div>
 
             <div className="ml-3 flex-1">
-              <div className="text-sm font-medium text-gray-900 truncate">{it.name}</div>
+              <div className="text-sm font-medium text-gray-900 truncate">
+                {it.name}
+              </div>
               {/* Placeholder for small meta info */}
             </div>
 
             {/* Optional area for extra actions or badges */}
-            <div className="ml-3 text-xs text-gray-500">{/* ADDITIONAL FIELDS */}</div>
+            <div className="ml-3 text-xs text-gray-500">
+              {/* ADDITIONAL FIELDS */}
+            </div>
           </div>
         </li>
       ))}

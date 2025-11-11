@@ -5,7 +5,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from .models import Player
-from .services.sort_sample import calculate_wos, sort_players_by_wos
 
 
 @csrf_exempt
@@ -29,30 +28,14 @@ def players(request):
         player_data = list(players)
         return JsonResponse({"players": player_data})
 
-    elif request.method == "POST":
-        # Create a new player
-        try:
-            data = json.loads(request.body)
-            name = data.get("name")
 
-            if not name:
-                return JsonResponse({"error": "Name is required"}, status=400)
-
-            player = Player.objects.create(name=name)
-            return JsonResponse(
-                {
-                    "id": player.id,
-                    "name": player.name,
-                    "created_at": player.created_at.isoformat(),
-                    "updated_at": player.updated_at.isoformat(),
-                },
-                status=201,
-            )
-
-        except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON"}, status=400)
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=400)
+class TeamViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Team model.
+    Provides CRUD operations for teams.
+    """
+    queryset = Team.objects.all()
+    serializer_class = TeamSerializer
 
 
 @csrf_exempt
@@ -88,15 +71,19 @@ def players_ranked(request):
         )
         players_list = list(players)
 
-        # Sort by WOS
+        """
+        Sort by WOS
         sorted_players = sort_players_by_wos(players_list, ascending=False)
 
         # Add WOS score to each player
-        result = []
+        """
+        """
         for player in sorted_players:
             player_data = dict(player)
             player_data["wos_score"] = round(calculate_wos(player), 2)
             result.append(player_data)
+        """
+        result = []
 
         return JsonResponse({"players": result})
 

@@ -13,6 +13,13 @@ const Lineup = lazy(() =>
   }))
 );
 
+/**
+ * AppRoutes
+ *
+ * - Defines all client-side routes for the application.
+ * - Supports code-splitting via React.lazy and Suspense for heavy pages.
+ * - Maps each path to its corresponding page component.
+ */
 const AppRoutes: React.FC = () => {
   return (
     <Routes>

@@ -10,9 +10,13 @@ interface PlayersOrderedListProps {
 }
 
 /**
- * Feature component: sorts players by `batting_order` (ascending) and
- * renders the UI primitive `PlayerList`.
- * Ordering is not business logic, just nicer UI.
+ * PlayersOrderedList (Feature component)
+ *
+ * - Sorts the provided players by `batting_order` in ascending order.
+ *   - Players without a batting_order are pushed to the end.
+ * - Maps the sorted data to the `PlayerList` UI primitive.
+ * - Handles missing names by defaulting to `"Unnamed"`.
+ * - Purely a UI convenience; does not modify business logic.
  */
 export function PlayersOrderedList({
   players,
@@ -30,6 +34,7 @@ export function PlayersOrderedList({
     return ao - bo;
   });
 
+  // Map to the UI primitive's expected structure
   const items = sorted.map((p) => ({
     id: String(p.id),
     name: p.name ?? "Unnamed",

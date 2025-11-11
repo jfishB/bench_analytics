@@ -1,6 +1,5 @@
 /**
- * shared/types.ts
- * Shared Typescript interfaces and types.
+ * Centralized TypeScript interfaces and type definitions shared across the app.
  */
 
 export type Player = {
