@@ -34,6 +34,7 @@ class RosterConfig(AppConfig):
 
         # Avoid running during migrations or if database isn't ready
         from django.db import connection
+
         from roster.models import Player
 
         try:
