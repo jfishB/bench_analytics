@@ -6,8 +6,10 @@ NOTE: This is a PLACEHOLDER algorithm.
 The ranking logic will be replaced by the algorithm in lineups/services/algorithm_logic.py
 """
 
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
+
 from roster.models import Player, Team
+
 from .sort_sample import calculate_wos, sort_players_by_wos
 
 

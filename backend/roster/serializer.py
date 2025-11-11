@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Team, Player
+
+from .models import Player, Team
 
 
 class PlayerNameValidationMixin:

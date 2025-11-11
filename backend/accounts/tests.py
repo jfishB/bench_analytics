@@ -3,12 +3,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from .exceptions import (
-    EmailAlreadyExistsError,
-    InvalidCredentialsError,
-    MissingFieldsError,
-    UserAlreadyExistsError,
-)
+from .exceptions import EmailAlreadyExistsError, InvalidCredentialsError, MissingFieldsError, UserAlreadyExistsError
 from .services import login_user, register_user
 
 # Create your tests here.
