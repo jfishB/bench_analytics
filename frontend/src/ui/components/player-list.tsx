@@ -12,7 +12,7 @@ export interface PlayerListItem {
 export interface PlayerListProps {
   items: PlayerListItem[];
   className?: string;
-  onItemClick?: (item: PlayerListItem) => void; // <--- hinzufügen
+  onItemClick?: (item: PlayerListItem) => void;
   badgeClassName?: string;
 }
 
@@ -24,9 +24,13 @@ export interface PlayerListProps {
  * - Displays batting order, player name, and optional meta/actions area.
  * - Shows fallback text if the list is empty.
  */
-export function PlayerList({ items, className = "" }: PlayerListProps) {
+export function PlayerList({
+  items,
+  className = "",
+  onItemClick,
+  badgeClassName = "bg-primary text-white dark:bg-primary",
+}: PlayerListProps) {
   // Empty state: display friendly fallback
-export function PlayerList({ items, className = "", onItemClick, badgeClassName = "bg-primary text-white dark:bg-primary" }: PlayerListProps) {
   if (!items || items.length === 0) {
     return (
       <div className={cn("text-sm text-gray-500 italic py-4", className)}>
@@ -57,7 +61,12 @@ export function PlayerList({ items, className = "", onItemClick, badgeClassName 
             className="flex items-center bg-white border border-gray-100 rounded-lg p-3 shadow-sm cursor-pointer"
           >
             <div className="w-10 flex-shrink-0">
-              <div className={cn(badgeClassName, "h-8 w-8 rounded-full flex items-center justify-center font-semibold")}>
+              <div
+                className={cn(
+                  badgeClassName,
+                  "h-8 w-8 rounded-full flex items-center justify-center font-semibold"
+                )}
+              >
                 {it.battingOrder != null ? it.battingOrder : "—"}
               </div>
             </div>
@@ -79,4 +88,5 @@ export function PlayerList({ items, className = "", onItemClick, badgeClassName 
     </ol>
   );
 }
+
 export default PlayerList;

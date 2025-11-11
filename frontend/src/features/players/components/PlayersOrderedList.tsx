@@ -22,7 +22,7 @@ export function PlayersOrderedList({
   players,
   className = "",
   onItemClick,
-  badgeClassName,
+  badgeClassName = "bg-primary text-white dark:bg-primary",
 }: PlayersOrderedListProps) {
   // Copy and sort: players with undefined/null batting_order go to the end.
   const sorted = [...players].sort((a, b) => {
