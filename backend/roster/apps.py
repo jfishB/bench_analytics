@@ -33,7 +33,6 @@ class RosterConfig(AppConfig):
             return
 
         # Avoid running during migrations or if database isn't ready
-        from django.core.management import sql
         from django.db import connection
 
         try:
