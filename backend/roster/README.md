@@ -34,4 +34,4 @@ python manage.py runserver
 - imports new players and updates existing ones
 - prints stats: how many imported, updated, skipped
 
-thats p much it! ask me (luke) if you have any question!
+thats p much it! ask me (luke) if you have any questions!
