@@ -2,7 +2,7 @@ import React from "react";
 import logo from "../assets/logo.png";
 import { useNavigate } from "react-router-dom";
 
-export function Footer() {
+export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
   const navigate = useNavigate();
 
@@ -15,11 +15,11 @@ export function Footer() {
             <img
               src={logo}
               alt="Bench Analytics"
-              className="h-10 w-auto"
+              className="h-10 w-auto cursor-pointer"
               onClick={() => navigate("/")}
             />
             <p className="text-sm text-gray-500 max-w-xs leading-relaxed">
-              Advanced lineup optimization for baseball and softball coaches.
+              Advanced lineup optimization for baseball coaches.
             </p>
           </div>
 
@@ -112,4 +112,4 @@ export function Footer() {
       </div>
     </footer>
   );
-}
+};

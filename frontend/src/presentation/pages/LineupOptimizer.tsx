@@ -1,5 +1,6 @@
 import * as React from "react";
-import { PrettySelect, Label } from "@/components/ui";
+import { Label } from "../../ui/components/label";
+import { PrettySelect } from "../../ui/components/pretty-select";
 
 type Strategy = "balanced" | "power" | "contact" | "obp";
 type PitcherHand = "righty" | "lefty" | "unknown";

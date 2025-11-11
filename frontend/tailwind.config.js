@@ -9,7 +9,7 @@ export default {
       colors: {
         primary: "#233e8c",
         "primary-foreground": "#ffffff",
-        "muted-foreground": "#6b7280", // Example: Tailwind gray-500
+        "muted-foreground": "#6b7280",
       },
     },
   },
