@@ -34,14 +34,12 @@ class RosterConfig(AppConfig):
 
         # Avoid running during migrations or if database isn't ready
         from django.db import connection
+        from roster.models import Player
 
         try:
-            # Check if database and table exist
-            with connection.cursor() as cursor:
-                cursor.execute("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name='roster_player')")
-                table_exists = cursor.fetchone()[0]
-
-            if not table_exists:
+            # Check if database and table exist using Django's introspection API
+            table_name = Player._meta.db_table
+            if table_name not in connection.introspection.table_names():
                 print("\n[Roster CSV] Database tables not found. Run migrations first: python manage.py migrate")
                 return
 
