@@ -28,30 +28,14 @@ def players(request):
         player_data = list(players)
         return JsonResponse({"players": player_data})
 
-    elif request.method == "POST":
-        # Create a new player
-        try:
-            data = json.loads(request.body)
-            name = data.get("name")
 
-            if not name:
-                return JsonResponse({"error": "Name is required"}, status=400)
-
-            player = Player.objects.create(name=name)
-            return JsonResponse(
-                {
-                    "id": player.id,
-                    "name": player.name,
-                    "created_at": player.created_at.isoformat(),
-                    "updated_at": player.updated_at.isoformat(),
-                },
-                status=201,
-            )
-
-        except json.JSONDecodeError:
-            return JsonResponse({"error": "Invalid JSON"}, status=400)
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=400)
+class TeamViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Team model.
+    Provides CRUD operations for teams.
+    """
+    queryset = Team.objects.all()
+    serializer_class = TeamSerializer
 
 
 @csrf_exempt
