@@ -27,26 +27,34 @@ class Player(models.Model):
     savant_player_id = models.PositiveIntegerField(null=True, blank=True)  # External player_id
     year = models.PositiveIntegerField(null=True, blank=True)  # Season year (e.g., 2025)
     pa = models.PositiveIntegerField(null=True, blank=True)  # Plate appearances
-    home_run = models.FloatField(null=True, blank=True)  # Home run rate
-    k_percent = models.FloatField(null=True, blank=True)  # Strikeout %
-    bb_percent = models.FloatField(null=True, blank=True)  # Walk %
-    slg_percent = models.FloatField(null=True, blank=True)  # Slugging percentage
-    on_base_percent = models.FloatField(null=True, blank=True)  # On-base percentage
-    isolated_power = models.FloatField(null=True, blank=True)  # Isolated power (SLG − AVG)
-    r_total_stolen_base = models.FloatField(null=True, blank=True)  # Stolen bases
-    woba = models.FloatField(null=True, blank=True)  # weighted on-base average
+    home_run = models.FloatField(null=True, blank=True)  # Home run rate - HR per PA
+    k_percent = models.FloatField(null=True, blank=True)  # Frequency of strikeouts per plate appearance - K% = (SO / PA) * 100
+    bb_percent = models.FloatField(null=True, blank=True)  # Frequency of walks per plate appearance - BB% = (BB / PA) * 100
+    slg_percent = models.FloatField(
+        null=True, blank=True
+    )  # Measures total bases per at-bat, emphasizes extra-base hits - SLG = (1B + 2*2B + 3*3B + 4*HR) / AB
+    on_base_percent = models.FloatField(
+        null=True, blank=True
+    )  # On-base percentage: Measures how often a batter reaches base safely - OBP = (H + BB + HBP) / (AB + BB + HBP + SF)
+    isolated_power = models.FloatField(
+        null=True, blank=True
+    )  # Shows extra bases per at-bat (pure power) - ISO = SLG - AVG | (AVG = H / AB)
+    r_total_stolen_base = models.FloatField(null=True, blank=True)  # Stolen bases - Count of successful stolen base attempts
+    woba = models.FloatField(
+        null=True, blank=True
+    )  # Weighted On-Base Average: Weights each event by its average run value (Weights vary slightly each season) - wOBA = ((0.69*uBB) + (0.72*HBP) + (0.89*1B) + (1.27*2B) + (1.62*3B) + (2.10*HR)) / (AB + BB - IBB + SF + HBP)
     xwoba = models.FloatField(
         null=True, blank=True
-    )  # expected xwOBA: formulated using exit velocity, launch angle and, on certain types of batted balls, Sprint Speed.
+    )  # Expected wOBA: Derived from Statcast models; estimates what wOBA should be based on contact quality - xwOBA = Expected value based on exit velocity, launch angle, and sprint speed
     barrel_batted_rate = models.FloatField(
         null=True, blank=True
-    )  # A batted ball with the perfect combination of exit velocity and launch angle
+    )  # A "barrel" is a batted ball with optimal exit velocity and launch angle (typically >= 98 mph exit velocity and ~26–30° launch angle) - Barrel% = (Barreled Balls / Batted Balls) * 100
     hard_hit_percent = models.FloatField(
         null=True, blank=True
-    )  # Statcast defines a 'hard-hit ball' as one hit with an exit velocity of 95 mph or higher.
+    )  # Shows how often a player hits the ball hard - HardHit% = (Batted Balls ≥ 95 mph) / (Total Batted Balls) * 100
     sprint_speed = models.FloatField(
         null=True, blank=True
-    )  # A measurement of a player's top running speed, expressed in "feet per second in a player's fastest one-second window."
+    )  # Average feet per second during top 1-second window of a player's max-effort runs - MLB average ≈ 27 ft/sec; elite ≈ 30+ ft/sec
 
     class Meta:
         db_table = "players"
