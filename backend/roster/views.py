@@ -6,6 +6,7 @@ from django.views.decorators.http import require_http_methods
 
 from .models import Player
 
+
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
 def players(request):
@@ -86,7 +87,8 @@ def players_ranked(request):
         )
         players_list = list(players)
 
-        # Sort by WOS
+        """
+        Sort by WOS
         sorted_players = sort_players_by_wos(players_list, ascending=False)
 
         # Add WOS score to each player
@@ -95,6 +97,7 @@ def players_ranked(request):
             player_data = dict(player)
             player_data["wos_score"] = round(calculate_wos(player), 2)
             result.append(player_data)
+        """
 
         return JsonResponse({"players": result})
 
