@@ -92,6 +92,9 @@ def calculate_spot_scores(players_list: List[Player], spot: int) -> List[float]:
     hr_rate = normalize_stat([p.home_run for p in players_list])
     sb = normalize_stat([p.r_total_stolen_base for p in players_list])
 
+    # Extract PA values for sample size confidence weighting
+    pa_values = [p.pa for p in players_list]
+
     scores = []
 
     for i in range(n):
@@ -155,6 +158,10 @@ def calculate_spot_scores(players_list: List[Player], spot: int) -> List[float]:
         else:  # spot == 9
             # Weakest hitter: wOBA (will select lowest)
             score = combined_woba[i]
+
+        # Apply sample size confidence weighting (penalize players with < 100 PA)
+        if pa_values[i] is not None and pa_values[i] < 100:
+            score *= min(1.0, pa_values[i] / 100.0)
 
         scores.append(score)
 
