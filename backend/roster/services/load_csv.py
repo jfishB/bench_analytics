@@ -71,12 +71,18 @@ def load_csv_file(file: str | Path, year: int | None = None, dry_run: bool = Fal
             player.savant_player_id = savant_id
             player.year = use_year
             player.pa = pa
+            player.home_run = fflt("home_run")
             player.k_percent = fflt("k_percent")
             player.bb_percent = fflt("bb_percent")
+            player.slg_percent = fflt("slg_percent")
+            player.on_base_percent = fflt("on_base_percent")
+            player.isolated_power = fflt("isolated_power")
+            player.r_total_stolen_base = fflt("r_total_stolen_base")
             player.woba = fflt("woba")
             player.xwoba = fflt("xwoba")
             player.barrel_batted_rate = fflt("barrel_batted_rate")
-
+            player.hard_hit_percent = fflt("hard_hit_percent")
+            player.sprint_speed = fflt("sprint_speed")
             player.save()
 
             if created:
