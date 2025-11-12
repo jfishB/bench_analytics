@@ -53,4 +53,3 @@ export {
 } from './utils';
 
 // Re-export CSS for convenience
-import './index.css';
