@@ -8,7 +8,7 @@ from .serializers import LineupCreate, LineupOut
 from .services.algorithm_logic import algorithm_create_lineup
 from .services.auth_user import authorize_lineup_deletion
 from .services.input_data import CreateLineupInput, LineupPlayerInput
-from .services.validator import validate_data, validate_lineup_model
+from .services.validator import validate_lineup_model
 
 
 #############################################################################
@@ -43,9 +43,6 @@ class LineupCreateView(APIView):
                 request.user.id if request.user.is_authenticated else None
             ),
         )
-
-        # Validate the input payload defined in validator.
-        validate_data(payload)
 
         # Run the algorithm to create the lineup.
         lineup = algorithm_create_lineup(payload)
