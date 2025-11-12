@@ -172,11 +172,11 @@ Helper functions that return style objects for common CSS properties:
 
 ```tsx
 // Padding
-<div style={css.padding(4)}>
+<div style={css.padding({ all: 4 })}>
   {/* padding: 1rem */}
 </div>
 
-<div style={css.padding(4, 2, 6)}>
+<div style={css.padding({ y: 6, x: 2 })}>
   {/* paddingTop: 1.5rem, paddingBottom: 1.5rem, paddingLeft: 0.5rem, paddingRight: 0.5rem */}
 </div>
 
