@@ -19,7 +19,10 @@ Semantic color system that references CSS variables for theme support.
 ### 3. **Component Tokens** (`componentTokens.ts`)
 Pre-configured token combinations for common UI components.
 
-### 4. **CSS Variables** (`index.css`)
+### 4. **Utility Functions** (`utils.ts`)
+Helper functions for working with design tokens in inline styles.
+
+### 5. **CSS Variables** (`index.css`)
 Root-level CSS custom properties that support light/dark modes.
 
 ## Usage
@@ -152,6 +155,129 @@ Pre-configured tokens for common components:
 - `container` - max widths, padding
 - `section` - padding, gaps
 - `icon` - sizes
+
+## Utility Functions
+
+The design system provides utility functions to make working with tokens in inline styles easier and more convenient.
+
+### Importing Utilities
+
+```typescript
+import { css, token, breakpoint, transition, zIndex } from '@/ui/theme';
+```
+
+### css Utilities
+
+Helper functions that return style objects for common CSS properties:
+
+```tsx
+// Padding
+<div style={css.padding(4)}>
+  {/* padding: 1rem */}
+</div>
+
+<div style={css.padding(4, 2, 6)}>
+  {/* paddingTop: 1.5rem, paddingBottom: 1.5rem, paddingLeft: 0.5rem, paddingRight: 0.5rem */}
+</div>
+
+// Margin
+<div style={css.margin(4)}>
+  {/* margin: 1rem */}
+</div>
+
+// Gap
+<div style={css.gap(3)}>
+  {/* gap: 0.75rem */}
+</div>
+
+// Font
+<h1 style={css.font('2xl', 'bold')}>
+  {/* fontSize: 1.5rem, fontWeight: 700 */}
+</h1>
+
+// Border radius
+<div style={css.rounded('lg')}>
+  {/* borderRadius: 0.5rem */}
+</div>
+
+// Box shadow
+<div style={css.shadow('md')}>
+  {/* boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)...' */}
+</div>
+```
+
+### token Utilities
+
+Get raw token values when you need them directly:
+
+```tsx
+const spacing = token.spacing(4); // '1rem'
+const fontSize = token.fontSize('lg'); // '1.125rem'
+const color = token.color('primary.DEFAULT'); // '#3b82f6'
+```
+
+### breakpoint Utilities
+
+Work with responsive breakpoints:
+
+```tsx
+// Media queries
+const styles = {
+  [breakpoint.up('md')]: {
+    display: 'flex',
+  },
+  [breakpoint.down('sm')]: {
+    display: 'block',
+  },
+};
+
+// Check if breakpoint matches (client-side only)
+if (breakpoint.matches('lg')) {
+  // Viewport is >= 1024px
+}
+```
+
+### transition Utility
+
+Create consistent transitions:
+
+```tsx
+<button style={transition('all', 'base', 'ease')}>
+  {/* transition: 'all 200ms cubic-bezier(0.4, 0, 0.2, 1)' */}
+</button>
+
+<div style={transition('opacity', 'slow')}>
+  {/* transition: 'opacity 300ms cubic-bezier(0.4, 0, 0.2, 1)' */}
+</div>
+```
+
+### zIndex Utility
+
+Use semantic z-index layers:
+
+```tsx
+<div style={zIndex('modal')}>
+  {/* zIndex: 1200 */}
+</div>
+
+<div style={zIndex('dropdown')}>
+  {/* zIndex: 1000 */}
+</div>
+```
+
+### combineStyles Utility
+
+Merge multiple style objects:
+
+```tsx
+const baseStyles = css.padding(4);
+const colorStyles = { backgroundColor: colors.primary };
+const combinedStyles = combineStyles(baseStyles, colorStyles);
+
+<div style={combinedStyles}>
+  {/* Both padding and backgroundColor applied */}
+</div>
+```
 
 ## Best Practices
 
