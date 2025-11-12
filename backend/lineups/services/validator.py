@@ -69,9 +69,7 @@ def validate_data(payload):
     created_by_id = _get(payload, "requested_user_id")
     User = get_user_model()
     if not created_by_id:
-        created_by_id = (
-            User.objects.filter(is_superuser=True).values_list("id", flat=True).first()
-        )
+        created_by_id = User.objects.filter(is_superuser=True).values_list("id", flat=True).first()
         if created_by_id is None:
             raise NoCreator()
 

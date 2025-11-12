@@ -132,9 +132,7 @@ def normalize_stat(values: List[float], invert: bool = False) -> Dict[int, float
     return normalized
 
 
-def blend_woba_xwoba(
-    woba_norm: Dict[int, float], xwoba_norm: Dict[int, float]
-) -> Dict[int, float]:
+def blend_woba_xwoba(woba_norm: Dict[int, float], xwoba_norm: Dict[int, float]) -> Dict[int, float]:
     """Blend actual wOBA (60%) with expected xwOBA (40%) for predictive accuracy.
 
     wOBA measures actual offensive production, while xwOBA measures expected
@@ -148,10 +146,7 @@ def blend_woba_xwoba(
     Returns:
         Dictionary mapping index to blended wOBA value
     """
-    return {
-        i: WOBA_ACTUAL_WEIGHT * woba_norm[i] + XWOBA_EXPECTED_WEIGHT * xwoba_norm[i]
-        for i in woba_norm
-    }
+    return {i: WOBA_ACTUAL_WEIGHT * woba_norm[i] + XWOBA_EXPECTED_WEIGHT * xwoba_norm[i] for i in woba_norm}
 
 
 def calculate_spot_scores(players_list: List[Player], spot: int) -> List[float]:
@@ -185,9 +180,7 @@ def calculate_spot_scores(players_list: List[Player], spot: int) -> List[float]:
 
     # Plate discipline metrics
     bb_pct = normalize_stat([p.bb_percent for p in players_list])
-    k_pct = normalize_stat(
-        [p.k_percent for p in players_list], invert=True
-    )  # Lower K% is better
+    k_pct = normalize_stat([p.k_percent for p in players_list], invert=True)  # Lower K% is better
 
     # Contact quality metrics
     barrel_pct = normalize_stat([p.barrel_batted_rate for p in players_list])
