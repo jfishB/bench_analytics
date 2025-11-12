@@ -15,10 +15,11 @@ import type { Spacing } from './tokens';
 export const css = {
   /**
    * Create padding style object
-   * @example css.padding(4) => { padding: '1rem' }
-   * @example css.padding(4, 2) => { paddingTop: '1rem', paddingBottom: '0.5rem', paddingLeft: '0.5rem', paddingRight: '0.5rem' }
+   * @example css.padding({ all: 4 }) => { padding: '1rem' }
+   * @example css.padding({ all: 4, x: 2 }) => { paddingTop: '1rem', paddingBottom: '1rem', paddingLeft: '0.5rem', paddingRight: '0.5rem' }
+   * @example css.padding({ all: 4, x: 2, y: 1 }) => { paddingTop: '0.25rem', paddingBottom: '0.25rem', paddingLeft: '0.5rem', paddingRight: '0.5rem' }
    */
-  padding: (all: Spacing, x?: Spacing, y?: Spacing) => {
+  padding: ({ all, x, y }: { all: Spacing, x?: Spacing, y?: Spacing }) => {
     if (x !== undefined || y !== undefined) {
       return {
         paddingTop: designTokens.spacing[y ?? all],
