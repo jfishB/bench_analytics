@@ -1,9 +1,9 @@
 from django.test import TestCase
-from rest_framework.test import APITestCase
-from rest_framework import status
 from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase
 
-from .models import Team, Player
+from .models import Player, Team
 from .services.player_ranking import calculate_wos, get_ranked_players
 
 
