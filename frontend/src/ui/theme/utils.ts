@@ -94,7 +94,11 @@ export const token = {
     const parts = path.split('.');
     let value: any = colors;
     for (const part of parts) {
-      value = value[part];
+      if (value && Object.prototype.hasOwnProperty.call(value, part)) {
+        value = value[part];
+      } else {
+        throw new Error(`token.color: Invalid color path "${path}"`);
+      }
     }
     return value;
   },
