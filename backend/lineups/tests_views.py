@@ -33,9 +33,7 @@ class LineupViewsTests(TestCase):
             "team_id": self.team.id,
             "name": "My Lineup",
             "opponent_pitcher_id": self.players[0].id,
-            "players": [
-                {"player_id": p.id, "position": "1B"} for p in self.players[:9]
-            ],
+            "players": [{"player_id": p.id, "position": "1B"} for p in self.players[:9]],
         }
 
         # Prepare a lineup object that algorithm would return
@@ -46,9 +44,7 @@ class LineupViewsTests(TestCase):
             created_by=self.creator,
         )
         for idx, p in enumerate(self.players[:9], start=1):
-            LineupPlayer.objects.create(
-                lineup=lineup, player=p, position="1B", batting_order=idx
-            )
+            LineupPlayer.objects.create(lineup=lineup, player=p, position="1B", batting_order=idx)
 
         mock_algorithm.return_value = lineup
 
@@ -66,9 +62,7 @@ class LineupViewsTests(TestCase):
             opponent_pitcher_id=self.players[0].id,
             created_by=self.creator,
         )
-        LineupPlayer.objects.create(
-            lineup=lineup, player=self.players[0], position="P", batting_order=1
-        )
+        LineupPlayer.objects.create(lineup=lineup, player=self.players[0], position="P", batting_order=1)
 
         url = f"{self.base_url}{lineup.id}/"
         resp = self.client.get(url)
@@ -119,9 +113,7 @@ class LineupViewsTests(TestCase):
         payload = {
             "team_id": self.team.id,
             "name": "No Opponent Lineup",
-            "players": [
-                {"player_id": p.id, "position": "1B"} for p in self.players[:9]
-            ],
+            "players": [{"player_id": p.id, "position": "1B"} for p in self.players[:9]],
         }
 
         # Create lineup without opponent_pitcher
@@ -132,9 +124,7 @@ class LineupViewsTests(TestCase):
             created_by=self.creator,
         )
         for idx, p in enumerate(self.players[:9], start=1):
-            LineupPlayer.objects.create(
-                lineup=lineup, player=p, position="1B", batting_order=idx
-            )
+            LineupPlayer.objects.create(lineup=lineup, player=p, position="1B", batting_order=idx)
 
         mock_algorithm.return_value = lineup
 
