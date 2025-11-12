@@ -32,19 +32,21 @@ class LineupViewsTests(TestCase):
         payload = {
             "team_id": self.team.id,
             "name": "My Lineup",
-            "opponent_pitcher_id": self.players[0].id,
-            "players": [{"player_id": p.id, "position": "1B"} for p in self.players[:9]],
+            "players": [
+                {"player_id": p.id, "position": "1B"} for p in self.players[:9]
+            ],
         }
 
         # Prepare a lineup object that algorithm would return
         lineup = Lineup.objects.create(
             team=self.team,
             name="My Lineup",
-            opponent_pitcher_id=self.players[0].id,
             created_by=self.creator,
         )
         for idx, p in enumerate(self.players[:9], start=1):
-            LineupPlayer.objects.create(lineup=lineup, player=p, position="1B", batting_order=idx)
+            LineupPlayer.objects.create(
+                lineup=lineup, player=p, position="1B", batting_order=idx
+            )
 
         mock_algorithm.return_value = lineup
 
@@ -59,10 +61,11 @@ class LineupViewsTests(TestCase):
         lineup = Lineup.objects.create(
             team=self.team,
             name="Saved",
-            opponent_pitcher_id=self.players[0].id,
             created_by=self.creator,
         )
-        LineupPlayer.objects.create(lineup=lineup, player=self.players[0], position="P", batting_order=1)
+        LineupPlayer.objects.create(
+            lineup=lineup, player=self.players[0], position="P", batting_order=1
+        )
 
         url = f"{self.base_url}{lineup.id}/"
         resp = self.client.get(url)
@@ -74,7 +77,6 @@ class LineupViewsTests(TestCase):
         lineup = Lineup.objects.create(
             team=self.team,
             name="Deletable",
-            opponent_pitcher_id=self.players[0].id,
             created_by=self.creator,
         )
 
@@ -98,42 +100,9 @@ class LineupViewsTests(TestCase):
         lineup = Lineup.objects.create(
             team=self.team,
             name="ByAdmin",
-            opponent_pitcher_id=self.players[0].id,
             created_by=self.creator,
         )
         url = f"{self.base_url}{lineup.id}/"
         self.client.force_authenticate(user=self.superuser)
         resp = self.client.delete(url)
         self.assertEqual(resp.status_code, 204)
-
-    @patch("lineups.views.algorithm_create_lineup")
-    def test_post_without_opponent_pitcher_succeeds(self, mock_algorithm):
-        """Test creating a lineup without opponent_pitcher (new optional field)."""
-        # Payload without opponent_pitcher_id
-        payload = {
-            "team_id": self.team.id,
-            "name": "No Opponent Lineup",
-            "players": [{"player_id": p.id, "position": "1B"} for p in self.players[:9]],
-        }
-
-        # Create lineup without opponent_pitcher
-        lineup = Lineup.objects.create(
-            team=self.team,
-            name="No Opponent Lineup",
-            opponent_pitcher=None,
-            created_by=self.creator,
-        )
-        for idx, p in enumerate(self.players[:9], start=1):
-            LineupPlayer.objects.create(lineup=lineup, player=p, position="1B", batting_order=idx)
-
-        mock_algorithm.return_value = lineup
-
-        # Authenticate and make request
-        self.client.force_authenticate(user=self.creator)
-        resp = self.client.post(self.base_url, payload, format="json")
-
-        # Verify response
-        self.assertEqual(resp.status_code, 201)
-        self.assertIn("id", resp.data)
-        self.assertEqual(resp.data["name"], "No Opponent Lineup")
-        self.assertIsNone(resp.data.get("opponent_pitcher_id"))
