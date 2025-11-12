@@ -36,7 +36,7 @@ Use spacing tokens instead of hardcoded pixel values:
 
 ```tsx
 // ❌ Bad - magic numbers
-<div className="p-4 gap-3 mb-6">
+<div style={{ padding: '16px', gap: '12px', marginBottom: '24px' }}>
 
 // ✅ Good - using Tailwind (which references tokens)
 <div className="p-4 gap-3 mb-6">
