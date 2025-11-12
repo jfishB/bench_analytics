@@ -56,11 +56,7 @@ const Home: React.FC = () => {
             <Button
               size="lg"
               onClick={() => navigate("/lineup")}
-              className="px-8 hover:opacity-90"
-              style={{
-                backgroundColor: "var(--accent-red)",
-                color: "var(--accent-red-foreground)",
-              }}
+              className="px-8 bg-[var(--accent-red)] text-[var(--accent-red-foreground)] hover:bg-[var(--accent-red)]/90"
             >
               Start Optimizing
             </Button>
