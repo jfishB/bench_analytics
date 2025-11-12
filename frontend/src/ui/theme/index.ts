@@ -43,5 +43,14 @@ export type { Color } from './colors';
 export { componentTokens } from './componentTokens';
 export type { ComponentTokens } from './componentTokens';
 
+export { 
+  css, 
+  token, 
+  breakpoint, 
+  combineStyles, 
+  transition, 
+  zIndex 
+} from './utils';
+
 // Re-export CSS for convenience
 import './index.css';
