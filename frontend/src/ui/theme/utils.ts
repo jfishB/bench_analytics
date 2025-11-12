@@ -32,9 +32,11 @@ export const css = {
 
   /**
    * Create margin style object
-   * @example css.margin(4) => { margin: '1rem' }
+   * @example css.margin({ all: 4 }) => { margin: '1rem' }
+   * @example css.margin({ all: 4, x: 2 }) => { marginTop: '1rem', marginBottom: '1rem', marginLeft: '0.5rem', marginRight: '0.5rem' }
+   * @example css.margin({ all: 4, x: 2, y: 1 }) => { marginTop: '0.25rem', marginBottom: '0.25rem', marginLeft: '0.5rem', marginRight: '0.5rem' }
    */
-  margin: (all: Spacing, x?: Spacing, y?: Spacing) => {
+  margin: ({ all, x, y }: { all: Spacing, x?: Spacing, y?: Spacing }) => {
     if (x !== undefined || y !== undefined) {
       return {
         marginTop: designTokens.spacing[y ?? all],
