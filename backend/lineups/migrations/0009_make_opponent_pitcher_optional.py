@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("lineups", "0008_alter_lineupplayer_batting_order"),
-        ("roster", "0003_remove_old_savant_fields"),
+        ("roster", "0003_remove_player_avg_best_speed_and_more"),
     ]
 
     operations = [
@@ -16,7 +16,11 @@ class Migration(migrations.Migration):
             model_name="lineup",
             name="opponent_pitcher",
             field=models.ForeignKey(
-                blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, related_name="+", to="roster.player"
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="+",
+                to="roster.player",
             ),
         ),
     ]
