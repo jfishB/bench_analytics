@@ -10,5 +10,6 @@ db.sqlite3
 
 pgdata/
 .env
+data/
 
 venv/
