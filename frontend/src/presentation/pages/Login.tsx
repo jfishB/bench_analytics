@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../services/AuthContext";
 
 // API base for auth endpoints. Use environment variable when available.
 const AUTH_BASE =
@@ -10,6 +11,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,8 +33,12 @@ export default function Login() {
       // Save token in localStorage
       localStorage.setItem("access", data.access);
       localStorage.setItem("refresh", data.refresh);
-
+      localStorage.setItem("username", data.username); // TODO Not working currently
       setMessage("Login successful!");
+
+      login(username); // sets the user in context
+      navigate("/"); // redirect to homepage or lineup
+
     } catch (err) {
       console.error(err);
       setMessage("Something went wrong.");
