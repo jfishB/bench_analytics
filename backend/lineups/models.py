@@ -8,9 +8,13 @@ from roster.models import Player, Team
 class Lineup(models.Model):  # each instance is a saved batting lineup for a team
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="lineups")
     name = models.CharField(max_length=120)  # coach-entered name for the lineup
-    opponent_pitcher = models.ForeignKey(Player, on_delete=models.PROTECT, related_name="+")
+    opponent_pitcher = models.ForeignKey(
+        Player, on_delete=models.PROTECT, related_name="+", null=True, blank=True
+    )
 
-    opponent_team = models.ForeignKey(Team, null=True, blank=True, on_delete=models.SET_NULL, related_name="+")
+    opponent_team = models.ForeignKey(
+        Team, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -35,8 +39,13 @@ class LineupPlayer(models.Model):
         db_table = "lineup_players"
         ordering = ["batting_order"]  # 1..9 by default
         constraints = [
-            models.UniqueConstraint(fields=["lineup", "player"], name="unique_player_per_lineup"),
-            models.UniqueConstraint(fields=["lineup", "batting_order"], name="unique_batting_order_per_lineup"),
+            models.UniqueConstraint(
+                fields=["lineup", "player"], name="unique_player_per_lineup"
+            ),
+            models.UniqueConstraint(
+                fields=["lineup", "batting_order"],
+                name="unique_batting_order_per_lineup",
+            ),
         ]
 
     def __str__(self):
