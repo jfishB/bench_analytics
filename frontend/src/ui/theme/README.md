@@ -181,7 +181,7 @@ Helper functions that return style objects for common CSS properties:
 </div>
 
 // Margin
-<div style={css.margin(4)}>
+<div style={css.margin({ all: 4 })}>
   {/* margin: 1rem */}
 </div>
 
