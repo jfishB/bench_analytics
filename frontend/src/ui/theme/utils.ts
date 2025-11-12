@@ -94,12 +94,30 @@ export const token = {
   color: (path: string) => {
     const parts = path.split('.');
     let value: any = colors;
-    for (const part of parts) {
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
       if (value && Object.prototype.hasOwnProperty.call(value, part)) {
         value = value[part];
       } else {
+        // Try camelCase join of remaining parts if current value is object
+        const remaining = parts.slice(i).join('');
+        if (value && Object.prototype.hasOwnProperty.call(value, remaining)) {
+          value = value[remaining];
+          return value;
+        }
+        // If current value has DEFAULT, use it and continue
+        if (value && Object.prototype.hasOwnProperty.call(value, 'DEFAULT')) {
+          value = value['DEFAULT'];
+          // If not at the end, continue with remaining parts
+          if (i < parts.length - 1) continue;
+          return value;
+        }
         throw new Error(`token.color: Invalid color path "${path}"`);
       }
+    }
+    // If the final value is an object with DEFAULT, return that
+    if (value && typeof value === 'object' && Object.prototype.hasOwnProperty.call(value, 'DEFAULT')) {
+      return value['DEFAULT'];
     }
     return value;
   },
