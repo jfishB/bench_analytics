@@ -36,6 +36,7 @@ class TeamViewSet(viewsets.ModelViewSet):
     ViewSet for Team model.
     Provides CRUD operations for teams.
     """
+
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
 

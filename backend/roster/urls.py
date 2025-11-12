@@ -7,8 +7,8 @@ app_name = "roster"
 
 # DRF Router automatically generates URL patterns
 router = DefaultRouter()
-router.register(r'teams', views.TeamViewSet, basename='team')
-router.register(r'players', views.PlayerViewSet, basename='player')
+router.register(r"teams", views.TeamViewSet, basename="team")
+router.register(r"players", views.PlayerViewSet, basename="player")
 
 # Router generates these URLs:
 # GET    /teams/          -> list teams
