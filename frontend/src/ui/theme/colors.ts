@@ -120,9 +120,11 @@ export const colors = {
 } as const;
 
 // Helper function to get color with opacity
+// Note: For rgba(var(--color), opacity) to work, the CSS variable must be defined as "r, g, b" (e.g., "255, 255, 255").
+// If your variables are not in this format, consider updating them or handling conversion here.
 export const withOpacity = (color: string, opacity: number): string => {
   if (color.startsWith('var(')) {
-    return `rgb(from ${color} r g b / ${opacity})`;
+    return `rgba(${color}, ${opacity})`;
   }
   return color;
 };
