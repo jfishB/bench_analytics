@@ -213,7 +213,7 @@ Get raw token values when you need them directly:
 ```tsx
 const spacing = token.spacing(4); // '1rem'
 const fontSize = token.fontSize('lg'); // '1.125rem'
-const color = token.color('primary.DEFAULT'); // '#3b82f6'
+const color = token.color('primary.DEFAULT'); // 'var(--primary)'
 ```
 
 ### breakpoint Utilities
