@@ -6,7 +6,7 @@ from django.views.decorators.http import require_http_methods
 from rest_framework import viewsets
 
 from .models import Player, Team
-from .serializer import TeamSerializer, PlayerSerializer
+from .serializer import PlayerSerializer, TeamSerializer
 
 
 @csrf_exempt
