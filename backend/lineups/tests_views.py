@@ -32,13 +32,14 @@ class LineupViewsTests(TestCase):
         payload = {
             "team_id": self.team.id,
             "name": "My Lineup",
-            "opponent_pitcher_id": self.players[0].id,
             "players": [{"player_id": p.id, "position": "1B"} for p in self.players[:9]],
         }
 
         # Prepare a lineup object that algorithm would return
         lineup = Lineup.objects.create(
-            team=self.team, name="My Lineup", opponent_pitcher_id=self.players[0].id, created_by=self.creator
+            team=self.team,
+            name="My Lineup",
+            created_by=self.creator,
         )
         for idx, p in enumerate(self.players[:9], start=1):
             LineupPlayer.objects.create(lineup=lineup, player=p, position="1B", batting_order=idx)
@@ -54,7 +55,9 @@ class LineupViewsTests(TestCase):
 
     def test_get_detail_returns_200(self):
         lineup = Lineup.objects.create(
-            team=self.team, name="Saved", opponent_pitcher_id=self.players[0].id, created_by=self.creator
+            team=self.team,
+            name="Saved",
+            created_by=self.creator,
         )
         LineupPlayer.objects.create(lineup=lineup, player=self.players[0], position="P", batting_order=1)
 
@@ -66,7 +69,9 @@ class LineupViewsTests(TestCase):
 
     def test_delete_only_creator_or_superuser(self):
         lineup = Lineup.objects.create(
-            team=self.team, name="Deletable", opponent_pitcher_id=self.players[0].id, created_by=self.creator
+            team=self.team,
+            name="Deletable",
+            created_by=self.creator,
         )
 
         url = f"{self.base_url}{lineup.id}/"
@@ -87,7 +92,9 @@ class LineupViewsTests(TestCase):
 
     def test_superuser_can_delete(self):
         lineup = Lineup.objects.create(
-            team=self.team, name="ByAdmin", opponent_pitcher_id=self.players[0].id, created_by=self.creator
+            team=self.team,
+            name="ByAdmin",
+            created_by=self.creator,
         )
         url = f"{self.base_url}{lineup.id}/"
         self.client.force_authenticate(user=self.superuser)
