@@ -7,7 +7,6 @@ from rest_framework.test import APITestCase
 from .models import Player, Team
 from .services.player_ranking import get_ranked_players
 
-
 # @pytest.mark.skip(reason="Requires database migrations with home_run column")
 # class PlayerModelTests(TestCase):
 #     """Test Player model functionality."""
