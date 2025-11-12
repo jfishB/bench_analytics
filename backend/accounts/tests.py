@@ -52,7 +52,7 @@ class AccountServiceTests(TestCase):
         data = login_user("testuser", "test123")
         self.assertIn("access", data)
         self.assertIn("refresh", data)
-        self.assertEqual(data["username"], "testuser")
+        self.assertEqual(data["user"]["username"], "testuser")
 
     def test_login_user_invalid_credentials(self):
         with self.assertRaises(InvalidCredentialsError):
@@ -93,7 +93,7 @@ class AccountViewTests(TestCase):
         data = {"username": "testuser", "password": "wrongpassword"}
         response = self.client.post(self.login_url, data)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-        self.assertIn("error", response.data)
+        self.assertIn("detail", response.data)
 
     def test_protected_view_requires_auth(self):
         response = self.client.get(self.protected_url)
