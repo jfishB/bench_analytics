@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Button } from "../../ui/components/button";
+import { AlgorithmModal } from "../../ui/components/AlgorithmModal";
+import { Info } from "lucide-react";
 
 const API_BASE =
   process.env.REACT_APP_API_BASE || "http://localhost:8000/api/v1";
@@ -19,6 +21,7 @@ export default function Lineup() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(false);
   const [isSorted, setIsSorted] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchPlayers = async () => {
     setLoading(true);
@@ -50,7 +53,18 @@ export default function Lineup() {
 
   return (
     <div className="flex flex-col items-center mt-10 space-y-4 px-4">
-      <h2 className="text-3xl font-bold">Lineup Optimizer</h2>
+      <div className="flex items-center gap-3">
+        <h2 className="text-3xl font-bold">Lineup Optimizer</h2>
+        <Button
+          onClick={() => setIsModalOpen(true)}
+          variant="outline"
+          size="sm"
+          className="gap-2"
+        >
+          <Info className="w-4 h-4" />
+          How it works
+        </Button>
+      </div>
 
       <div className="max-w-2xl text-center text-sm text-gray-600 bg-blue-50 border border-blue-200 rounded p-3">
         <p className="font-semibold mb-1">
@@ -135,6 +149,11 @@ export default function Lineup() {
       {players.length === 0 && !loading && (
         <p className="text-gray-500">Click "Load All Players" to get started</p>
       )}
+
+      <AlgorithmModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }
