@@ -19,15 +19,19 @@ class LineupCreateView(APIView):
 
     def post(self, request):
         # Validate the body against the request contract
-        req = LineupCreate(data=request.data)  # takes client data and sends to the serializer
-        req.is_valid(raise_exception=True)  # checks that the input data is valid; this is built into Django REST Framework
-        data = req.validated_data  # the validated data from the request which is now safe to use
+        req = LineupCreate(
+            data=request.data
+        )  # takes client data and sends to the serializer
+        req.is_valid(
+            raise_exception=True
+        )  # checks that the input data is valid; this is built into Django REST Framework
+        data = (
+            req.validated_data
+        )  # the validated data from the request which is now safe to use
 
         payload = CreateLineupInput(
             team_id=data["team_id"],
             name=data["name"],
-            opponent_pitcher_id=data.get("opponent_pitcher_id"),
-            opponent_team_id=data.get("opponent_team_id"),
             players=[
                 LineupPlayerInput(
                     player_id=p["player_id"],
@@ -35,7 +39,9 @@ class LineupCreateView(APIView):
                 )
                 for p in data["players"]
             ],
-            requested_user_id=(request.user.id if request.user.is_authenticated else None),
+            requested_user_id=(
+                request.user.id if request.user.is_authenticated else None
+            ),
         )
 
         # Validate the input payload defined in validator.
@@ -54,8 +60,6 @@ class LineupCreateView(APIView):
                 "id": lineup.id,
                 "team_id": lineup.team_id,
                 "name": lineup.name,
-                "opponent_pitcher_id": lineup.opponent_pitcher_id,
-                "opponent_team_id": lineup.opponent_team_id,
                 "players": [
                     {
                         "player_id": lp.player_id,
@@ -89,8 +93,6 @@ class LineupDetailView(APIView):
                 "id": lineup.id,
                 "team_id": lineup.team_id,
                 "name": lineup.name,
-                "opponent_pitcher_id": lineup.opponent_pitcher_id,
-                "opponent_team_id": lineup.opponent_team_id,
                 "players": [
                     {
                         "player_id": lp.player_id,

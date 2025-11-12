@@ -48,7 +48,9 @@ def normalize_stat(values: List[float], invert: bool = False) -> Dict[int, float
     return normalized
 
 
-def blend_woba_xwoba(woba_norm: Dict[int, float], xwoba_norm: Dict[int, float]) -> Dict[int, float]:
+def blend_woba_xwoba(
+    woba_norm: Dict[int, float], xwoba_norm: Dict[int, float]
+) -> Dict[int, float]:
     """Blend woba (60%) and xwoba (40%) for predictive accuracy.
 
     Args:
@@ -81,7 +83,9 @@ def calculate_spot_scores(players_list: List[Player], spot: int) -> List[float]:
     xwoba = normalize_stat([p.xwoba for p in players_list])
     combined_woba = blend_woba_xwoba(woba, xwoba)
     bb_pct = normalize_stat([p.bb_percent for p in players_list])
-    k_pct = normalize_stat([p.k_percent for p in players_list], invert=True)  # Lower is better
+    k_pct = normalize_stat(
+        [p.k_percent for p in players_list], invert=True
+    )  # Lower is better
     barrel_pct = normalize_stat([p.barrel_batted_rate for p in players_list])
     hard_hit_pct = normalize_stat([p.hard_hit_percent for p in players_list])
     sprint_speed = normalize_stat([p.sprint_speed for p in players_list])
@@ -96,27 +100,56 @@ def calculate_spot_scores(players_list: List[Player], spot: int) -> List[float]:
     for i in range(n):
         if spot == 1:
             # Leadoff: High OBP, speed, stolen bases, walks
-            score = 0.50 * obp[i] + 0.20 * sprint_speed[i] + 0.15 * sb[i] + 0.10 * bb_pct[i] + 0.05 * k_pct[i]
+            score = (
+                0.50 * obp[i]
+                + 0.20 * sprint_speed[i]
+                + 0.15 * sb[i]
+                + 0.10 * bb_pct[i]
+                + 0.05 * k_pct[i]
+            )
 
         elif spot == 2:
             # Elite balanced hitter: wOBA, OBP, walks, avoid strikeouts
-            score = 0.4 * combined_woba[i] + 0.3 * obp[i] + 0.2 * bb_pct[i] + 0.1 * k_pct[i]
+            score = (
+                0.4 * combined_woba[i] + 0.3 * obp[i] + 0.2 * bb_pct[i] + 0.1 * k_pct[i]
+            )
 
         elif spot == 3:
             # Strong consistent hitter: wOBA, SLG, walks
-            score = 0.45 * combined_woba[i] + 0.25 * slg[i] + 0.2 * bb_pct[i] + 0.1 * k_pct[i]
+            score = (
+                0.45 * combined_woba[i]
+                + 0.25 * slg[i]
+                + 0.2 * bb_pct[i]
+                + 0.1 * k_pct[i]
+            )
 
         elif spot == 4:
             # Cleanup (power hitter): ISO, SLG, barrels, hard hits, HR rate
-            score = 0.3 * iso[i] + 0.25 * slg[i] + 0.2 * barrel_pct[i] + 0.15 * hard_hit_pct[i] + 0.1 * hr_rate[i]
+            score = (
+                0.3 * iso[i]
+                + 0.25 * slg[i]
+                + 0.2 * barrel_pct[i]
+                + 0.15 * hard_hit_pct[i]
+                + 0.1 * hr_rate[i]
+            )
 
         elif spot == 5:
             # Secondary power hitter: SLG, ISO, wOBA, barrels
-            score = 0.35 * slg[i] + 0.25 * iso[i] + 0.25 * combined_woba[i] + 0.15 * barrel_pct[i]
+            score = (
+                0.35 * slg[i]
+                + 0.25 * iso[i]
+                + 0.25 * combined_woba[i]
+                + 0.15 * barrel_pct[i]
+            )
 
         elif spot == 6:
             # Decent hitter with speed and baserunning: OBP, sprint speed, stolen bases, wOBA
-            score = 0.35 * obp[i] + 0.25 * sprint_speed[i] + 0.20 * sb[i] + 0.20 * combined_woba[i]
+            score = (
+                0.35 * obp[i]
+                + 0.25 * sprint_speed[i]
+                + 0.20 * sb[i]
+                + 0.20 * combined_woba[i]
+            )
 
         elif spot in [7, 8]:
             # Average hitters: wOBA as primary metric
@@ -152,7 +185,6 @@ def algorithm_create_lineup(payload):
     validated = validate_data(payload)
     team_obj = validated["team"]
     players_list = validated["players"]
-    opp_pitcher = validated["opp_pitcher"]
     created_by_id = validated["created_by_id"]
 
     # Build position mapping from payload
@@ -195,8 +227,6 @@ def algorithm_create_lineup(payload):
         lineup = Lineup.objects.create(
             team=team_obj,
             name=payload.name,
-            opponent_pitcher=opp_pitcher,
-            opponent_team_id=payload.opponent_team_id,
             created_by=created_by,
         )
 
