@@ -34,19 +34,32 @@ export function PlayersOrderedList({
     return ao - bo;
   });
 
-  // Map to the UI primitive's expected structure
+  // Map to the UI primitive's expected structure. Keep payload as Partial<Player>.
   const items = sorted.map((p) => ({
-    id: String(p.id),
+    id: p.id !== undefined && p.id !== null ? String(p.id) : undefined,
     name: p.name ?? "Unnamed",
     battingOrder: p.batting_order ?? null,
-    payload: p as Player,
+    payload: p,
   }));
+
+  // Type guard: ensure a Partial<Player> is a complete Player before calling the consumer
+  function isCompletePlayer(p: Partial<Player> | undefined): p is Player {
+    return !!p && typeof p.id !== "undefined" && typeof p.name === "string" && typeof p.position !== "undefined";
+  }
 
   return (
     <PlayerList
       items={items}
       className={className}
-      onItemClick={(it) => onItemClick && onItemClick(it.payload as Player)}
+      onItemClick={(it) => {
+        const payload = it.payload as Partial<Player> | undefined;
+        if (!payload) return;
+        if (onItemClick && isCompletePlayer(payload)) {
+          onItemClick(payload);
+        } else {
+          console.warn("PlayersOrderedList: onItemClick skipped due to incomplete player data", payload);
+        }
+      }}
       badgeClassName={badgeClassName}
     />
   );

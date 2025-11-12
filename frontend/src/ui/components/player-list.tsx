@@ -6,7 +6,8 @@ export interface PlayerListItem {
   id?: string;
   name: string;
   battingOrder?: number | null;
-  payload: Player;
+  // Payload may be partial player data
+  payload: Partial<Player>;
 }
 
 export interface PlayerListProps {
