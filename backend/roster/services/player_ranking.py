@@ -10,8 +10,6 @@ from typing import Any, Dict, List, Optional
 
 from roster.models import Player, Team
 
-from .sort_sample import calculate_wos, sort_players_by_wos
-
 
 def get_all_players_with_stats() -> List[Dict[str, Any]]:
     """
@@ -40,6 +38,9 @@ def get_ranked_players(ascending: bool = False, top_n: Optional[int] = None) -> 
     """
     Get players ranked by WOS score.
 
+    TODO: Implement actual WOS ranking algorithm.
+    For now, returns all players without ranking.
+
     Args:
         ascending: Sort order (False = highest first)
         top_n: Optional limit on number of results
@@ -52,14 +53,11 @@ def get_ranked_players(ascending: bool = False, top_n: Optional[int] = None) -> 
     if not players:
         return []
 
-    # Sort by WOS
-    sorted_players = sort_players_by_wos(players, ascending=ascending)
-
-    # Add WOS score to each player
+    # TODO: Replace with actual WOS ranking logic from lineups/services/algorithm_logic.py
     result = []
-    for player in sorted_players:
+    for player in players:
         player_data = dict(player)
-        player_data["wos_score"] = round(calculate_wos(player), 2)
+        player_data["wos_score"] = 0.0  # Placeholder
         result.append(player_data)
 
     # Apply limit if specified

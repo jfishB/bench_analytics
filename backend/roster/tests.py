@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .models import Player, Team
-from .services.player_ranking import calculate_wos, get_ranked_players
+from .services.player_ranking import get_ranked_players
 
 
 class PlayerModelTests(TestCase):
@@ -27,17 +27,6 @@ class PlayerModelTests(TestCase):
 
 class PlayerRankingServiceTests(TestCase):
     """Test player ranking service functions."""
-
-    def test_calculate_wos(self):
-        """Test WOS calculation."""
-        player = {
-            "xwoba": 0.4,
-            "bb_percent": 10.0,
-            "barrel_batted_rate": 15.0,
-            "k_percent": 20.0,
-        }
-        wos = calculate_wos(player)
-        self.assertEqual(wos, 425.0)
 
     def test_get_ranked_players_empty(self):
         """Test ranking with no players."""
