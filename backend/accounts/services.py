@@ -16,8 +16,8 @@ def register_user(username, email, password) -> User:
     Handles user registration logic.
     """
 
-    if not all([username, email, password]):
-        raise MissingFieldsError("Username, email, and password are required.")
+    if not username or not email or not password:
+        raise MissingFieldsError("All fields are required.")
 
     if User.objects.filter(username=username).exists():
         raise UserAlreadyExistsError("Username already exists.")
@@ -49,10 +49,5 @@ def login_user(username, password) -> dict:
     return {
         "access": str(refresh.access_token),
         "refresh": str(refresh),
-        # "username": user.username,
-        "user": {
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-        },
+        "username": user.username,
     }

@@ -3,10 +3,8 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
-from rest_framework import viewsets
 
-from .models import Player, Team
-from .serializer import PlayerSerializer, TeamSerializer
+from .models import Player
 
 
 @csrf_exempt
@@ -36,19 +34,8 @@ class TeamViewSet(viewsets.ModelViewSet):
     ViewSet for Team model.
     Provides CRUD operations for teams.
     """
-
     queryset = Team.objects.all()
     serializer_class = TeamSerializer
-
-
-class PlayerViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet for Player model.
-    Provides CRUD operations for players.
-    """
-
-    queryset = Player.objects.all()
-    serializer_class = PlayerSerializer
 
 
 @csrf_exempt
