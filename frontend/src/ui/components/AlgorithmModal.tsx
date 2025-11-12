@@ -17,7 +17,7 @@ export function AlgorithmModal({ isOpen, onClose }: AlgorithmModalProps) {
       >
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-2xl font-semibold text-gray-900">
+          <h2 id="algorithm-modal-title" className="text-2xl font-semibold text-gray-900">
             Our Algorithm
           </h2>
           <button
