@@ -28,7 +28,27 @@ class PlayerSerializer(PlayerNameValidationMixin, serializers.ModelSerializer):
 
     class Meta:
         model = Player
-        fields = ["id", "name", "team", "team_name", "position", "xwoba", "bb_percent", "k_percent", "barrel_batted_rate"]
+        fields = [
+            "id",
+            "name",
+            "team",
+            "team_name",
+            "position",
+            "woba",
+            "xwoba",
+            "bb_percent",
+            "k_percent",
+            "barrel_batted_rate",
+            "on_base_percent",
+            "slg_percent",
+            "sprint_speed",
+            "r_total_stolen_base",
+            "isolated_power",
+            "hard_hit_percent",
+            "home_run",
+            "pa",
+            "year",
+        ]
 
 
 class PlayerListSerializer(serializers.ModelSerializer):

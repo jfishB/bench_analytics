@@ -22,5 +22,4 @@ router.register(r"players", views.PlayerViewSet, basename="player")
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("players/ranked/", views.players_ranked, name="player-ranked"),
 ]
