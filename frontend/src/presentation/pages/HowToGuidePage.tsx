@@ -21,7 +21,7 @@ const HowToGuide: React.FC = () => {
 
       {/* Getting Started Section */}
       <section className="space-y-6">
-        <h2 className="text-3xl text-primary">Getting Started</h2>
+        <h2 className="text-2xl text-primary">Getting Started</h2>
 
         {/* Step 1 */}
         <Card>
@@ -37,12 +37,12 @@ const HowToGuide: React.FC = () => {
             <p className="mb-4">
               Let the algorithm create an optimized lineup.
             </p>
-            <div className="space-y-2">
-              <p className="font-semibold text-sm">Pro Tip:</p>
-              <ul className="list-inside space-y-1 text-muted-foreground text-sm">
-                <li>Update stats regularly for best results</li>
-              </ul>
-            </div>
+            <p className="text-sm">
+              <span className="font-semibold">Pro Tip:</span>{" "}
+              <span className="text-muted-foreground">
+                Update stats regularly for best results
+              </span>
+            </p>
           </CardContent>
         </Card>
 
@@ -58,21 +58,19 @@ const HowToGuide: React.FC = () => {
           </CardHeader>
           <CardContent>
             <p className="mb-4">Review the recommendations and rationale.</p>
-            <div className="space-y-2">
-              <p className="font-semibold text-sm">Pro Tip:</p>
-              <ul className="list-inside space-y-1 text-muted-foreground text-sm">
-                <li>Adjust based on game importance</li>
-              </ul>
-            </div>
+            <p className="text-sm">
+              <span className="font-semibold">Pro Tip:</span>{" "}
+              <span className="text-muted-foreground">
+                Adjust based on game importance
+              </span>
+            </p>
           </CardContent>
         </Card>
       </section>
 
       {/* Understanding Key Metrics Section */}
       <section className="space-y-4">
-        <h2 className="text-xl font-semibold text-primary">
-          Understanding Key Metrics
-        </h2>
+        <h2 className="text-2xl text-primary">Understanding Key Metrics</h2>
 
         <div className="grid md:grid-cols-2 gap-6">
           {/* wOBA Card */}
@@ -143,6 +141,74 @@ const HowToGuide: React.FC = () => {
             </CardContent>
           </Card>
         </div>
+      </section>
+
+      {/* Lineup Construction Best Practices */}
+      <section className="space-y-4">
+        <h2 className="text-2xl text-primary">
+          Lineup Construction Best Practices
+        </h2>
+
+        <Card className="rounded-2xl">
+          <CardContent className="px-6 py-5 space-y-6">
+            {/* Card header text */}
+            <div>
+              <p className="text-base font-semibold text-foreground">
+                Traditional Lineup Roles
+              </p>
+              <p className="text-base text-muted-foreground">
+                Understanding where different player types typically bat
+              </p>
+            </div>
+
+            {/* Roles grid */}
+            <div className="grid md:grid-cols-3 gap-y-6 gap-x-10 text-base">
+              {/* Leadoff */}
+              <div className="space-y-1">
+                <p className="font-semibold text-foreground">Leadoff (1st)</p>
+                <p className="text-muted-foreground">
+                  High OBP, good speed, sets the tone
+                </p>
+              </div>
+
+              {/* Contact */}
+              <div className="space-y-1">
+                <p className="font-semibold text-foreground">Contact (2nd)</p>
+                <p className="text-muted-foreground">
+                  Good contact, can advance runners
+                </p>
+              </div>
+
+              {/* Power */}
+              <div className="space-y-1">
+                <p className="font-semibold text-foreground">Power (3rd–5th)</p>
+                <p className="text-muted-foreground">
+                  Best hitters, drive in runs
+                </p>
+              </div>
+
+              {/* Production */}
+              <div className="space-y-1">
+                <p className="font-semibold text-foreground">
+                  Production (6th–7th)
+                </p>
+                <p className="text-muted-foreground">
+                  Solid contributors, table setters
+                </p>
+              </div>
+
+              {/* Defense First */}
+              <div className="space-y-1">
+                <p className="font-semibold text-foreground">
+                  Defense First (8th–9th)
+                </p>
+                <p className="text-muted-foreground">
+                  Weaker hitters, focus on defense
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </section>
     </div>
   );
