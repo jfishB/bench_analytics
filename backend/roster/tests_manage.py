@@ -1,5 +1,5 @@
-from django.test import SimpleTestCase
 from django.conf import settings
+from django.test import SimpleTestCase
 
 
 class RosterManageTests(SimpleTestCase):
@@ -11,4 +11,3 @@ class RosterManageTests(SimpleTestCase):
 
     def test_roster_app_in_installed_apps(self):
         self.assertIn("roster", settings.INSTALLED_APPS)
-

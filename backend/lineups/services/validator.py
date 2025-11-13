@@ -9,13 +9,7 @@ from django.contrib.auth import get_user_model
 
 from roster.models import Player, Team
 
-from .exceptions import (
-    BadBattingOrder,
-    NoCreator,
-    PlayersNotFound,
-    PlayersWrongTeam,
-    TeamNotFound,
-)
+from .exceptions import BadBattingOrder, NoCreator, PlayersNotFound, PlayersWrongTeam, TeamNotFound
 
 
 def validate_data(payload):
@@ -84,7 +78,6 @@ def validate_data(payload):
     if all_orders_present:
         if sorted(orders) != list(range(1, len(orders) + 1)):
             raise BadBattingOrder()
-
 
     # Determine created_by: prefer provided requested_user_id on payload
     created_by_id = _get(payload, "requested_user_id")

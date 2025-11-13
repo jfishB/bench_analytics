@@ -1,6 +1,3 @@
-from django.test import TestCase
-from lineups.services.algorithm_logic import algorithm_create_lineup
-from lineups.services.input_data import CreateLineupInput, LineupPlayerInput
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
@@ -8,6 +5,8 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 
 from lineups.models import Lineup, LineupPlayer
+from lineups.services.algorithm_logic import algorithm_create_lineup
+from lineups.services.input_data import CreateLineupInput, LineupPlayerInput
 from roster.models import Player, Team
 
 
@@ -79,7 +78,6 @@ class LineupViewsTests(TestCase):
         resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.data["id"], lineup.id)
-
 
     def test_delete_only_creator_or_superuser(self):
         lineup = Lineup.objects.create(

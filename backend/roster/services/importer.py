@@ -1,6 +1,6 @@
 import csv
 from decimal import Decimal
-from typing import Dict, Any, List, Optional
+from typing import Any, Dict, List, Optional
 
 from roster.models import Player, Team
 
@@ -41,7 +41,7 @@ def import_from_csv(path: str, team_id: Optional[int] = None, dry_run: bool = Fa
     processed = created = updated = 0
 
     for r in rows:
-        name = r.get('"last_name, first_name"') or r.get('last_name, first_name') or r.get("name")
+        name = r.get('"last_name, first_name"') or r.get("last_name, first_name") or r.get("name")
         if name is None:
             first = r.get(" first_name") or r.get("first_name")
             last = r.get("last_name")

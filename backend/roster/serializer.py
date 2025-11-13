@@ -31,6 +31,7 @@ class PlayerSerializer(PlayerNameValidationMixin, serializers.ModelSerializer):
 
 class PlayerListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for listing players."""
+
     class Meta:
         model = Player
         fields = ["id", "name", "team", "position"]

@@ -12,71 +12,71 @@ from roster.models import Player, Team
 
 
 def get_all_players_with_stats() -> List[Dict[str, Any]]:
-	"""
-	Fetch all players with a subset of their stats as dictionaries.
+    """
+    Fetch all players with a subset of their stats as dictionaries.
 
-	Returns a list of dicts with fields used by downstream placeholder logic.
-	"""
-	return list(
-		Player.objects.all().values(
-			"id",
-			"name",
-			"team_id",
-			"position",
-			"xwoba",
-			"bb_percent",
-			"k_percent",
-			"barrel_batted_rate",
-			"pa",
-			"year",
-		)
-	)
+    Returns a list of dicts with fields used by downstream placeholder logic.
+    """
+    return list(
+        Player.objects.all().values(
+            "id",
+            "name",
+            "team_id",
+            "position",
+            "xwoba",
+            "bb_percent",
+            "k_percent",
+            "barrel_batted_rate",
+            "pa",
+            "year",
+        )
+    )
 
 
 def get_ranked_players(ascending: bool = False, top_n: Optional[int] = None) -> List[Dict[str, Any]]:
-	"""
-	Placeholder ranking: returns all players with a synthetic `wos_score` field.
-	"""
-	players = get_all_players_with_stats()
+    """
+    Placeholder ranking: returns all players with a synthetic `wos_score` field.
+    """
+    players = get_all_players_with_stats()
 
-	if not players:
-		return []
+    if not players:
+        return []
 
-	result: List[Dict[str, Any]] = []
-	for player in players:
-		player_data = dict(player)
-		player_data["wos_score"] = 0.0
-		result.append(player_data)
+    result: List[Dict[str, Any]] = []
+    for player in players:
+        player_data = dict(player)
+        player_data["wos_score"] = 0.0
+        result.append(player_data)
 
-	if top_n:
-		result = result[:top_n]
+    if top_n:
+        result = result[:top_n]
 
-	# sort by wos_score
-	result.sort(key=lambda p: p["wos_score"], reverse=not ascending)
-	return result
+    # sort by wos_score
+    result.sort(key=lambda p: p["wos_score"], reverse=not ascending)
+    return result
 
 
 def get_all_players_with_stats() -> List[Dict[str, Any]]:
-	"""
-	Fetch all players with their stats as dictionaries.
+    """
+    Fetch all players with their stats as dictionaries.
 
-	Returns:
-		List of player dictionaries containing stats.
-	"""
-	return list(
-		Player.objects.all().values(
-			"id",
-			"name",
-			"team_id",
-			"position",
-			"xwoba",
-			"bb_percent",
-			"k_percent",
-			"barrel_batted_rate",
-			"pa",
-			"year",
-		)
-	)
+    Returns:
+            List of player dictionaries containing stats.
+    """
+    return list(
+        Player.objects.all().values(
+            "id",
+            "name",
+            "team_id",
+            "position",
+            "xwoba",
+            "bb_percent",
+            "k_percent",
+            "barrel_batted_rate",
+            "pa",
+            "year",
+        )
+    )
 
 
 # def get_ranked_players(ascending: bool = False, top_n: Optional[int] = None) -> List[Dict[str, Any]]:

@@ -1,5 +1,5 @@
-from django.test import SimpleTestCase
 from django.conf import settings
+from django.test import SimpleTestCase
 
 
 class LineupsManageTests(SimpleTestCase):
@@ -12,4 +12,3 @@ class LineupsManageTests(SimpleTestCase):
 
     def test_lineups_app_in_installed_apps(self):
         self.assertIn("lineups", settings.INSTALLED_APPS)
-

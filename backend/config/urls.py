@@ -7,7 +7,6 @@ urlpatterns = [
     # Redirect the root URL to the saved lineups list so visiting
     # http://127.0.0.1:8000/ shows a useful page instead of a 404.
     path("", RedirectView.as_view(url="/api/v1/lineups/saved/", permanent=False)),
-
     path("admin/", admin.site.urls),
     # Backwards-compatible alias (no /v1/) for older clients that call /api/players/
     path("api/players/", include("roster.urls")),

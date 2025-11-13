@@ -8,7 +8,8 @@ from rest_framework import viewsets
 from .models import Player, Team
 from .serializer import PlayerSerializer, TeamSerializer
 
-# TODO: implement post as well for clarity 
+
+# TODO: implement post as well for clarity
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
 def players(request):
@@ -29,6 +30,7 @@ def players(request):
         )
         player_data = list(players)
         return JsonResponse({"players": player_data})
+
 
 # TODO: what does this do is it needed clarify?
 class TeamViewSet(viewsets.ModelViewSet):
@@ -65,7 +67,8 @@ def player_detail(request, player_id):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
 
-# TODO: get rid of old method 
+
+# TODO: get rid of old method
 @csrf_exempt
 @require_http_methods(["GET"])
 def players_ranked(request):

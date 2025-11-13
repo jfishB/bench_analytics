@@ -36,4 +36,8 @@ class Command(BaseCommand):
         for m in result.get("messages", []):
             self.stdout.write(m)
 
-        self.stdout.write(self.style.SUCCESS(f"Import summary: processed={result.get('processed')} created={result.get('created')} updated={result.get('updated')}"))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Import summary: processed={result.get('processed')} created={result.get('created')} updated={result.get('updated')}"
+            )
+        )

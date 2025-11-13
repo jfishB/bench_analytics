@@ -1,19 +1,16 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import permissions, status
+from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Lineup
-from .models import LineupPlayer
-from .serializers import LineupPlayerOut
-from .serializers import LineupOut
-from .serializers import LineupCreate, LineupOut, LineupCreateByTeam
 from roster.models import Player as RosterPlayer
+
+from .models import Lineup, LineupPlayer
+from .serializers import LineupCreate, LineupCreateByTeam, LineupOut, LineupPlayerOut
 from .services.algorithm_logic import algorithm_create_lineup
 from .services.auth_user import authorize_lineup_deletion
 from .services.input_data import CreateLineupInput, LineupPlayerInput
 from .services.validator import validate_data, validate_lineup_model
-from rest_framework import viewsets
 
 
 #############################################################################
@@ -34,16 +31,14 @@ class LineupCreateView(APIView):
         team_id = data["team_id"]
         # TODO: clean architecture for querying players
         players_qs = list(RosterPlayer.objects.filter(team_id=team_id))
-        players_input = [
-            LineupPlayerInput(player_id=p.id, position=(p.position or "--")) for p in players_qs
-        ]
+        players_input = [LineupPlayerInput(player_id=p.id, position=(p.position or "--")) for p in players_qs]
 
         payload = CreateLineupInput(
             team_id=team_id,
             players=players_input,
             requested_user_id=(request.user.id if request.user.is_authenticated else None),
         )
-        # TODO: decide where to validate the data 
+        # TODO: decide where to validate the data
         # Run the algorithm using the constructed payload. The algorithm will
         # validate the payload and raise domain errors if the team/players are invalid.
         # Pass the dataclass payload directly so the algorithm can run its own
@@ -78,7 +73,7 @@ class LineupCreateView(APIView):
         return Response(out.data, status=status.HTTP_201_CREATED)
 
 
-# TODO: decide if we need this 
+# TODO: decide if we need this
 class LineupDetailView(APIView):
     """Retrieve or delete a saved lineup by id.
 

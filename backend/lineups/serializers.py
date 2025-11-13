@@ -35,6 +35,7 @@ class LineupCreateByTeam(serializers.Serializer):
 
     team_id = serializers.IntegerField()
 
+
 # ---- Response schema (server -> client) ----
 class LineupPlayerOut(serializers.Serializer):
     """This is a saved batting slot returned to the client."""
