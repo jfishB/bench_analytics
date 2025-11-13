@@ -12,8 +12,6 @@ from roster.models import Player, Team
 from .exceptions import (
     BadBattingOrder,
     NoCreator,
-    OpponentPitcherNotFound,
-    OpponentTeamMismatch,
     PlayersNotFound,
     PlayersWrongTeam,
     TeamNotFound,
@@ -69,9 +67,9 @@ def validate_data(payload):
 
     players_qs = ordered_players
 
-    # Ensure all players belong to the stated team
-    if any(p.team_id != team_obj.id for p in players_qs):
-        raise PlayersWrongTeam()
+    # # Ensure all players belong to the stated team
+    # if any(p.team_id != team_obj.id for p in players_qs):
+    #     raise PlayersWrongTeam()
 
     # Batting order: optional on input only check if all players have it
     orders = []
@@ -103,7 +101,7 @@ def validate_data(payload):
     }
 
 
-def validate_lineup_model(lineup):
+def validate_lineup_model(lineup, allow_mixed_teams: bool = False):
     """Validate a Lineup model instance produced by the algorithm.
 
     Raises the same domain exceptions as the input validator when the
@@ -132,9 +130,10 @@ def validate_lineup_model(lineup):
     if len(players) == 0:
         raise PlayersNotFound()
 
-    # Check all players belong to the lineup team
-    if any(p.player.team_id != lineup.team_id for p in players):
-        raise PlayersWrongTeam()
+    # Check all players belong to the lineup team unless mixed teams are allowed
+    if not allow_mixed_teams:
+        if any(p.player.team_id != lineup.team_id for p in players):
+            raise PlayersWrongTeam()
 
     # Batting order must be unique and consecutive 1..N
     orders = [getattr(p, "batting_order", None) for p in players]
