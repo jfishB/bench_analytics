@@ -12,59 +12,104 @@ from roster.models import Player, Team
 
 
 def get_all_players_with_stats() -> List[Dict[str, Any]]:
-    """
-    Fetch all players with their stats as dictionaries.
+	"""
+	Fetch all players with a subset of their stats as dictionaries.
 
-    Returns:
-        List of player dictionaries containing stats.
-    """
-    return list(
-        Player.objects.all().values(
-            "id",
-            "name",
-            "team__name",
-            "position",
-            "xwoba",
-            "bb_percent",
-            "k_percent",
-            "barrel_batted_rate",
-            "pa",
-            "year",
-        )
-    )
+	Returns a list of dicts with fields used by downstream placeholder logic.
+	"""
+	return list(
+		Player.objects.all().values(
+			"id",
+			"name",
+			"team_id",
+			"position",
+			"xwoba",
+			"bb_percent",
+			"k_percent",
+			"barrel_batted_rate",
+			"pa",
+			"year",
+		)
+	)
 
 
 def get_ranked_players(ascending: bool = False, top_n: Optional[int] = None) -> List[Dict[str, Any]]:
-    """
-    Get players ranked by WOS score.
+	"""
+	Placeholder ranking: returns all players with a synthetic `wos_score` field.
+	"""
+	players = get_all_players_with_stats()
 
-    TODO: Implement actual WOS ranking algorithm.
-    For now, returns all players without ranking.
+	if not players:
+		return []
 
-    Args:
-        ascending: Sort order (False = highest first)
-        top_n: Optional limit on number of results
+	result: List[Dict[str, Any]] = []
+	for player in players:
+		player_data = dict(player)
+		player_data["wos_score"] = 0.0
+		result.append(player_data)
 
-    Returns:
-        List of player dictionaries with wos_score field added.
-    """
-    players = get_all_players_with_stats()
+	if top_n:
+		result = result[:top_n]
 
-    if not players:
-        return []
+	# sort by wos_score
+	result.sort(key=lambda p: p["wos_score"], reverse=not ascending)
+	return result
 
-    # TODO: Replace with actual WOS ranking logic from lineups/services/algorithm_logic.py
-    result = []
-    for player in players:
-        player_data = dict(player)
-        player_data["wos_score"] = 0.0  # Placeholder
-        result.append(player_data)
 
-    # Apply limit if specified
-    if top_n:
-        result = result[:top_n]
+def get_all_players_with_stats() -> List[Dict[str, Any]]:
+	"""
+	Fetch all players with their stats as dictionaries.
 
-    return result
+	Returns:
+		List of player dictionaries containing stats.
+	"""
+	return list(
+		Player.objects.all().values(
+			"id",
+			"name",
+			"team_id",
+			"position",
+			"xwoba",
+			"bb_percent",
+			"k_percent",
+			"barrel_batted_rate",
+			"pa",
+			"year",
+		)
+	)
+
+
+# def get_ranked_players(ascending: bool = False, top_n: Optional[int] = None) -> List[Dict[str, Any]]:
+#     """
+#     Get players ranked by WOS score.
+
+#     TODO: Implement actual WOS ranking algorithm.
+#     For now, returns all players without ranking.
+
+#     Args:
+#         ascending: Sort order (False = highest first)
+#         top_n: Optional limit on number of results
+
+#     Returns:
+#         List of player dictionaries with wos_score field added.
+#     """
+#     players = get_all_players_with_stats()
+
+#     if not players:
+#         return []
+
+#     # TODO: Replace with actual WOS ranking logic from lineups/services/algorithm_logic.py
+#     result = []
+#     for player in players:
+#         player_data = dict(player)
+#         player_data["wos_score"] = 0.0  # Placeholder
+#         result.append(player_data)
+
+#     # Apply limit if specified
+#     if top_n:
+#         result = result[:top_n]
+
+#     return result
 
 
 def create_player_with_stats(name: str, **stats) -> Player:

@@ -1,4 +1,3 @@
-import pytest
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
@@ -104,7 +103,7 @@ class TeamAPITests(APITestCase):
 
     def test_list_teams(self):
         """Test GET /teams/"""
-        Team.objects.create(name="Yankees")
+        Team.objects.create()
         url = reverse("roster:team-list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -113,7 +112,7 @@ class TeamAPITests(APITestCase):
     def test_create_team(self):
         """Test POST /teams/"""
         url = reverse("roster:team-list")
-        data = {"name": "Red Sox"}
+        data = {}
         response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Team.objects.count(), 1)

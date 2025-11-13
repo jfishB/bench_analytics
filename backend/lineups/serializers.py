@@ -23,11 +23,17 @@ class LineupCreate(serializers.Serializer):
     """This is the entire request body to save a lineup."""
 
     team_id = serializers.IntegerField()
-    name = serializers.CharField(max_length=120)  # the coach-entered the name
-    opponent_pitcher_id = serializers.IntegerField(required=False, allow_null=True)
-    opponent_team_id = serializers.IntegerField(required=False, allow_null=True)
     players = LineupPlayerIn(many=True, min_length=9, max_length=9)  # calls LineupPlayerIn from above
 
+
+class LineupCreateByTeam(serializers.Serializer):
+    """Create lineup request containing only a team identifier.
+
+    The frontend may supply only a team_id (and optional metadata). The
+    server will load players for that team and run the algorithm.
+    """
+
+    team_id = serializers.IntegerField()
 
 # ---- Response schema (server -> client) ----
 class LineupPlayerOut(serializers.Serializer):
@@ -43,9 +49,6 @@ class LineupOut(serializers.Serializer):
 
     id = serializers.IntegerField()
     team_id = serializers.IntegerField()
-    name = serializers.CharField()
-    opponent_pitcher_id = serializers.IntegerField(required=False, allow_null=True)
-    opponent_team_id = serializers.IntegerField(required=False, allow_null=True)
     players = LineupPlayerOut(many=True)
     created_by = serializers.IntegerField()
     created_at = serializers.DateTimeField()
