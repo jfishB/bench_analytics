@@ -24,8 +24,6 @@ class LineupCreate(serializers.Serializer):
 
     team_id = serializers.IntegerField()
     name = serializers.CharField(max_length=120)  # the coach-entered the name
-    opponent_pitcher_id = serializers.IntegerField(required=False, allow_null=True)
-    opponent_team_id = serializers.IntegerField(required=False, allow_null=True)
     players = LineupPlayerIn(many=True, min_length=9, max_length=9)  # calls LineupPlayerIn from above
 
 
@@ -44,8 +42,6 @@ class LineupOut(serializers.Serializer):
     id = serializers.IntegerField()
     team_id = serializers.IntegerField()
     name = serializers.CharField()
-    opponent_pitcher_id = serializers.IntegerField(required=False, allow_null=True)
-    opponent_team_id = serializers.IntegerField(required=False, allow_null=True)
     players = LineupPlayerOut(many=True)
     created_by = serializers.IntegerField()
     created_at = serializers.DateTimeField()

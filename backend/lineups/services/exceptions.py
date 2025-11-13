@@ -30,24 +30,6 @@ class BadBattingOrder(Exception):
         self.detail = detail
 
 
-class OpponentPitcherNotFound(Exception):
-    def __init__(self, detail: str = "Opponent pitcher not found."):
-        super().__init__(detail)
-        self.detail = detail
-
-
-class OpponentTeamMismatch(Exception):
-    def __init__(self, detail: str = "Opponent team mismatch."):
-        super().__init__(detail)
-        self.detail = detail
-
-
-class PitcherInBatters(Exception):
-    def __init__(self, detail: str = "Opponent pitcher cannot appear in batting lineup."):
-        super().__init__(detail)
-        self.detail = detail
-
-
 class NoCreator(Exception):
     def __init__(self, detail: str = "No creator found"):
         super().__init__(detail)

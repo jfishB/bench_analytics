@@ -12,8 +12,6 @@ from roster.models import Player, Team
 from .exceptions import (
     BadBattingOrder,
     NoCreator,
-    OpponentPitcherNotFound,
-    OpponentTeamMismatch,
     PlayersNotFound,
     PlayersWrongTeam,
     TeamNotFound,
@@ -67,18 +65,6 @@ def validate_data(payload):
         if sorted(orders) != list(range(1, len(orders) + 1)):
             raise BadBattingOrder()
 
-    # Validate opponent pitcher (optional)
-    opp_pitcher_id = _get(payload, "opponent_pitcher_id")
-    opp_pitcher = None
-    if opp_pitcher_id:
-        opp_pitcher = Player.objects.select_related("team").filter(pk=opp_pitcher_id).first()
-        if not opp_pitcher:
-            raise OpponentPitcherNotFound()
-
-        opp_team_id = _get(payload, "opponent_team_id")
-        if opp_team_id is not None and opp_team_id != opp_pitcher.team_id:
-            raise OpponentTeamMismatch()
-
     # Determine created_by: prefer provided requested_user_id on payload
     created_by_id = _get(payload, "requested_user_id")
     User = get_user_model()
@@ -90,7 +76,6 @@ def validate_data(payload):
     return {
         "team": team_obj,
         "players": players_qs,
-        "opp_pitcher": opp_pitcher,
         "created_by_id": created_by_id,
     }
 
@@ -105,9 +90,6 @@ def validate_lineup_model(lineup):
     # Import here to avoid import cycles
     from .exceptions import (
         BadBattingOrder,
-        OpponentPitcherNotFound,
-        OpponentTeamMismatch,
-        PitcherInBatters,
         PlayersNotFound,
         PlayersWrongTeam,
     )
@@ -135,18 +117,6 @@ def validate_lineup_model(lineup):
         raise BadBattingOrder()
     if sorted(orders) != list(range(1, len(orders) + 1)):
         raise BadBattingOrder()
-
-    # Opponent pitcher validation (optional)
-    opp_pid = getattr(lineup, "opponent_pitcher_id", None)
-    if opp_pid is not None:
-        # If opponent_team_id is set, it must match the pitcher's team
-        opp_team_id = getattr(lineup, "opponent_team_id", None)
-        if opp_team_id is not None:
-            from roster.models import Player as RosterPlayer
-
-            pitcher = RosterPlayer.objects.filter(pk=opp_pid).first()
-            if pitcher and pitcher.team_id != opp_team_id:
-                raise OpponentTeamMismatch()
 
     # All checks passed — return True for convenience
     return True

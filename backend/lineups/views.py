@@ -8,7 +8,7 @@ from .serializers import LineupCreate, LineupOut
 from .services.algorithm_logic import algorithm_create_lineup
 from .services.auth_user import authorize_lineup_deletion
 from .services.input_data import CreateLineupInput, LineupPlayerInput
-from .services.validator import validate_data, validate_lineup_model
+from .services.validator import validate_lineup_model
 
 
 #############################################################################
@@ -26,8 +26,6 @@ class LineupCreateView(APIView):
         payload = CreateLineupInput(
             team_id=data["team_id"],
             name=data["name"],
-            opponent_pitcher_id=data.get("opponent_pitcher_id"),
-            opponent_team_id=data.get("opponent_team_id"),
             players=[
                 LineupPlayerInput(
                     player_id=p["player_id"],
@@ -37,9 +35,6 @@ class LineupCreateView(APIView):
             ],
             requested_user_id=(request.user.id if request.user.is_authenticated else None),
         )
-
-        # Validate the input payload defined in validator.
-        validate_data(payload)
 
         # Run the algorithm to create the lineup.
         lineup = algorithm_create_lineup(payload)
@@ -54,8 +49,6 @@ class LineupCreateView(APIView):
                 "id": lineup.id,
                 "team_id": lineup.team_id,
                 "name": lineup.name,
-                "opponent_pitcher_id": lineup.opponent_pitcher_id,
-                "opponent_team_id": lineup.opponent_team_id,
                 "players": [
                     {
                         "player_id": lp.player_id,
@@ -89,8 +82,6 @@ class LineupDetailView(APIView):
                 "id": lineup.id,
                 "team_id": lineup.team_id,
                 "name": lineup.name,
-                "opponent_pitcher_id": lineup.opponent_pitcher_id,
-                "opponent_team_id": lineup.opponent_team_id,
                 "players": [
                     {
                         "player_id": lp.player_id,
