@@ -1,33 +1,20 @@
-# Bench Analytics
+<p align="center">
+  <img src="assets/logo.png" alt="Project Logo" width="400"/>
+</p>
 
-**Bench Analytics** is a web application that helps **baseball coaches** build the most effective **team lineup** against a chosen opponent.  
-By analyzing player data and opponent characteristics, the app provides **data-driven lineup recommendations** that improve strategic decision-making.
-
----
-
-## Overview
-
-Coaches can:
-
-- Maintain and manage a **player roster** (add, edit, and remove players).
-- Select an **opponent team** to generate optimal matchups.
-- Run **lineup optimization algorithms** based on player performance and opponent metrics.
-- View results in an **intuitive and modern interface** built for ease of use during pre-game planning.
-
-This project is designed for **sports analytics enthusiasts and coaching staff** who want to bring a quantitative edge to their baseball strategies.
-
----
+Bench Analytics is a web application designed to help baseball coaches build the most effective team lineup against a chosen opponent. By analyzing player data, it provides data-driven lineup recommendations to enhance strategic decision-making.
 
 ## Features
 
-- **Player Management:** Add, update, and remove players from your roster.
-- **Opponent Selection:** Choose an opposing team for analysis.
-- **Lineup Optimization:** Automatically compute the best batting order using performance data.
-- **Interactive Frontend:** Clean, responsive UI built with React + Tailwind CSS.
-- **Database Integration:** Persistent storage for rosters and matchups via PostgreSQL.
-- **Containerized Setup:** Fully runnable using Docker and docker-compose.
+- Lineup Optimization – Automatically compute the most effective batting order based on player stats.
 
----
+- Performance-Based Recommendations – Data-driven suggestions for batting order and strategic matchups.
+
+- Detailed Player Stats – View individual player performance metrics, trends, and historical stats.
+
+- Intuitive Frontend – Clean, responsive UI built with React + Tailwind CSS for easy pre-game planning.
+
+- Algorithm Rationale – Explain the reasoning behind suggested lineups for transparency.
 
 ## Tech Stack
 
@@ -50,51 +37,80 @@ This project is designed for **sports analytics enthusiasts and coaching staff**
 - Docker
 - Git & GitHub for version control
 - ESLint + Prettier for clean and consistent code
-- Django ORM for database management
 
----
+## Run Locally
 
-## Getting Started
+**Clone the project**
 
-### 1. Clone the Repository
-
-```
-git clone https://github.com/<your-org-or-username>/bench_analytics.git
-cd bench_analytics
+```bash
+  git clone https://github.com/jfishB/bench_analytics.git
 ```
 
-### 2. Run with Docker
+**Go to the project directory**
+
+```bash
+  cd bench_analytics
+```
+
+**Install dependencies**
+
+Frontend
+
+```bash
+  cd frontend
+  npm install
 
 ```
-docker-compose up --build
+
+Backend
+
+```bash
+cd backend
+python -m venv venv         # create virtual environment
+source venv/bin/activate    # Linux/macOS
+# or
+venv\Scripts\Activate.ps1   # Windows PowerShell
+
+pip install -r requirements.txt
 ```
 
-This command will start the backend, frontend, and PostgreSQL services.
+**Start the servers**
 
-### 3. Access the App
+Frontend
 
-Frontend: `http://localhost:3000`
+```bash
+cd frontend
+npm run start
+```
 
-Backend API: `http://localhost:8000`
+Backend
 
-## Contributors
-
-Jeevesh Balendra,
-Lea Palme,
-Ilya Kononov,
-Luke Pan,
-Rashu Sharda
+```bash
+cd backend
+python manage.py migrate   # apply database migrations
+python manage.py runserver
+```
 
 ## License
 
 This project is licensed under the MIT License.
 
-## Future Improvements
+## Authors
 
-Integration with live player statistics APIs.
+- [@jfishB](https://github.com/rashusharda)
+- [@leajosephine12 ](https://github.com/leajosephine12)
+- [@IlyaK27](https://github.com/IlyaK27)
+- [@Xera-phix](https://github.com/Xera-phix)
+- [@rashusharda](https://github.com/rashusharda)
+- [@qiuethan](https://github.com/qiuethan)
 
-Advanced matchup prediction models using ML.
+## Roadmap
 
-Role-based authentication (Coach / Analyst).
+- Generate multiple lineups to compare and contrast.
 
-Exportable reports for lineup results.
+- Role-based authentication (Each coach see their respective lineup).
+- Exportable reports for lineup results.
+
+## Support
+
+For support, reach out via email or check the authors’ GitHub profiles.
