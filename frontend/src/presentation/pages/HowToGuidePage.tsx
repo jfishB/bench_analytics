@@ -13,6 +13,11 @@ const ProTip: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   </p>
 );
 
+/**
+ * HowToGuide page component.
+ * Provides a comprehensive guide on using the Lineup Optimizer,
+ * including key metrics, best practices, and FAQs.
+ */
 const HowToGuide: React.FC = () => {
   return (
     <div className="px-4 md:px-12 lg:px-24 space-y-12 max-w-6xl mx-auto">
