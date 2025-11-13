@@ -40,8 +40,30 @@ class LineupPlayerOut(serializers.Serializer):
     """This is a saved batting slot returned to the client."""
 
     player_id = serializers.IntegerField()
+    # Use a SerializerMethodField so the serializer works whether the
+    # input is a dict (views build a dict with 'player_name') or a
+    # LineupPlayer model instance. This avoids KeyError during
+    # representation when the nested instance doesn't have a
+    # `player_name` attribute/key.
+    player_name = serializers.SerializerMethodField()
     position = serializers.CharField(max_length=3)
     batting_order = serializers.IntegerField()
+
+    def get_player_name(self, obj):
+        # If the serializer was given a dict (as in our view builders),
+        # return the explicit 'player_name' key if present.
+        if isinstance(obj, dict):
+            # obj may be like {"player_id": 1, "player_name": "Foo", ...}
+            # prefer explicit 'player_name' key that views set, fall back to 'name'
+            return obj.get("player_name") or obj.get("name")
+
+        # Otherwise assume obj is a LineupPlayer model instance and
+        # try to read the related player's name. Be defensive in case
+        # the relation is missing.
+        try:
+            return obj.player.name
+        except Exception:
+            return None
 
 
 class LineupOut(serializers.Serializer):
