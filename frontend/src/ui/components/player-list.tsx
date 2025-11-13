@@ -1,15 +1,20 @@
 import React from "react";
 import { cn } from "../../utils";
+import type { Player } from "../../shared/types";
 
-interface PlayerListItem {
-  id?: string | number;
+export interface PlayerListItem {
+  id?: string;
   name: string;
   battingOrder?: number | null;
+  // Payload may be partial player data
+  payload: Partial<Player>;
 }
 
-interface PlayerListProps {
+export interface PlayerListProps {
   items: PlayerListItem[];
   className?: string;
+  onItemClick?: (item: PlayerListItem) => void;
+  badgeClassName?: string;
 }
 
 /**
@@ -20,7 +25,12 @@ interface PlayerListProps {
  * - Displays batting order, player name, and optional meta/actions area.
  * - Shows fallback text if the list is empty.
  */
-export function PlayerList({ items, className = "" }: PlayerListProps) {
+export function PlayerList({
+  items,
+  className = "",
+  onItemClick,
+  badgeClassName = "bg-primary text-white dark:bg-primary",
+}: PlayerListProps) {
   // Empty state: display friendly fallback
   if (!items || items.length === 0) {
     return (
@@ -35,9 +45,32 @@ export function PlayerList({ items, className = "" }: PlayerListProps) {
     <ol className={cn("space-y-2", className)}>
       {items.map((it) => (
         <li key={it.id ?? it.name}>
-          <div className="flex items-center bg-white border border-gray-100 rounded-lg p-3 shadow-sm">
+          <div
+            role={onItemClick ? "button" : undefined}
+            tabIndex={onItemClick ? 0 : undefined}
+            onClick={onItemClick ? () => onItemClick(it) : undefined}
+            onKeyDown={
+              onItemClick
+                ? (e: React.KeyboardEvent) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onItemClick(it);
+                    }
+                  }
+                : undefined
+            }
+            className={cn(
+              "flex items-center bg-white border border-gray-100 rounded-lg p-3 shadow-sm",
+              onItemClick && "cursor-pointer"
+            )}
+          >
             <div className="w-10 flex-shrink-0">
-              <div className="h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center font-semibold text-gray-700">
+              <div
+                className={cn(
+                  badgeClassName,
+                  "h-8 w-8 rounded-full flex items-center justify-center font-semibold"
+                )}
+              >
                 {it.battingOrder != null ? it.battingOrder : "—"}
               </div>
             </div>
@@ -59,4 +92,5 @@ export function PlayerList({ items, className = "" }: PlayerListProps) {
     </ol>
   );
 }
+
 export default PlayerList;

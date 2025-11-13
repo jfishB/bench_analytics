@@ -3,18 +3,12 @@
  */
 
 export type Player = {
-    // Unique player identifier
-    id: string;
-
-    // Full name of the player
-    name: string;
-
-    // Team the player belongs to
-    team: string;
-
-    // Player's position on the field
-    position: string;
-
-    // Batting average (optional)
-    average?: number;
+  id: number;
+  name: string;
+  team?: string;
+  position: string;
+  avg?: number;
+  obp?: number;
+  ops?: number;
+  batting_order?: number;
 }

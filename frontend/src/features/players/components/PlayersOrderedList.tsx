@@ -1,10 +1,12 @@
 import React from "react";
 import PlayerList from "../../../ui/components/player-list";
-import type { Player } from "../../../shared/types";
+import type { Player } from "../../../shared/types"; // player type defined in shared/types
 
 interface PlayersOrderedListProps {
   players: Array<Partial<Player> & { batting_order?: number | null }>;
   className?: string;
+  onItemClick?: (player: Player) => void;
+  badgeClassName?: string;
 }
 
 /**
@@ -19,8 +21,10 @@ interface PlayersOrderedListProps {
 export function PlayersOrderedList({
   players,
   className = "",
+  onItemClick,
+  badgeClassName = "bg-primary text-white dark:bg-primary",
 }: PlayersOrderedListProps) {
-  // Create a sorted copy; players with null/undefined batting_order go last
+  // Copy and sort: players with undefined/null batting_order go to the end.
   const sorted = [...players].sort((a, b) => {
     const ao = a.batting_order;
     const bo = b.batting_order;
@@ -30,14 +34,35 @@ export function PlayersOrderedList({
     return ao - bo;
   });
 
-  // Map to the UI primitive's expected structure
+  // Map to the UI primitive's expected structure. Keep payload as Partial<Player>.
   const items = sorted.map((p) => ({
-    id: p.id,
+    id: p.id !== undefined && p.id !== null ? String(p.id) : undefined,
     name: p.name ?? "Unnamed",
     battingOrder: p.batting_order ?? null,
+    payload: p,
   }));
 
-  return <PlayerList items={items} className={className} />;
+  // Type guard: ensure a Partial<Player> is a complete Player before calling the consumer
+  function isCompletePlayer(p: Partial<Player> | undefined): p is Player {
+    return !!p && typeof p.id !== "undefined" && typeof p.name === "string" && typeof p.position !== "undefined";
+  }
+
+  return (
+    <PlayerList
+      items={items}
+      className={className}
+      onItemClick={(it) => {
+        const payload = it.payload as Partial<Player> | undefined;
+        if (!payload) return;
+        if (onItemClick && isCompletePlayer(payload)) {
+          onItemClick(payload);
+        } else {
+          console.warn("PlayersOrderedList: onItemClick skipped due to incomplete player data", payload);
+        }
+      }}
+      badgeClassName={badgeClassName}
+    />
+  );
 }
 
 export default PlayersOrderedList;
