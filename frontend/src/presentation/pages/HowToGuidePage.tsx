@@ -30,6 +30,30 @@ const HowToGuide: React.FC = () => {
               <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-900 text-white flex items-center justify-center font-bold">
                 1
               </span>
+              <span>Load Your Roster</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4">
+              Navigate to Lineup Optimizer and add your players with their
+              current season statistics.
+            </p>
+            <p className="text-sm">
+              <span className="font-semibold">Pro Tip:</span>{" "}
+              <span className="text-muted-foreground">
+                Include all available stats for more accurate results
+              </span>
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Step 2 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3">
+              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--accent-red)] text-white flex items-center justify-center font-bold">
+                2
+              </span>
               <span>Generate</span>
             </CardTitle>
           </CardHeader>
@@ -47,12 +71,12 @@ const HowToGuide: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Step 2 */}
+        {/* Step 3 */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
-              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--accent-red)] text-white flex items-center justify-center font-bold">
-                2
+              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-900 text-white flex items-center justify-center font-bold">
+                3
               </span>
               <span>Review</span>
             </CardTitle>
