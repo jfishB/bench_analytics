@@ -102,7 +102,7 @@ const HowToGuide: React.FC = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
-              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-900 text-white flex items-center justify-center font-bold">
+              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--accent-red)] text-white flex items-center justify-center font-bold">
                 4
               </span>
               <span>Maintain Accuracy</span>
