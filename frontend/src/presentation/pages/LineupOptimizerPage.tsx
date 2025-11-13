@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "../../ui/components/button";
 import {
   Card,
@@ -18,113 +18,165 @@ import {
 import { generateLineup } from "../../features/lineup/usecases/lineupOptimizerUseCase";
 import { Player } from "../../shared/types";
 
-export function LineupOptimizer() {
-  const samplePlayers: Player[] = [
-    {
-      id: 1,
-      name: "Mike Rodriguez",
-      position: "C",
-      avg: 0.285,
-      obp: 0.342,
-      ops: 0.798,
-      batting_order: 1,
-      team: "Aces",
-    },
-    {
-      id: 2,
-      name: "Tommy Chen",
-      position: "1B",
-      avg: 0.312,
-      obp: 0.378,
-      ops: 0.889,
-      batting_order: 5,
-      team: "Aces",
-    },
-    {
-      id: 3,
-      name: "Jake Williams",
-      position: "2B",
-      avg: 0.267,
-      obp: 0.321,
-      ops: 0.745,
-      batting_order: 8,
-      team: "Aces",
-    },
-    {
-      id: 4,
-      name: "Carlos Martinez",
-      position: "3B",
-      avg: 0.298,
-      obp: 0.365,
-      ops: 0.834,
-      batting_order: 4,
-      team: "Aces",
-    },
-    {
-      id: 5,
-      name: "David Johnson",
-      position: "SS",
-      avg: 0.275,
-      obp: 0.338,
-      ops: 0.772,
-      batting_order: 6,
-      team: "Aces",
-    },
-    {
-      id: 6,
-      name: "Alex Thompson",
-      position: "LF",
-      avg: 0.289,
-      obp: 0.351,
-      ops: 0.812,
-      batting_order: 7,
-      team: "Aces",
-    },
-    {
-      id: 7,
-      name: "Ryan Davis",
-      position: "CF",
-      avg: 0.304,
-      obp: 0.372,
-      ops: 0.867,
-      batting_order: 3,
-      team: "Aces",
-    },
-    {
-      id: 8,
-      name: "Josh Miller",
-      position: "RF",
-      avg: 0.281,
-      obp: 0.329,
-      ops: 0.786,
-      batting_order: 9,
-      team: "Aces",
-    },
-    {
-      id: 9,
-      name: "Sam Wilson",
-      position: "DH",
-      avg: 0.325,
-      obp: 0.391,
-      ops: 0.923,
-      batting_order: 2,
-      team: "Aces",
-    },
-  ];
+// TODO: check if clean architecture is mantained here?
+// Convert roster API player objects into the frontend Player shape.
+function mapRosterApiPlayers(apiPlayers: any[]): Player[] {
+  return apiPlayers.map((p) => ({
+    id: Number(p.id),
+    name: p.name ?? "Unnamed",
+    // many roster endpoints may not include `position` or `team` in the minimal view
+    position: (p.position as string) ?? "--",
+    // normalize team: could be numeric id, object {id,name} or team_name string
+    team:
+      typeof p.team === "number"
+        ? String(p.team)
+        : p.team && typeof p.team === "object"
+        ? p.team.name ?? String(p.team.id ?? "")
+        : (p.team_name as string) ?? (p.team_id ? String(p.team_id) : ""),
+    avg: (p.avg as number) ?? undefined,
+    obp: (p.obp as number) ?? undefined,
+    ops: (p.ops as number) ?? undefined,
+    batting_order: (p.batting_order as number) ?? undefined,
+  }));
+}
 
-  const [rosterPlayers] = useState<Player[]>(samplePlayers);
-  const [lineupPlayers] = useState<Player[]>(samplePlayers);
+
+/**
+ * Small presentational helper that accepts raw roster API payload and
+ * returns a PlayersOrderedList for display. Keeps mapping logic centralized
+ * so the rest of the page can remain simple.
+ */
+export function RosterApiDisplay({
+  apiData,
+  onItemClick,
+  badgeClassName,
+}: {
+  apiData: any;
+  onItemClick?: (p: Player) => void;
+  badgeClassName?: string;
+}) {
+  const players = Array.isArray(apiData?.players) ? mapRosterApiPlayers(apiData.players) : [];
+
+  return (
+    <PlayersOrderedList
+      players={players}
+      onItemClick={onItemClick}
+      badgeClassName={badgeClassName}
+    />
+  );
+}
+
+export function LineupOptimizer() {
+  // Load roster from the backend and use it as the source of truth
+  const [rosterPlayers, setRosterPlayers] = useState<Player[]>([]);
+  const [lineupPlayers, setLineupPlayers] = useState<Player[]>([]);
   const [generatedLineup, setGeneratedLineup] = useState<Player[]>([]);
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [loadingRoster, setLoadingRoster] = useState(false);
+  const [rosterError, setRosterError] = useState<string | null>(null);
+  const [teamId, setTeamId] = useState<number | undefined>(undefined);
 
-  const handleGenerate = () => {
+  const isMountedRef = useRef(true);
+
+  const fetchRoster = async () => {
+    setLoadingRoster(true);
+    setRosterError(null);
+    try {
+      const res = await fetch("/api/v1/roster/players/");
+      if (!res.ok) throw new Error(`Failed to load roster: ${res.status}`);
+  const data = await res.json();
+  // Support multiple possible shapes: array, {players: []}, {results: []}
+  let rawPlayers: any[] = [];
+  if (Array.isArray(data)) rawPlayers = data;
+  else if (Array.isArray(data.players)) rawPlayers = data.players;
+  else if (Array.isArray(data.results)) rawPlayers = data.results;
+  else rawPlayers = [];
+  // debug visibility when roster doesn't load
+  console.debug("fetchRoster: received data shape", { data, rawPlayersLength: rawPlayers.length });
+
+      // determine team id if present on payload
+      const first = rawPlayers[0];
+      let detectedTeamId: number | undefined = undefined;
+      if (first) {
+        if (typeof first.team === "number") detectedTeamId = first.team;
+        else if (first.team && typeof first.team === "object" && first.team.id) detectedTeamId = first.team.id;
+        else if (typeof first.team_id === "number") detectedTeamId = first.team_id;
+      }
+
+      const mapped = mapRosterApiPlayers(rawPlayers);
+  console.debug("fetchRoster: mapped players", mapped.length, mapped.slice(0,3));
+      if (!isMountedRef.current) return;
+      setRosterPlayers(mapped);
+      setLineupPlayers(mapped);
+      if (mapped.length === 0) {
+        setRosterError("No players returned from roster API");
+      }
+      setTeamId(detectedTeamId);
+    } catch (err: any) {
+      console.error("Failed to load roster", err);
+      if (isMountedRef.current) setRosterError(err?.message ?? String(err));
+    } finally {
+      if (isMountedRef.current) setLoadingRoster(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRoster();
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const handleGenerate = async () => {
     setGenerating(true);
+    const payload = {
+      team_id: teamId ?? rosterPlayers[0]?.team ?? 1,
+      name: "Auto-generated lineup",
+      opponent_pitcher_id: null,
+      opponent_team_id: null,
+    };
+    try {
+
+      const res = await fetch("/api/v1/lineups/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+    if (!res.ok) {
+      throw new Error(`Server returned ${res.status}`);
+    }
+
+    const data = await res.json();
+    // API returns players 
+    const ordered = (data.players || [])
+      .slice()
+      .map((p: any) => {
+        // Try to find the full Player object in rosterPlayers or lineupPlayers
+        const full =
+          rosterPlayers.find((r) => r.id === p.player_id) ||
+          lineupPlayers.find((r) => r.id === p.player_id) || {
+            id: p.player_id,
+            name: "Unknown",
+            position: p.position,
+            team: "",
+          };
+
+        return { ...full, batting_order: p.batting_order };
+      });
+
+    setGeneratedLineup(ordered);
+  } catch (err) {
+    console.error("Lineup generation via server failed, falling back to client:", err);
+    // Fallback: local heuristic
     const source = lineupPlayers.length ? lineupPlayers : rosterPlayers;
     const newLineup = generateLineup(source);
     setGeneratedLineup(newLineup);
+  } finally {
     setGenerating(false);
-  };
+  }
+};
 
   return (
     <div className="space-y-6">
@@ -154,10 +206,28 @@ export function LineupOptimizer() {
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-2 gap-4 h-full">
-                <PlayersOrderedList
-                  players={rosterPlayers}
-                  onItemClick={(p) => setSelectedPlayer(p)}
-                />
+                <div className="w-full">
+                  {rosterError && (
+                    <div className="mb-2 text-sm text-red-600">
+                      Failed to load roster: {rosterError} <Button onClick={() => fetchRoster()}>Retry</Button>
+                    </div>
+                  )}
+
+                  <div className="relative">
+                    {loadingRoster && rosterPlayers.length === 0 ? (
+                      <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60">
+                        <div className="text-sm">Loading roster…</div>
+                      </div>
+                    ) : loadingRoster ? (
+                      <div className="absolute top-2 right-2 z-10 text-xs px-2 py-1 bg-white/80 rounded">Refreshing…</div>
+                    ) : null}
+
+                    <PlayersOrderedList
+                      players={rosterPlayers}
+                      onItemClick={(p) => setSelectedPlayer(p)}
+                    />
+                  </div>
+                </div>
                 <div className="h-full flex items-start">
                   {selectedPlayer ? (
                     <PlayerCard
@@ -198,7 +268,7 @@ export function LineupOptimizer() {
                   <Button
                     onClick={handleGenerate}
                     className="w-full"
-                    disabled={generating}
+                    disabled={generating || loadingRoster || typeof teamId === "undefined"}
                   >
                     {generating ? "Generating…" : "Generate Lineup"}
                   </Button>
