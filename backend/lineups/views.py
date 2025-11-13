@@ -133,8 +133,8 @@ class LineupDetailView(APIView):
 
 class LineupViewSet(viewsets.ModelViewSet):
     """
-    ViewSet for Team model.
-    Provides CRUD operations for teams.
+    ViewSet for Lineup model.
+    Provides CRUD operations for lineups.
     """
 
     queryset = Lineup.objects.all()
