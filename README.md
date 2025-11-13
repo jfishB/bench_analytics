@@ -1,6 +1,6 @@
-![Logo](assets/logo.png)
-
-# BenchAnalytics
+<p align="center">
+  <img src="frontend/src/logo.png" alt="Project Logo" width="200"/>
+</p>
 
 Bench Analytics is a web application designed to help baseball coaches build the most effective team lineup against a chosen opponent. By analyzing player data, it provides data-driven lineup recommendations to enhance strategic decision-making.
 
