@@ -8,6 +8,7 @@ import {
 	CardTitle,
 } from "../../ui/components/card";
 import PlayersOrderedList from "../../features/players/components/PlayersOrderedList";
+import LineupAnalysis from "../../features/players/components/LineupAnalysis";
 import { PlayerCard } from "../../ui/components/player-card";
 import {
 	Tabs,
@@ -223,7 +224,14 @@ export function LineupOptimizer() {
 							<CardDescription>Statistical breakdown and insights</CardDescription>
 						</CardHeader>
 						<CardContent>
-							<div className="text-center text-muted-foreground py-8">Generate a lineup first to see detailed analysis and recommendations</div>
+							{players.map((player, i) => (
+								<LineupAnalysis
+									key={player.id ?? i}
+									player={player}
+									battingOrder={i + 1}
+									message={`I am position ${i}`}
+								/>
+							))}
 						</CardContent>
 					</Card>
 				</TabsContent>
