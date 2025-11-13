@@ -3,7 +3,9 @@
 Two workflows run automatically when you push code or open a pull request:
 
 ## Backend CI
+
 Runs these checks in order:
+
 1. **Lint** - Checks code style (flake8, black, isort)
 2. **Test** - Runs Django tests with PostgreSQL
 3. **Security** - Scans for vulnerabilities (safety, bandit)
@@ -11,7 +13,9 @@ Runs these checks in order:
 Automatically skips `venv`, `migrations`, and other package folders.
 
 ## Frontend CI
+
 Runs these checks in order:
+
 1. **Type Check** - Validates TypeScript
 2. **Test** - Runs Jest tests
 3. **Build** - Creates production bundle
@@ -22,12 +26,14 @@ Runs these checks in order:
 The workflows use GitHub secrets if you set them, otherwise they fall back to defaults from `.env.sample`:
 
 **Backend:**
+
 - `POSTGRES_USER` (default: appuser)
 - `POSTGRES_PASSWORD` (default: secret)
 - `POSTGRES_DB` (default: appdb)
 - `SECRET_KEY` (default: dev-only-not-secret)
 
 **Frontend:**
+
 - `REACT_APP_API_URL` (default: http://localhost:8000)
 - `REACT_APP_ENV` (default: test)
 
@@ -36,6 +42,7 @@ To add secrets: Go to **Settings → Secrets and variables → Actions** and add
 ## Testing Locally
 
 **Backend:**
+
 ```bash
 cd backend
 venv\Scripts\Activate.ps1  # Windows
@@ -50,6 +57,7 @@ pytest --cov
 ```
 
 **Frontend:**
+
 ```bash
 cd frontend
 npm install
@@ -61,6 +69,7 @@ npm run build
 ## What You'll See
 
 When you open a PR, you'll see 2 status checks:
+
 - ✅ Backend CI
 - ✅ Frontend CI
 
