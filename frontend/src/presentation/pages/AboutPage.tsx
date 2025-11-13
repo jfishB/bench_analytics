@@ -33,7 +33,7 @@ export const About: React.FC = () => {
     },
     {
       name: "Ilya Kononov",
-      background: "Computer Science and Mathematics major focused on",
+      background: "Computer Science and Mathematics major interested in cloud development and optimization",
     },
     {
       name: "Luke Pan",
