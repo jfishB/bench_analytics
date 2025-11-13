@@ -152,11 +152,10 @@ def algorithm_create_lineup(payload):
     validated = validate_data(payload)
     team_obj = validated["team"]
     players_list = validated["players"]
-    opp_pitcher = validated["opp_pitcher"]
     created_by_id = validated["created_by_id"]
 
     # Build position mapping from payload
-    position_map = {p.player_id: p.position for p in payload.players}
+    position_map = {p.player_id: p.position for p in players_list}
 
     # Greedy assignment algorithm
     available_indices = set(range(len(players_list)))
@@ -188,28 +187,28 @@ def algorithm_create_lineup(payload):
             available_indices.remove(best_idx)
 
     # Create the Lineup and LineupPlayer objects in a transaction
+    # TODO: seperate for clean architecture
     with transaction.atomic():
         User = get_user_model()
         created_by = User.objects.get(pk=created_by_id)
 
         lineup = Lineup.objects.create(
             team=team_obj,
-            name=payload.name,
-            opponent_pitcher=opp_pitcher,
-            opponent_team_id=payload.opponent_team_id,
             created_by=created_by,
         )
 
         # Create LineupPlayer entries
+        lineup_players = []
         for batting_order, player_idx in assignments.items():
             player = players_list[player_idx]
             position = position_map.get(player.id, player.position)
 
-            LineupPlayer.objects.create(
+            lineup_player = LineupPlayer.objects.create(
                 lineup=lineup,
                 player=player,
                 position=position,
                 batting_order=batting_order,
             )
+            lineup_players.append(lineup_player)
 
-    return lineup
+    return lineup, lineup_players

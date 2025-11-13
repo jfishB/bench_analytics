@@ -9,15 +9,7 @@ from django.contrib.auth import get_user_model
 
 from roster.models import Player, Team
 
-from .exceptions import (
-    BadBattingOrder,
-    NoCreator,
-    OpponentPitcherNotFound,
-    OpponentTeamMismatch,
-    PlayersNotFound,
-    PlayersWrongTeam,
-    TeamNotFound,
-)
+from .exceptions import BadBattingOrder, NoCreator, PlayersNotFound, PlayersWrongTeam, TeamNotFound
 
 
 def validate_data(payload):
@@ -37,17 +29,37 @@ def validate_data(payload):
     if not team_obj:
         raise TeamNotFound()
 
-    # Extract player ids from input (supports dataclass list or list of dicts)
+    # Extract player ids and preserve requested positions from input
     ids = []
+    pos_map = {}
     for p in _get(payload, "players", []):
+        # support either raw int ids or LineupPlayerInput/dataclass/dict
         pid = _get(p, "player_id") if not isinstance(p, (int,)) else p
         if pid is None:
             raise PlayersNotFound()
         ids.append(pid)
+        # capture requested position if present
+        pos = _get(p, "position")
+        if pos is not None:
+            pos_map[pid] = pos
 
     players_qs = list(Player.objects.filter(id__in=ids).select_related("team"))
     if len(players_qs) != len(ids):
         raise PlayersNotFound()
+
+    # Re-order players to match the input order and attach requested positions
+    players_by_id = {p.id: p for p in players_qs}
+    ordered_players = []
+    for pid in ids:
+        player_obj = players_by_id.get(pid)
+        if player_obj is None:
+            raise PlayersNotFound()
+        # attach helper attributes expected by the algorithm
+        setattr(player_obj, "player_id", player_obj.id)
+        setattr(player_obj, "position", pos_map.get(pid, (player_obj.position or "--")))
+        ordered_players.append(player_obj)
+
+    players_qs = ordered_players
 
     # Ensure all players belong to the stated team
     if any(p.team_id != team_obj.id for p in players_qs):
@@ -67,18 +79,6 @@ def validate_data(payload):
         if sorted(orders) != list(range(1, len(orders) + 1)):
             raise BadBattingOrder()
 
-    # Validate opponent pitcher (optional)
-    opp_pitcher_id = _get(payload, "opponent_pitcher_id")
-    opp_pitcher = None
-    if opp_pitcher_id:
-        opp_pitcher = Player.objects.select_related("team").filter(pk=opp_pitcher_id).first()
-        if not opp_pitcher:
-            raise OpponentPitcherNotFound()
-
-        opp_team_id = _get(payload, "opponent_team_id")
-        if opp_team_id is not None and opp_team_id != opp_pitcher.team_id:
-            raise OpponentTeamMismatch()
-
     # Determine created_by: prefer provided requested_user_id on payload
     created_by_id = _get(payload, "requested_user_id")
     User = get_user_model()
@@ -90,7 +90,6 @@ def validate_data(payload):
     return {
         "team": team_obj,
         "players": players_qs,
-        "opp_pitcher": opp_pitcher,
         "created_by_id": created_by_id,
     }
 

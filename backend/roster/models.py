@@ -2,14 +2,14 @@ from django.db import models
 
 
 class Team(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+    # Name removed by design — teams are identified by id only.
 
     class Meta:
         db_table = "teams"
-        ordering = ["name"]  # alphabetical order
+        ordering = ["id"]
 
     def __str__(self):
-        return self.name
+        return f"Team {self.id}"
 
 
 class Player(models.Model):

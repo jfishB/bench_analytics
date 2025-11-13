@@ -19,8 +19,5 @@ class LineupPlayerInput:
 @dataclass
 class CreateLineupInput:
     team_id: int
-    name: str
     players: List[LineupPlayerInput]
-    opponent_pitcher_id: Optional[int] = None
-    opponent_team_id: Optional[int] = None
     requested_user_id: Optional[int] = None

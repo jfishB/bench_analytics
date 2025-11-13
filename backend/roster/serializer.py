@@ -24,41 +24,17 @@ class TeamSerializer(serializers.ModelSerializer):
 class PlayerSerializer(PlayerNameValidationMixin, serializers.ModelSerializer):
     """Serializer for Player model with nested team information."""
 
-    team_name = serializers.CharField(source="team.name", read_only=True)
-
     class Meta:
         model = Player
-        fields = [
-            "id",
-            "name",
-            "team",
-            "team_name",
-            "position",
-            "woba",
-            "xwoba",
-            "bb_percent",
-            "k_percent",
-            "barrel_batted_rate",
-            "on_base_percent",
-            "slg_percent",
-            "sprint_speed",
-            "r_total_stolen_base",
-            "isolated_power",
-            "hard_hit_percent",
-            "home_run",
-            "pa",
-            "year",
-        ]
+        fields = ["id", "name", "team", "position", "xwoba", "bb_percent", "k_percent", "barrel_batted_rate"]
 
 
 class PlayerListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for listing players."""
 
-    team_name = serializers.CharField(source="team.name", read_only=True)
-
     class Meta:
         model = Player
-        fields = ["id", "name", "team", "team_name", "position"]
+        fields = ["id", "name", "team", "position"]
 
 
 class PlayerRankedSerializer(PlayerSerializer):
@@ -71,7 +47,6 @@ class PlayerRankedSerializer(PlayerSerializer):
             "id",
             "name",
             "team",
-            "team_name",
             "position",
             "xwoba",
             "bb_percent",
