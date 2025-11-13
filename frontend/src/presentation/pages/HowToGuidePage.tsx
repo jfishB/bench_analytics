@@ -142,7 +142,7 @@ const HowToGuide: React.FC = () => {
               <p className="text-sm">
                 Comprehensive metric that values each outcome appropriately.
               </p>
-              <span className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 text-xs font-medium px-3 py-1 rounded-full">
+              <span className="inline-block bg-blue-100 text-blue-700 text-xs font-medium px-3 py-1 rounded-full">
                 Above .320 is good, .380+ is excellent
               </span>
             </CardContent>
@@ -157,7 +157,7 @@ const HowToGuide: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-2">
               <p className="text-sm">How often a player reaches base safely.</p>
-              <span className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 text-xs font-medium px-3 py-1 rounded-full">
+              <span className="inline-block bg-blue-100 text-blue-700 text-xs font-medium px-3 py-1 rounded-full">
                 Above .340 is good, .380+ is excellent
               </span>
             </CardContent>
@@ -174,7 +174,7 @@ const HowToGuide: React.FC = () => {
               <p className="text-sm">
                 Measures raw power by isolating extra-base hits (SLG minus AVG).
               </p>
-              <span className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 text-xs font-medium px-3 py-1 rounded-full">
+              <span className="inline-block bg-blue-100 text-blue-700 text-xs font-medium px-3 py-1 rounded-full">
                 Above .150 is good, .200+ is excellent
               </span>
             </CardContent>
@@ -192,7 +192,7 @@ const HowToGuide: React.FC = () => {
                 Percentage of plate appearances ending in a strikeout (lower is
                 better).
               </p>
-              <span className="inline-block bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100 text-xs font-medium px-3 py-1 rounded-full">
+              <span className="inline-block bg-blue-100 text-blue-700 text-xs font-medium px-3 py-1 rounded-full">
                 Below 20% is good, under 15% is excellent
               </span>
             </CardContent>
