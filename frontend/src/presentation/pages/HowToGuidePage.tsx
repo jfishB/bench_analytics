@@ -15,7 +15,7 @@ const HowToGuide: React.FC = () => {
           How to Use the Lineup Optimizer
         </h1>
         <p className="text-muted-foreground">
-          A step-by-step guide to creating optimal batting orders for your team
+          A step-by-step guide to creating optimal batting orders for your team.
         </p>
       </section>
 
@@ -35,13 +35,15 @@ const HowToGuide: React.FC = () => {
           </CardHeader>
           <CardContent>
             <p className="mb-4">
-              Navigate to Lineup Optimizer and add your players with their
-              current season statistics.
+              Open the Lineup Optimizer and input your full roster, including
+              each player’s current season statistics.
             </p>
             <p className="text-sm">
               <span className="font-semibold">Pro Tip:</span>{" "}
               <span className="text-muted-foreground">
-                Include all available stats for more accurate results
+                The more complete your data, the more precise the optimizer’s
+                recommendations will be. Include stats like batting averages,
+                on-base percentage, and OPS when available.
               </span>
             </p>
           </CardContent>
@@ -54,18 +56,19 @@ const HowToGuide: React.FC = () => {
               <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--accent-red)] text-white flex items-center justify-center font-bold">
                 2
               </span>
-              <span>Generate</span>
+              <span>Generate a Lineup</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="mb-4">
-              Go to Lineup Optimizer, switch to the Generate Lineup tab, and
-              generate a lineup.
+              Navigate to the Generate Lineup tab and create a lineup based on
+              your loaded roster.
             </p>
             <p className="text-sm">
               <span className="font-semibold">Pro Tip:</span>{" "}
               <span className="text-muted-foreground">
-                Update stats regularly for best results
+                Treat the lineup as guidance—you can manually adjust based on
+                your strategy or player preferences.
               </span>
             </p>
           </CardContent>
@@ -78,18 +81,46 @@ const HowToGuide: React.FC = () => {
               <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-900 text-white flex items-center justify-center font-bold">
                 3
               </span>
-              <span>Review</span>
+              <span>Review & Analyze</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="mb-4">
-              In Lineup Optimizer, switch to the Analysis tab, and review the
-              recommendations and rationale.
+              Switch to the Analysis tab to review recommended lineups and the
+              rationale behind each suggestion.
             </p>
             <p className="text-sm">
               <span className="font-semibold">Pro Tip:</span>{" "}
               <span className="text-muted-foreground">
-                Adjust based on game importance
+                Consider other factors beyond the data—injuries, matchups, or
+                player energy. The optimizer provides guidance, but ultimately
+                coaches make the final decision.
+              </span>
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Step 4 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3">
+              <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-900 text-white flex items-center justify-center font-bold">
+                4
+              </span>
+              <span>Maintain Accuracy</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4">
+              Regularly update player stats to reflect their latest performance
+              trends.
+            </p>
+            <p className="text-sm">
+              <span className="font-semibold">Pro Tip:</span>{" "}
+              <span className="text-muted-foreground">
+                Small stat changes can significantly affect lineup
+                recommendations, especially for tight matchups or critical
+                games.
               </span>
             </p>
           </CardContent>
