@@ -4,9 +4,11 @@ import { cn } from "../../utils";
 interface PlayerCardProps {
   id?: string | number; // optional player ID
   name: string; // player name
-  teamName?: string; // optional team name
+  teamID?: string; // optional team ID
+  teamName?: string; // optional team name (prefer this when available)
   battingPosition?: string | number | null; // optional batting position
   className?: string; // additional styling classes
+  // new stats
 }
 
 /**
@@ -23,6 +25,7 @@ interface PlayerCardProps {
 export function PlayerCard({
   id,
   name,
+  teamID,
   teamName,
   battingPosition,
   className = "",
@@ -50,7 +53,7 @@ export function PlayerCard({
         <div className="flex flex-col">
           <span className="text-xs text-gray-500">Team</span>
           <span className="text-sm font-medium text-gray-800">
-            {teamName || "--"}
+            {teamName ?? teamID ?? "--"}
           </span>
         </div>
 
