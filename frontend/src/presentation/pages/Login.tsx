@@ -17,7 +17,7 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const response = await fetch(`${AUTH_BASE}/token/`, {
+      const response = await fetch(`${AUTH_BASE}/login/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -29,7 +29,6 @@ export default function Login() {
       }
 
       const data = await response.json();
-
       // Save token in localStorage
       localStorage.setItem("access", data.access);
       localStorage.setItem("refresh", data.refresh);

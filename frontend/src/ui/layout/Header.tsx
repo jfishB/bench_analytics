@@ -1,65 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import logo from "../assets/logo.png";
 import { Button } from "../components/button";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "services/AuthContext";
 
-/**
- * Header Component
- * Displays the site logo, navigation menu, and auth actions.
- */
 export function Header() {
-  const location = useLocation(); // Get current route
+  const location = useLocation();
   const navigate = useNavigate();
-
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState<string | null>(null);
-
-  // --- Base URL for your backend auth API ---
-  const AUTH_BASE =
-    process.env.REACT_APP_API_BASE || "http://127.0.0.1:8000/api/v1/auth";
-
-  // --- Check login state on mount ---
-  useEffect(() => {
-    const token = localStorage.getItem("access");
-    const storedUsername = localStorage.getItem("username");
-
-    if (token && storedUsername) {
-      setIsAuthenticated(true);
-      setUsername(storedUsername);
-    } else {
-      setIsAuthenticated(false);
-      setUsername(null);
-    }
-  }, [location]); // runs again when page changes
-
-  // --- Handle Logout ---
-  const handleLogout = async () => {
-    const refresh = localStorage.getItem("refresh");
-    if (!refresh) {
-      localStorage.clear();
-      setIsAuthenticated(false);
-      navigate("/");
-      return;
-    }
-
-    try {
-      await fetch(`${AUTH_BASE}/logout/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access")}`,
-        },
-        body: JSON.stringify({ refresh }),
-      });
-    } catch (err) {
-      console.error("Logout error:", err);
-    } finally {
-      localStorage.clear();
-      setIsAuthenticated(false);
-      setUsername(null);
-      navigate("/");
-    }
-  };
+  const { user, logout } = useAuth();
 
   // --- Main navigation links ---
   const navItems = [
@@ -100,13 +48,13 @@ export function Header() {
 
             {/* --- Authentication Actions --- */}
             <div className="flex items-center space-x-3">
-              {isAuthenticated ? (
+              {user ? (
                 <>
                   <span className="text-sm text-gray-700">
-                    Logged in as <strong>{username}</strong>
+                    Logged in as <strong>{user}</strong>
                   </span>
                   <Button
-                    onClick={handleLogout}
+                    onClick={logout}
                     variant="outline"
                     className="ml-2 bg-red-600 text-white hover:bg-red-700"
                   >
