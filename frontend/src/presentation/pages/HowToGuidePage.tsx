@@ -6,6 +6,13 @@ import {
   CardTitle,
 } from "../../ui/components/card";
 
+const ProTip: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <p className="text-sm">
+    <span className="font-semibold">Pro Tip:</span>{" "}
+    <span className="text-muted-foreground">{children}</span>
+  </p>
+);
+
 const HowToGuide: React.FC = () => {
   return (
     <div className="px-4 md:px-12 lg:px-24 space-y-12 max-w-6xl mx-auto">
@@ -36,16 +43,13 @@ const HowToGuide: React.FC = () => {
           <CardContent>
             <p className="mb-4">
               Open the Lineup Optimizer and input your full roster, including
-              each player’s current season statistics.
+              each player's current season statistics.
             </p>
-            <p className="text-sm">
-              <span className="font-semibold">Pro Tip:</span>{" "}
-              <span className="text-muted-foreground">
-                The more complete your data, the more precise the optimizer’s
-                recommendations will be. Include stats like batting averages,
-                on-base percentage, and OPS when available.
-              </span>
-            </p>
+            <ProTip>
+              The more complete your data, the more precise the optimizer's
+              recommendations will be. Include stats like batting averages,
+              on-base percentage, and OPS when available.
+            </ProTip>
           </CardContent>
         </Card>
 
@@ -64,13 +68,10 @@ const HowToGuide: React.FC = () => {
               Navigate to the Generate Lineup tab and create a lineup based on
               your loaded roster.
             </p>
-            <p className="text-sm">
-              <span className="font-semibold">Pro Tip:</span>{" "}
-              <span className="text-muted-foreground">
-                Treat the lineup as guidance—you can manually adjust based on
-                your strategy or player preferences.
-              </span>
-            </p>
+            <ProTip>
+              Treat the lineup as guidance—you can manually adjust based on your
+              strategy or player preferences.
+            </ProTip>
           </CardContent>
         </Card>
 
@@ -89,14 +90,11 @@ const HowToGuide: React.FC = () => {
               Switch to the Analysis tab to review recommended lineups and the
               rationale behind each suggestion.
             </p>
-            <p className="text-sm">
-              <span className="font-semibold">Pro Tip:</span>{" "}
-              <span className="text-muted-foreground">
-                Consider other factors beyond the data—injuries, matchups, or
-                player energy. The optimizer provides guidance, but ultimately
-                coaches make the final decision.
-              </span>
-            </p>
+            <ProTip>
+              Consider other factors beyond the data—injuries, matchups, or
+              player energy. The optimizer provides guidance, but ultimately
+              coaches make the final decision.
+            </ProTip>
           </CardContent>
         </Card>
 
@@ -115,14 +113,10 @@ const HowToGuide: React.FC = () => {
               Regularly update player stats to reflect their latest performance
               trends.
             </p>
-            <p className="text-sm">
-              <span className="font-semibold">Pro Tip:</span>{" "}
-              <span className="text-muted-foreground">
-                Small stat changes can significantly affect lineup
-                recommendations, especially for tight matchups or critical
-                games.
-              </span>
-            </p>
+            <ProTip>
+              Small stat changes can significantly affect lineup
+              recommendations, especially for tight matchups or critical games.
+            </ProTip>
           </CardContent>
         </Card>
       </section>
