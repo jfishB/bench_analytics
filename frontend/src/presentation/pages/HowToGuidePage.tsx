@@ -35,7 +35,8 @@ const HowToGuide: React.FC = () => {
           </CardHeader>
           <CardContent>
             <p className="mb-4">
-              Let the algorithm create an optimized lineup.
+              Go to Lineup Optimizer, switch to the Generate Lineup tab, and
+              generate a lineup.
             </p>
             <p className="text-sm">
               <span className="font-semibold">Pro Tip:</span>{" "}
@@ -57,7 +58,10 @@ const HowToGuide: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="mb-4">Review the recommendations and rationale.</p>
+            <p className="mb-4">
+              In Lineup Optimizer, switch to the Analysis tab, and review the
+              recommendations and rationale.
+            </p>
             <p className="text-sm">
               <span className="font-semibold">Pro Tip:</span>{" "}
               <span className="text-muted-foreground">
@@ -209,6 +213,39 @@ const HowToGuide: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+      </section>
+      {/* FAQ Section */}
+      <section className="space-y-4">
+        <h2 className="text-2xl text-primary">Frequently Asked Questions</h2>
+
+        <div className="space-y-3">
+          {/* FAQ 1 */}
+          <Card className="rounded-2xl">
+            <CardContent className="px-6 py-4 space-y-1">
+              <p className="text-sm md:text-base font-semibold text-foreground">
+                How often should I update player statistics?
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Update stats at least weekly during the season, or after
+                significant performance changes.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* FAQ 2 */}
+          <Card className="rounded-2xl">
+            <CardContent className="px-6 py-4 space-y-1">
+              <p className="text-sm md:text-base font-semibold text-foreground">
+                Should I always follow the generated lineup exactly?
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Use the generated lineup as a starting point. Consider factors
+                like player confidence, recent streaks, and team chemistry that
+                algorithms can&apos;t easily quantify.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </section>
     </div>
   );
