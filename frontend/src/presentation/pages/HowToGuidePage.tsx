@@ -8,7 +8,7 @@ import {
 
 const HowToGuide: React.FC = () => {
   return (
-    <div className="space-y-12 max-w-6xl mx-auto">
+    <div className="px-4 md:px-12 lg:px-24 space-y-12 max-w-6xl mx-auto">
       {/* Header Section */}
       <section className="text-center space-y-4">
         <h1 className="text-3xl mb-2 text-primary">
