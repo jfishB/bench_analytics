@@ -65,6 +65,7 @@ class LineupCreateView(APIView):
                 "players": [
                     {
                         "player_id": lp.player_id,
+                        "player_name": lp.player.name,
                         "position": lp.position,
                         "batting_order": lp.batting_order,
                     }
@@ -98,6 +99,7 @@ class LineupDetailView(APIView):
                 "players": [
                     {
                         "player_id": lp.player_id,
+                        "player_name": lp.player.name if getattr(lp, "player", None) is not None else None,
                         "position": lp.position,
                         "batting_order": lp.batting_order,
                     }
