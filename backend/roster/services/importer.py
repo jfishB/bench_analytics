@@ -1,0 +1,125 @@
+import csv
+from decimal import Decimal
+from typing import Dict, Any, List, Optional
+
+from roster.models import Player, Team
+
+
+def _to_float(v):
+    if v is None or v == "":
+        return None
+    try:
+        return float(Decimal(v))
+    except Exception:
+        try:
+            return float(str(v).replace("%", ""))
+        except Exception:
+            return None
+
+
+def import_from_csv(path: str, team_id: Optional[int] = None, dry_run: bool = False) -> Dict[str, Any]:
+    """Import players from a CSV file into the roster Player model.
+
+    Returns a summary dict with counts and messages.
+    """
+    messages: List[str] = []
+    try:
+        f = open(path, newline="", encoding="utf-8")
+    except FileNotFoundError:
+        raise
+
+    reader = csv.DictReader(f)
+    rows = list(reader)
+    if not rows:
+        messages.append("No rows found in CSV.")
+        f.close()
+        return {"processed": 0, "created": 0, "updated": 0, "messages": messages}
+
+    if team_id is not None:
+        Team.objects.get_or_create(pk=team_id)
+
+    processed = created = updated = 0
+
+    for r in rows:
+        name = r.get('"last_name, first_name"') or r.get('last_name, first_name') or r.get("name")
+        if name is None:
+            first = r.get(" first_name") or r.get("first_name")
+            last = r.get("last_name")
+            if first and last:
+                name = f"{last}, {first}"
+
+        if not name:
+            messages.append(f"Skipping row without name: {r}")
+            continue
+
+        savant_player_id = r.get("player_id") or r.get("savant_player_id")
+        year = r.get("year")
+        pa = r.get("pa")
+        home_run = _to_float(r.get("home_run"))
+        k_percent = _to_float(r.get("k_percent"))
+        bb_percent = _to_float(r.get("bb_percent"))
+        slg_percent = _to_float(r.get("slg_percent"))
+        on_base_percent = _to_float(r.get("on_base_percent"))
+        isolated_power = _to_float(r.get("isolated_power"))
+        r_total_stolen_base = _to_float(r.get("r_total_stolen_base"))
+        woba = _to_float(r.get("woba"))
+        xwoba = _to_float(r.get("xwoba"))
+        barrel_batted_rate = _to_float(r.get("barrel_batted_rate"))
+        hard_hit_percent = _to_float(r.get("hard_hit_percent"))
+        sprint_speed = _to_float(r.get("sprint_speed"))
+
+        team_id_csv = None
+        if "team_id" in r:
+            team_id_csv = r.get("team_id")
+        elif '"team_id"' in r:
+            team_id_csv = r.get('"team_id"')
+
+        use_team_id = None
+        if team_id_csv:
+            try:
+                use_team_id = int(team_id_csv)
+            except Exception:
+                use_team_id = None
+        elif team_id is not None:
+            use_team_id = team_id
+
+        team_obj = None
+        if use_team_id is not None:
+            team_obj, _ = Team.objects.get_or_create(pk=use_team_id)
+
+        defaults: Dict[str, Any] = {
+            "savant_player_id": int(savant_player_id) if savant_player_id and str(savant_player_id).isdigit() else None,
+            "year": int(year) if year and str(year).isdigit() else None,
+            "pa": int(pa) if pa and str(pa).isdigit() else None,
+            "home_run": home_run,
+            "k_percent": k_percent,
+            "bb_percent": bb_percent,
+            "slg_percent": slg_percent,
+            "on_base_percent": on_base_percent,
+            "isolated_power": isolated_power,
+            "r_total_stolen_base": r_total_stolen_base,
+            "woba": woba,
+            "xwoba": xwoba,
+            "barrel_batted_rate": barrel_batted_rate,
+            "hard_hit_percent": hard_hit_percent,
+            "sprint_speed": sprint_speed,
+        }
+
+        if dry_run:
+            messages.append(f"Would import player: {name} team_id={use_team_id} fields={defaults}")
+            processed += 1
+            continue
+
+        player, created_flag = Player.objects.update_or_create(
+            name=name,
+            defaults={**defaults, "team": team_obj},
+        )
+        processed += 1
+        if created_flag:
+            created += 1
+        else:
+            updated += 1
+
+    f.close()
+    messages.append(f"Processed {processed} rows: created={created} updated={updated}")
+    return {"processed": processed, "created": created, "updated": updated, "messages": messages}
