@@ -67,6 +67,83 @@ const HowToGuide: React.FC = () => {
           </CardContent>
         </Card>
       </section>
+
+      {/* Understanding Key Metrics Section */}
+      <section className="space-y-4">
+        <h2 className="text-xl font-semibold text-primary">
+          Understanding Key Metrics
+        </h2>
+
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* wOBA Card */}
+          <Card>
+            <CardHeader className="pb-1">
+              <CardTitle className="text-base font-semibold text-foreground">
+                wOBA (Weighted On-Base Average)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <p className="text-sm">
+                Comprehensive offensive metric that values each outcome
+                appropriately.
+              </p>
+              <span className="inline-block bg-blue-100 dark:bg-blue-100 text-blue-800 dark:text-blue-900 text-xs font-medium px-3 py-1 rounded-full">
+                Above .320 is good, .380+ is excellent
+              </span>
+            </CardContent>
+          </Card>
+
+          {/* OBP Card */}
+          <Card>
+            <CardHeader className="pb-1">
+              <CardTitle className="text-base font-semibold text-foreground">
+                On-Base Percentage (OBP)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <p className="text-sm">How often a player reaches base safely.</p>
+              <span className="inline-block bg-blue-100 dark:bg-blue-100 text-blue-800 dark:text-blue-900 text-xs font-medium px-3 py-1 rounded-full">
+                Above .340 is good, .380+ is excellent
+              </span>
+            </CardContent>
+          </Card>
+
+          {/* ISO Card */}
+          <Card>
+            <CardHeader className="pb-1">
+              <CardTitle className="text-base font-semibold text-foreground">
+                ISO (Isolated Power)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <p className="text-sm">
+                Measures raw power by isolating extra-base hits (SLG minus AVG).
+              </p>
+              <span className="inline-block bg-blue-100 dark:bg-blue-100 text-blue-800 dark:text-blue-900 text-xs font-medium px-3 py-1 rounded-full">
+                Above .150 is good, .200+ is excellent
+              </span>
+            </CardContent>
+          </Card>
+
+          {/* K% Card */}
+          <Card>
+            <CardHeader className="pb-1">
+              <CardTitle className="text-base font-semibold text-foreground">
+                K% (Strikeout Rate)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <p className="text-sm">
+                Percentage of plate appearances ending in a strikeout (lower is
+                better).
+              </p>
+              <span className="inline-block bg-blue-100 dark:bg-blue-100 text-blue-800 dark:text-blue-900 text-xs font-medium px-3 py-1 rounded-full">
+                Below 20% is good, under 15% is excellent
+              </span>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
     </div>
   );
 };
