@@ -2,6 +2,7 @@ import React from "react";
 import AppRoutes from "./app/router/routes"; // TSX routes
 import { Header } from "./ui/layout/Header";
 import { Footer } from "./ui/layout/Footer";
+import { AuthProvider } from "./services/AuthContext";
 
 /**
  * App (Root Component)
@@ -12,18 +13,20 @@ import { Footer } from "./ui/layout/Footer";
  */
 const App: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Global header */}
-      <Header />
+    <AuthProvider>
+      <div className="min-h-screen flex flex-col">
+        {/* Global header */}
+        <Header />
 
-      {/* Main content area where routes are rendered */}
-      <main className="flex-grow mt-24 px-4">
-        <AppRoutes />
-      </main>
+        {/* Main content area where routes are rendered */}
+        <main className="flex-grow mt-24 px-4">
+          <AppRoutes />
+        </main>
 
-      {/* Global footer */}
-      <Footer />
-    </div>
+        {/* Global footer */}
+        <Footer />
+      </div>
+    </AuthProvider>
   );
 };
 

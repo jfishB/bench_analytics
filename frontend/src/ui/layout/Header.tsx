@@ -2,14 +2,12 @@ import React from "react";
 import logo from "../assets/logo.png";
 import { Button } from "../components/button";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "services/AuthContext";
 
-/**
- * Header Component
- * Displays the site logo, navigation menu, and auth actions.
- */
 export function Header() {
-  const location = useLocation(); // Get current route
+  const location = useLocation();
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
 
   // --- Main navigation links ---
   const navItems = [
@@ -19,22 +17,8 @@ export function Header() {
     { id: "about", label: "About Us", path: "/about" },
   ];
 
-  // --- Authentication buttons ---
-  const authItems = [
-    { id: "login", label: "Login", path: "/login", variant: "outline" },
-    {
-      id: "register",
-      label: "Register",
-      path: "/register",
-      variant: "default",
-    },
-  ];
-
   // Determine active nav/auth item based on current route
   const activeSection = navItems.find(
-    (item) => item.path === location.pathname
-  )?.id;
-  const activeAuth = authItems.find(
     (item) => item.path === location.pathname
   )?.id;
 
@@ -43,10 +27,8 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex h-20 items-center justify-between">
           {/* --- Logo --- */}
-          <div className="flex items-center space-x-4">
-            <div className="relative">
-              <img src={logo} alt="Bench Analytics" className="h-14 w-auto" />
-            </div>
+          <div className="flex items-center space-x-4 cursor-pointer" onClick={() => navigate("/")}>
+            <img src={logo} alt="Bench Analytics" className="h-14 w-auto" />
           </div>
 
           {/* --- Desktop Navigation --- */}
@@ -62,23 +44,41 @@ export function Header() {
               </Button>
             ))}
 
-            {/* Divider between navigation and auth actions */}
-            <span className="text-muted-foreground mx-2 select-none text-lg">
-              |
-            </span>
+            <span className="text-muted-foreground mx-2 select-none text-lg">|</span>
 
             {/* --- Authentication Actions --- */}
-            <div className="flex items-center space-x-2">
-              {authItems.map((item) => (
-                <Button
-                  key={item.id}
-                  variant={activeAuth === item.id ? "default" : "outline"}
-                  onClick={() => navigate(item.path)}
-                  className="ml-4 bg-blue-600 text-white hover:bg-blue-700"
-                >
-                  {item.label}
-                </Button>
-              ))}
+            <div className="flex items-center space-x-3">
+              {user ? (
+                <>
+                  <span className="text-sm text-gray-700">
+                    Logged in as <strong>{user}</strong>
+                  </span>
+                  <Button
+                    onClick={logout}
+                    variant="outline"
+                    className="ml-2 bg-red-600 text-white hover:bg-red-700"
+                  >
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => navigate("/login")}
+                    className="bg-blue-600 text-white hover:bg-blue-700"
+                  >
+                    Login
+                  </Button>
+                  <Button
+                    variant="default"
+                    onClick={() => navigate("/register")}
+                    className="bg-blue-700 text-white hover:bg-blue-800"
+                  >
+                    Register
+                  </Button>
+                </>
+              )}
             </div>
           </nav>
         </div>

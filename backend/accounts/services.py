@@ -49,7 +49,6 @@ def login_user(username, password) -> dict:
     return {
         "access": str(refresh.access_token),
         "refresh": str(refresh),
-        # "username": user.username,
         "user": {
             "id": user.id,
             "username": user.username,

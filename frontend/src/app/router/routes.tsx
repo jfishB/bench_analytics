@@ -7,6 +7,9 @@ import Register from "presentation/pages/RegisterPage";
 import About from "presentation/pages/AboutPage";
 import HowToGuide from "presentation/pages/HowToGuidePage";
 
+import ProtectedRoute from "../../services/ProtectedRoute";
+import PublicRoute from "../../services/PublicRoute";
+
 const Lineup = lazy(() =>
   import("presentation/pages/LineupOptimizerPage").then((m) => ({
     default: m.LineupOptimizer,
@@ -23,17 +26,38 @@ const Lineup = lazy(() =>
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/login" element={<Login />} />
+      {/* Public routes */}
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <PublicRoute>
+            <Register />
+          </PublicRoute>
+        }
+      />
+
+      {/* Protected routes */}
       <Route
         path="/lineup"
         element={
-          <Suspense fallback={<div>Loading Lineup...</div>}>
-            <Lineup />
-          </Suspense>
+          <ProtectedRoute>
+            <Suspense fallback={<div>Loading Lineup...</div>}>
+              <Lineup />
+            </Suspense>
+          </ProtectedRoute>
         }
       />
+
+      {/* Always accessible */}
+      <Route path="/" element={<Home />} />
       <Route path="/how-to-guide" element={<HowToGuide />} />
       <Route path="/about" element={<About />} />
     </Routes>
