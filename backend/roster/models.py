@@ -27,7 +27,16 @@ class Player(models.Model):
     savant_player_id = models.PositiveIntegerField(null=True, blank=True)  # External player_id
     year = models.PositiveIntegerField(null=True, blank=True)  # Season year (e.g., 2025)
     pa = models.PositiveIntegerField(null=True, blank=True)  # Plate appearances
-    home_run = models.FloatField(null=True, blank=True)  # Home run rate - HR per PA
+    
+    # Raw counting stats (for simulation)
+    hit = models.PositiveIntegerField(null=True, blank=True)  # Total hits
+    double = models.PositiveIntegerField(null=True, blank=True)  # Doubles
+    triple = models.PositiveIntegerField(null=True, blank=True)  # Triples
+    home_run = models.PositiveIntegerField(null=True, blank=True)  # Home runs
+    strikeout = models.PositiveIntegerField(null=True, blank=True)  # Strikeouts
+    walk = models.PositiveIntegerField(null=True, blank=True)  # Walks (BB)
+    
+    # Derived percentages (legacy/for display)
     k_percent = models.FloatField(null=True, blank=True)  # Frequency of strikeouts per plate appearance - K% = (SO / PA) * 100
     bb_percent = models.FloatField(null=True, blank=True)  # Frequency of walks per plate appearance - BB% = (BB / PA) * 100
     slg_percent = models.FloatField(
