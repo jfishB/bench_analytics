@@ -15,10 +15,85 @@ import {
   TabsList,
   TabsTrigger,
 } from "../../ui/components/tabs";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 const API_BASE =
   process.env.REACT_APP_API_BASE || "http://localhost:8000/api/v1";
 const ROSTER_BASE = `${API_BASE}/roster`;
+
+// Sortable player item component for drag and drop
+interface SortablePlayerItemProps {
+  player: any;
+  index: number;
+}
+
+function SortablePlayerItem({ player, index }: SortablePlayerItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: player.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="flex items-center bg-white border border-gray-200 rounded-lg p-3 shadow-sm cursor-move hover:bg-gray-50"
+    >
+      <div className="w-10 flex-shrink-0">
+        <div className="h-8 w-8 rounded-full flex items-center justify-center font-semibold bg-primary text-white">
+          {player.batting_order || index + 1}
+        </div>
+      </div>
+      <div className="ml-3 flex-1">
+        <div className="text-sm font-medium text-gray-900">{player.name}</div>
+        <div className="text-xs text-gray-500">{player.position || "—"}</div>
+      </div>
+      <div className="ml-3">
+        <svg
+          className="h-5 w-5 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 8h16M4 16h16"
+          />
+        </svg>
+      </div>
+    </div>
+  );
+}
 
 // Simple debugging page: fetch roster players and display basic status
 
@@ -36,12 +111,43 @@ export function LineupOptimizer() {
   const [selectionWarning, setSelectionWarning] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("current");
   const [lineupCreated, setLineupCreated] = useState<boolean>(false);
+  const [lineupMode, setLineupMode] = useState<"manual" | "sabermetrics">(
+    "manual"
+  );
 
   // lineup generation states
   const [lineupPlayers, setLineupPlayers] = useState<any[]>([]);
+  const [battingOrderLineup, setBattingOrderLineup] = useState<any[]>([]);
   const [generatedLineup, setGeneratedLineup] = useState<any[]>([]);
   const [generating, setGenerating] = useState(false);
   const [teamId, setTeamId] = useState<number | undefined>(1);
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Handle drag end for batting order
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setBattingOrderLineup((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+
+        const newOrder = arrayMove(items, oldIndex, newIndex);
+        // Update batting orders
+        return newOrder.map((player, index) => ({
+          ...player,
+          batting_order: index + 1,
+        }));
+      });
+    }
+  };
 
   // Toggle player selection
   const togglePlayerSelection = (player: any) => {
@@ -229,6 +335,7 @@ export function LineupOptimizer() {
                           }));
 
                         setLineupPlayers(selectedPlayers);
+                        setBattingOrderLineup(selectedPlayers); // Initialize batting order
                         setLineupCreated(true); // Mark lineup as created
                         setActiveTab("optimizer"); // Switch to Generate Lineup tab
                       }}
@@ -329,94 +436,195 @@ export function LineupOptimizer() {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Lineup Optimizer</CardTitle>
-                  <CardDescription>
-                    Generate an optimal batting order based on current roster
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-sm text-muted-foreground">
-                    Use the tester below to call the backend generator.
-                  </div>
-                  <div className="pt-4">
-                    <PlayersOrderedList
-                      players={lineupPlayers}
-                      onItemClick={(p) =>
-                        setSelected(players.find((x) => x.id === p.id) ?? null)
-                      }
-                      badgeClassName="bg-primary text-white dark:bg-primary"
-                    />
-                    <div className="pt-4">
-                      <Button
-                        onClick={async () => {
-                          setGenerating(true);
-                          try {
-                            const payload = { team_id: teamId };
-                            const res = await fetch(`${API_BASE}/lineups/`, {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify(payload),
-                            });
-                            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                            const data = await res.json();
-                            const ordered = (data.players || []).map(
-                              (p: any) => {
-                                const full = players.find(
-                                  (r) => r.id === p.player_id
-                                ) || {
-                                  id: p.player_id,
-                                  name: p.player_name ?? "Unknown",
-                                  position: p.position,
-                                  team: String(p.team ?? teamId),
-                                };
-                                return {
-                                  ...full,
-                                  batting_order: p.batting_order,
-                                };
-                              }
-                            );
-                            setGeneratedLineup(ordered);
-                          } catch (err: any) {
-                            console.error("Lineup generation failed:", err);
-                          } finally {
-                            setGenerating(false);
-                          }
-                        }}
-                      >
-                        {generating ? "Generating…" : "Generate Lineup"}
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            <>
+              {/* Mode Toggle */}
+              <div className="mb-6">
+                <Tabs
+                  value={lineupMode}
+                  onValueChange={(value) =>
+                    setLineupMode(value as "manual" | "sabermetrics")
+                  }
+                  className="w-full"
+                >
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="manual">Manual</TabsTrigger>
+                    <TabsTrigger value="sabermetrics">Sabermetrics</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Generated Lineup</CardTitle>
-                  <CardDescription>
-                    Results from the backend generator
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {generatedLineup.length > 0 ? (
-                    <PlayersOrderedList
-                      players={generatedLineup}
-                      onItemClick={(p) =>
-                        setSelected(players.find((x) => x.id === p.id) ?? null)
-                      }
-                      badgeClassName="bg-primary text-white dark:bg-primary"
-                    />
-                  ) : (
-                    <div className="text-center text-muted-foreground py-8">
-                      Use the generator to get a preview here.
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+              {/* Manual Mode */}
+              {lineupMode === "manual" ? (
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Selected Players</CardTitle>
+                      <CardDescription>
+                        Your 9 selected players - drag them to arrange batting
+                        order
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <PlayersOrderedList
+                        players={lineupPlayers}
+                        onItemClick={(p) =>
+                          setSelected(
+                            players.find((x) => x.id === p.id) ?? null
+                          )
+                        }
+                        badgeClassName="bg-gray-400 text-white"
+                      />
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Batting Order</CardTitle>
+                      <CardDescription>
+                        Drag players to rearrange the batting order
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <DndContext
+                        sensors={sensors}
+                        collisionDetection={closestCenter}
+                        onDragEnd={handleDragEnd}
+                      >
+                        <SortableContext
+                          items={battingOrderLineup.map((p) => p.id)}
+                          strategy={verticalListSortingStrategy}
+                        >
+                          <div className="space-y-2">
+                            {battingOrderLineup.map((player, index) => (
+                              <SortablePlayerItem
+                                key={player.id}
+                                player={player}
+                                index={index}
+                              />
+                            ))}
+                          </div>
+                        </SortableContext>
+                      </DndContext>
+
+                      <div className="mt-6">
+                        <Button
+                          className="w-full"
+                          onClick={() => {
+                            // TODO: Save the batting order lineup to backend
+                            console.log("Save lineup:", battingOrderLineup);
+                          }}
+                        >
+                          Save Lineup
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              ) : (
+                /* Sabermetrics Mode */
+                <div className="grid md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Algorithm Generator</CardTitle>
+                      <CardDescription>
+                        Generate an optimal batting order using sabermetrics
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-sm text-muted-foreground mb-4">
+                        Use the algorithm to generate an optimal lineup based on
+                        player statistics.
+                      </div>
+                      <div className="pt-4">
+                        <PlayersOrderedList
+                          players={lineupPlayers}
+                          onItemClick={(p) =>
+                            setSelected(
+                              players.find((x) => x.id === p.id) ?? null
+                            )
+                          }
+                          badgeClassName="bg-gray-400 text-white"
+                        />
+                        <div className="pt-4">
+                          <Button
+                            className="w-full"
+                            onClick={async () => {
+                              setGenerating(true);
+                              try {
+                                const payload = { team_id: teamId };
+                                const res = await fetch(
+                                  `${API_BASE}/lineups/`,
+                                  {
+                                    method: "POST",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify(payload),
+                                  }
+                                );
+                                if (!res.ok)
+                                  throw new Error(`HTTP ${res.status}`);
+                                const data = await res.json();
+                                const ordered = (data.players || []).map(
+                                  (p: any) => {
+                                    const full = players.find(
+                                      (r) => r.id === p.player_id
+                                    ) || {
+                                      id: p.player_id,
+                                      name: p.player_name ?? "Unknown",
+                                      position: p.position,
+                                      team: String(p.team ?? teamId),
+                                    };
+                                    return {
+                                      ...full,
+                                      batting_order: p.batting_order,
+                                    };
+                                  }
+                                );
+                                setGeneratedLineup(ordered);
+                              } catch (err: any) {
+                                console.error("Lineup generation failed:", err);
+                              } finally {
+                                setGenerating(false);
+                              }
+                            }}
+                          >
+                            {generating ? "Generating…" : "Generate Lineup"}
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Generated Lineup</CardTitle>
+                      <CardDescription>
+                        Optimal batting order generated by the algorithm
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {generatedLineup.length > 0 ? (
+                        <PlayersOrderedList
+                          players={generatedLineup}
+                          onItemClick={(p) =>
+                            setSelected(
+                              players.find((x) => x.id === p.id) ?? null
+                            )
+                          }
+                          badgeClassName="bg-primary text-white dark:bg-primary"
+                        />
+                      ) : (
+                        <div className="text-center text-muted-foreground py-8">
+                          Click "Generate Lineup" to see the optimal batting
+                          order.
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </>
           )}
         </TabsContent>
 
