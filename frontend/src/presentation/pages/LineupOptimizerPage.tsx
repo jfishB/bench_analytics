@@ -122,6 +122,12 @@ export function LineupOptimizer() {
   const [generating, setGenerating] = useState(false);
   const [teamId, setTeamId] = useState<number | undefined>(1);
 
+  // Lineup name and save status
+  const [lineupName, setLineupName] = useState<string>("");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
+    "idle"
+  );
+
   // Drag and drop sensors
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -506,15 +512,56 @@ export function LineupOptimizer() {
                         </SortableContext>
                       </DndContext>
 
-                      <div className="mt-6">
+                      <div className="mt-6 space-y-3">
+                        <div>
+                          <label
+                            htmlFor="lineup-name-manual"
+                            className="block text-sm font-medium text-gray-700 mb-1"
+                          >
+                            Lineup Name
+                          </label>
+                          <input
+                            id="lineup-name-manual"
+                            type="text"
+                            value={lineupName}
+                            onChange={(e) => setLineupName(e.target.value)}
+                            placeholder="Enter lineup name..."
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                          />
+                        </div>
                         <Button
-                          className="w-full"
-                          onClick={() => {
-                            // TODO: Save the batting order lineup to backend
-                            console.log("Save lineup:", battingOrderLineup);
+                          className={`w-full ${
+                            saveStatus === "saved"
+                              ? "bg-green-600 hover:bg-green-600"
+                              : ""
+                          } disabled:bg-gray-200 disabled:cursor-not-allowed`}
+                          disabled={
+                            !lineupName.trim() || saveStatus === "saving"
+                          }
+                          onClick={async () => {
+                            setSaveStatus("saving");
+                            try {
+                              // TODO: Save the batting order lineup to backend
+                              console.log("Save lineup:", battingOrderLineup);
+                              // Simulate API call
+                              await new Promise((resolve) =>
+                                setTimeout(resolve, 500)
+                              );
+                              setSaveStatus("saved");
+                              setTimeout(() => {
+                                setSaveStatus("idle");
+                              }, 1000);
+                            } catch (err) {
+                              console.error("Failed to save lineup:", err);
+                              setSaveStatus("idle");
+                            }
                           }}
                         >
-                          Save Lineup
+                          {saveStatus === "saving"
+                            ? "Saving..."
+                            : saveStatus === "saved"
+                            ? "Saved ✓"
+                            : "Save Lineup"}
                         </Button>
                       </div>
                     </CardContent>
@@ -605,15 +652,72 @@ export function LineupOptimizer() {
                     </CardHeader>
                     <CardContent>
                       {generatedLineup.length > 0 ? (
-                        <PlayersOrderedList
-                          players={generatedLineup}
-                          onItemClick={(p) =>
-                            setSelected(
-                              players.find((x) => x.id === p.id) ?? null
-                            )
-                          }
-                          badgeClassName="bg-primary text-white dark:bg-primary"
-                        />
+                        <>
+                          <PlayersOrderedList
+                            players={generatedLineup}
+                            onItemClick={(p) =>
+                              setSelected(
+                                players.find((x) => x.id === p.id) ?? null
+                              )
+                            }
+                            badgeClassName="bg-primary text-white dark:bg-primary"
+                          />
+                          <div className="mt-6 space-y-3">
+                            <div>
+                              <label
+                                htmlFor="lineup-name-sabermetrics"
+                                className="block text-sm font-medium text-gray-700 mb-1"
+                              >
+                                Lineup Name
+                              </label>
+                              <input
+                                id="lineup-name-sabermetrics"
+                                type="text"
+                                value={lineupName}
+                                onChange={(e) => setLineupName(e.target.value)}
+                                placeholder="Enter lineup name..."
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                              />
+                            </div>
+                            <Button
+                              className={`w-full ${
+                                saveStatus === "saved"
+                                  ? "bg-green-600 hover:bg-green-600"
+                                  : ""
+                              } disabled:bg-gray-200 disabled:cursor-not-allowed`}
+                              disabled={
+                                !lineupName.trim() || saveStatus === "saving"
+                              }
+                              onClick={async () => {
+                                setSaveStatus("saving");
+                                try {
+                                  // TODO: Save the generated lineup to backend
+                                  console.log(
+                                    "Save generated lineup:",
+                                    generatedLineup
+                                  );
+                                  // Simulate API call
+                                  await new Promise((resolve) =>
+                                    setTimeout(resolve, 500)
+                                  );
+                                  setSaveStatus("saved");
+                                  setTimeout(() => {
+                                    setSaveStatus("idle");
+                                  }, 1000);
+                                } catch (err) {
+                                  console.error("Failed to save lineup:", err);
+                                  setSaveStatus("idle");
+                                }
+                              }}
+                            >
+                              {saveStatus === "saving"
+                                ? "Saving..."
+                                : saveStatus === "saved"
+                                ? "Saved ✓"
+                                : "Save Lineup"}
+                            </Button>
+                          </div>
+                        </>
                       ) : (
                         <div className="text-center text-muted-foreground py-8">
                           Click "Generate Lineup" to see the optimal batting
