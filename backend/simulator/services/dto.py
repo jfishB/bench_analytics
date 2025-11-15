@@ -13,7 +13,7 @@ from typing import List
 @dataclass
 class BatterStats:
     """Raw batting statistics for a player."""
-    
+
     name: str
     plate_appearances: int
     hits: int
@@ -31,29 +31,30 @@ class BatterStats:
     def to_probabilities(self) -> List[float]:
         """
         Convert raw stats to at-bat outcome probabilities.
-        
+
         Returns list of 7 probabilities: [K, out, walk, 1B, 2B, 3B, HR]
         """
         if self.plate_appearances == 0:
             # Default to all outs if no data
             return [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        
+
         pa = self.plate_appearances
-        
+
         prob_strikeout = self.strikeouts / pa
         prob_walk = self.walks / pa
         prob_single = self.singles / pa
         prob_double = self.doubles / pa
         prob_triple = self.triples / pa
         prob_homerun = self.home_runs / pa
-        
+
         # Remaining probability is in-play outs
-        prob_out = 1.0 - (prob_strikeout + prob_walk + prob_single + 
-                          prob_double + prob_triple + prob_homerun)
-        
+        prob_out = 1.0 - (
+            prob_strikeout + prob_walk + prob_single + prob_double + prob_triple + prob_homerun
+        )
+
         # Ensure non-negative
         prob_out = max(0.0, prob_out)
-        
+
         return [
             prob_strikeout,
             prob_out,
@@ -61,21 +62,21 @@ class BatterStats:
             prob_single,
             prob_double,
             prob_triple,
-            prob_homerun
+            prob_homerun,
         ]
 
 
 @dataclass
 class SimulationResult:
     """Results from a lineup simulation."""
-    
+
     lineup_names: List[str]
     num_games: int
     avg_score: float
     median_score: float
     std_dev: float
     all_scores: List[int]
-    
+
     def __str__(self) -> str:
         return (
             f"Simulation Results ({self.num_games} games):\n"

@@ -10,52 +10,46 @@ from rest_framework import serializers
 
 class PlayerInputSerializer(serializers.Serializer):
     """Input serializer for specifying players by ID."""
+
     player_ids = serializers.ListField(
         child=serializers.IntegerField(),
         min_length=9,
         max_length=9,
-        help_text="List of exactly 9 player IDs in batting order"
+        help_text="List of exactly 9 player IDs in batting order",
     )
     num_games = serializers.IntegerField(
-        default=10000,
-        min_value=100,
-        max_value=100000,
-        help_text="Number of games to simulate"
+        default=10000, min_value=100, max_value=100000, help_text="Number of games to simulate"
     )
 
 
 class PlayerNameInputSerializer(serializers.Serializer):
     """Input serializer for specifying players by name."""
+
     player_names = serializers.ListField(
         child=serializers.CharField(),
         min_length=9,
         max_length=9,
-        help_text="List of exactly 9 player names in batting order"
+        help_text="List of exactly 9 player names in batting order",
     )
     num_games = serializers.IntegerField(
-        default=10000,
-        min_value=100,
-        max_value=100000,
-        help_text="Number of games to simulate"
+        default=10000, min_value=100, max_value=100000, help_text="Number of games to simulate"
     )
 
 
 class TeamInputSerializer(serializers.Serializer):
     """Input serializer for using a team's top players."""
+
     team_id = serializers.IntegerField(help_text="Team ID to use")
     num_games = serializers.IntegerField(
-        default=10000,
-        min_value=100,
-        max_value=100000,
-        help_text="Number of games to simulate"
+        default=10000, min_value=100, max_value=100000, help_text="Number of games to simulate"
     )
 
 
 class SimulationResultSerializer(serializers.Serializer):
     """Output serializer for simulation results."""
+
     lineup = serializers.ListField(
-        child=serializers.CharField(),
-        help_text="Player names in batting order"
+        child=serializers.CharField(), help_text="Player names in batting order"
     )
     num_games = serializers.IntegerField()
     avg_score = serializers.FloatField()
@@ -64,6 +58,5 @@ class SimulationResultSerializer(serializers.Serializer):
     min_score = serializers.IntegerField()
     max_score = serializers.IntegerField()
     score_distribution = serializers.DictField(
-        child=serializers.IntegerField(),
-        help_text="Mapping of score -> frequency"
+        child=serializers.IntegerField(), help_text="Mapping of score -> frequency"
     )
