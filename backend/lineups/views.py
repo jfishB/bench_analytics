@@ -9,7 +9,13 @@ from rest_framework.views import APIView
 from roster.models import Player as RosterPlayer
 
 from .models import Lineup, LineupPlayer
-from .serializers import LineupCreate, LineupCreateByTeam, LineupOut, LineupPlayerOut
+from .serializers import (
+    LineupCreate,
+    LineupCreateByTeam,
+    LineupModelSerializer,
+    LineupOut,
+    LineupPlayerOut,
+)
 from .services.algorithm_logic import algorithm_create_lineup
 from .services.auth_user import authorize_lineup_deletion
 from .services.input_data import CreateLineupInput, LineupPlayerInput
@@ -247,7 +253,7 @@ class LineupViewSet(viewsets.ModelViewSet):
     """
 
     queryset = Lineup.objects.all()
-    serializer_class = LineupOut
+    serializer_class = LineupModelSerializer
 
 
 class LineupPlayerViewSet(viewsets.ModelViewSet):

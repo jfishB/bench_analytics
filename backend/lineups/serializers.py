@@ -82,3 +82,29 @@ class LineupOut(serializers.Serializer):
     players = LineupPlayerOut(many=True)
     created_by = serializers.IntegerField()
     created_at = serializers.DateTimeField()
+
+
+class LineupModelSerializer(serializers.ModelSerializer):
+    """ModelSerializer for Lineup - used by ViewSet for list/retrieve operations."""
+
+    players = serializers.SerializerMethodField()
+
+    class Meta:
+        from .models import Lineup
+
+        model = Lineup
+        fields = ["id", "team_id", "name", "created_by", "created_at", "players"]
+        read_only_fields = ["id", "created_at"]
+
+    def get_players(self, obj):
+        """Return the lineup players in batting order."""
+        lineup_players = obj.players.order_by("batting_order")
+        return [
+            {
+                "player_id": lp.player_id,
+                "player_name": lp.player.name if lp.player else None,
+                "position": lp.position,
+                "batting_order": lp.batting_order,
+            }
+            for lp in lineup_players
+        ]

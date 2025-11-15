@@ -128,6 +128,10 @@ export function LineupOptimizer() {
     "idle"
   );
 
+  // Saved lineups (for Lineup Simulator tab)
+  const [savedLineups, setSavedLineups] = useState<any[]>([]);
+  const [loadingLineups, setLoadingLineups] = useState(false);
+
   // Drag and drop sensors
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -178,6 +182,28 @@ export function LineupOptimizer() {
       return newSet;
     });
   };
+
+  // Fetch saved lineups
+  const fetchSavedLineups = async () => {
+    setLoadingLineups(true);
+    try {
+      const res = await fetch(`${API_BASE}/lineups/saved/`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      setSavedLineups(Array.isArray(data) ? data : data.results || []);
+    } catch (err: any) {
+      console.error("Failed to fetch lineups:", err);
+    } finally {
+      setLoadingLineups(false);
+    }
+  };
+
+  // Fetch saved lineups when switching to analysis tab
+  useEffect(() => {
+    if (activeTab === "analysis") {
+      fetchSavedLineups();
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     let cancelled = false;
@@ -236,7 +262,7 @@ export function LineupOptimizer() {
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="current">Current Roster</TabsTrigger>
           <TabsTrigger value="optimizer">Generate Lineup</TabsTrigger>
-          <TabsTrigger value="analysis">Analysis</TabsTrigger>
+          <TabsTrigger value="analysis">Lineup Simulator</TabsTrigger>
         </TabsList>
 
         {/* CURRENT ROSTER */}
@@ -569,6 +595,7 @@ export function LineupOptimizer() {
                               await res.json();
 
                               setSaveStatus("saved");
+                              fetchSavedLineups(); // Refresh lineup list
                               setTimeout(() => {
                                 setSaveStatus("idle");
                                 setLineupName(""); // Clear the name field for next lineup
@@ -747,6 +774,7 @@ export function LineupOptimizer() {
                                   await res.json();
 
                                   setSaveStatus("saved");
+                                  fetchSavedLineups(); // Refresh lineup list
                                   setTimeout(() => {
                                     setSaveStatus("idle");
                                     setLineupName(""); // Clear the name field for next lineup
@@ -782,20 +810,93 @@ export function LineupOptimizer() {
           )}
         </TabsContent>
 
-        {/* ANALYSIS */}
+        {/* LINEUP SIMULATOR */}
         <TabsContent value="analysis" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Lineup Analysis</CardTitle>
+              <CardTitle>Lineup Simulator</CardTitle>
               <CardDescription>
-                Statistical breakdown and insights
+                View and simulate all your saved lineups
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center text-muted-foreground py-8">
-                Generate a lineup first to see detailed analysis and
-                recommendations
-              </div>
+              {loadingLineups ? (
+                <div className="text-center text-muted-foreground py-8">
+                  Loading lineups...
+                </div>
+              ) : savedLineups.length === 0 ? (
+                <div className="text-center text-muted-foreground py-8">
+                  <div className="mb-4">
+                    <svg
+                      className="h-16 w-16 text-gray-400 mx-auto mb-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    No Saved Lineups Yet
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Create and save lineups in the Generate Lineup tab to see
+                    them here.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {savedLineups.map((lineup: any) => (
+                    <Card
+                      key={lineup.id}
+                      className="hover:shadow-lg transition-shadow"
+                    >
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-lg">{lineup.name}</CardTitle>
+                        <CardDescription className="text-xs">
+                          Created:{" "}
+                          {new Date(lineup.created_at).toLocaleDateString()}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="text-sm font-medium text-gray-700 mb-2">
+                            Batting Order:
+                          </div>
+                          <div className="space-y-1">
+                            {lineup.players
+                              ?.sort(
+                                (a: any, b: any) =>
+                                  a.batting_order - b.batting_order
+                              )
+                              .map((player: any) => (
+                                <div
+                                  key={player.player_id}
+                                  className="flex items-center text-sm"
+                                >
+                                  <span className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-semibold mr-2">
+                                    {player.batting_order}
+                                  </span>
+                                  <span className="flex-1">
+                                    {player.player_name}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    {player.position}
+                                  </span>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
