@@ -541,18 +541,41 @@ export function LineupOptimizer() {
                           onClick={async () => {
                             setSaveStatus("saving");
                             try {
-                              // TODO: Save the batting order lineup to backend
-                              console.log("Save lineup:", battingOrderLineup);
-                              // Simulate API call
-                              await new Promise((resolve) =>
-                                setTimeout(resolve, 500)
-                              );
+                              const payload = {
+                                team_id: teamId,
+                                name: lineupName,
+                                players: battingOrderLineup.map((p) => ({
+                                  player_id: p.id,
+                                  position: p.position || "DH",
+                                  batting_order: p.batting_order,
+                                })),
+                              };
+
+                              const res = await fetch(`${API_BASE}/lineups/`, {
+                                method: "POST",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify(payload),
+                              });
+
+                              if (!res.ok) {
+                                const errorText = await res.text();
+                                throw new Error(
+                                  `HTTP ${res.status}: ${errorText}`
+                                );
+                              }
+
+                              await res.json();
+
                               setSaveStatus("saved");
                               setTimeout(() => {
                                 setSaveStatus("idle");
+                                setLineupName(""); // Clear the name field for next lineup
                               }, 1000);
-                            } catch (err) {
+                            } catch (err: any) {
                               console.error("Failed to save lineup:", err);
+                              setError(err?.message || "Failed to save lineup");
                               setSaveStatus("idle");
                             }
                           }}
@@ -597,6 +620,7 @@ export function LineupOptimizer() {
                             className="w-full"
                             onClick={async () => {
                               setGenerating(true);
+                              setError(null);
                               try {
                                 const payload = { team_id: teamId };
                                 const res = await fetch(
@@ -630,7 +654,8 @@ export function LineupOptimizer() {
                                 );
                                 setGeneratedLineup(ordered);
                               } catch (err: any) {
-                                console.error("Lineup generation failed:", err);
+                                console.error("Generation failed:", err);
+                                setError(err?.message || "Failed to generate");
                               } finally {
                                 setGenerating(false);
                               }
@@ -691,21 +716,46 @@ export function LineupOptimizer() {
                               onClick={async () => {
                                 setSaveStatus("saving");
                                 try {
-                                  // TODO: Save the generated lineup to backend
-                                  console.log(
-                                    "Save generated lineup:",
-                                    generatedLineup
+                                  const payload = {
+                                    team_id: teamId,
+                                    name: lineupName,
+                                    players: generatedLineup.map((p) => ({
+                                      player_id: p.id,
+                                      position: p.position || "DH",
+                                      batting_order: p.batting_order,
+                                    })),
+                                  };
+
+                                  const res = await fetch(
+                                    `${API_BASE}/lineups/`,
+                                    {
+                                      method: "POST",
+                                      headers: {
+                                        "Content-Type": "application/json",
+                                      },
+                                      body: JSON.stringify(payload),
+                                    }
                                   );
-                                  // Simulate API call
-                                  await new Promise((resolve) =>
-                                    setTimeout(resolve, 500)
-                                  );
+
+                                  if (!res.ok) {
+                                    const errorText = await res.text();
+                                    throw new Error(
+                                      `HTTP ${res.status}: ${errorText}`
+                                    );
+                                  }
+
+                                  await res.json();
+
                                   setSaveStatus("saved");
                                   setTimeout(() => {
                                     setSaveStatus("idle");
+                                    setLineupName(""); // Clear the name field for next lineup
                                   }, 1000);
-                                } catch (err) {
+                                } catch (err: any) {
                                   console.error("Failed to save lineup:", err);
+                                  setError(
+                                    err?.message || "Failed to save lineup"
+                                  );
                                   setSaveStatus("idle");
                                 }
                               }}

@@ -1,4 +1,7 @@
+from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -20,57 +23,163 @@ class LineupCreateView(APIView):
     permission_classes = [permissions.AllowAny]  # adjust as needed
 
     def post(self, request):
-        # Validate the body against a lightweight contract (frontend may send only team_id)
+        # Try to validate with full payload first (manual/sabermetrics save with players and batting orders)
+        req_full = LineupCreate(data=request.data)
+
+        if req_full.is_valid():
+            # Full payload provided - check if batting orders are set
+            data = req_full.validated_data
+            players_data = data["players"]
+            all_have_batting_order = all(
+                p.get("batting_order") is not None for p in players_data
+            )
+
+            if all_have_batting_order:
+                # Manual or sabermetrics save - skip algorithm and save directly
+                team_id = data["team_id"]
+                lineup_name = (
+                    data.get("name")
+                    or f"Lineup - {timezone.now().strftime('%Y-%m-%d %H:%M')}"
+                )
+
+                # Build CreateLineupInput with provided batting orders
+                players_input = [
+                    LineupPlayerInput(
+                        player_id=p["player_id"],
+                        position=p["position"],
+                        batting_order=p.get("batting_order"),
+                    )
+                    for p in players_data
+                ]
+
+                payload = CreateLineupInput(
+                    team_id=team_id,
+                    players=players_input,
+                    requested_user_id=(
+                        request.user.id if request.user.is_authenticated else None
+                    ),
+                )
+
+                # Validate data
+                validated = validate_data(payload)
+                team_obj = validated["team"]
+                players_list = validated["players"]
+                created_by_id = validated["created_by_id"]
+
+                # Build batting order and position mappings from payload
+                batting_orders = {}
+                position_map = {}
+                for p in payload.players:
+                    batting_orders[p.player_id] = p.batting_order
+                    position_map[p.player_id] = p.position
+
+                # Save lineup directly in transaction
+                with transaction.atomic():
+                    User = get_user_model()
+                    created_by = User.objects.get(pk=created_by_id)
+
+                    lineup = Lineup.objects.create(
+                        team=team_obj,
+                        name=lineup_name,
+                        created_by=created_by,
+                    )
+
+                    # Create LineupPlayer entries with provided batting orders
+                    lineup_players = []
+                    for player in players_list:
+                        position = position_map.get(player.id, player.position)
+                        batting_order = batting_orders.get(player.id)
+
+                        lineup_player = LineupPlayer.objects.create(
+                            lineup=lineup,
+                            player=player,
+                            position=position,
+                            batting_order=batting_order,
+                        )
+                        lineup_players.append(lineup_player)
+
+                # Validate the produced Lineup model
+                validate_lineup_model(lineup)
+
+                # Build response
+                out = LineupOut(
+                    {
+                        "id": lineup.id,
+                        "team_id": lineup.team_id,
+                        "name": lineup.name,
+                        "players": [
+                            {
+                                "player_id": lp.player_id,
+                                "player_name": lp.player.name,
+                                "position": lp.position,
+                                "batting_order": lp.batting_order,
+                            }
+                            for lp in lineup_players
+                        ],
+                        "created_by": lineup.created_by_id,
+                        "created_at": lineup.created_at,
+                    }
+                )
+                return Response(out.data, status=status.HTTP_201_CREATED)
+
+        # Fall back to algorithm mode (team_id only)
+        # This is now only for "Generate Lineup" button - should NOT save to DB
+        # It just runs the algorithm and returns the suggested lineup
         req = LineupCreateByTeam(data=request.data)
         req.is_valid(raise_exception=True)
         data = req.validated_data
 
-        # Load players for the requested team on the server side and build the
-        # CreateLineupInput payload. This keeps the frontend thin and avoids
-        # trusting client-provided player lists.
         team_id = data["team_id"]
-        # TODO: clean architecture for querying players
+
+        # Load all players for the team
         players_qs = list(RosterPlayer.objects.filter(team_id=team_id))
-        players_input = [LineupPlayerInput(player_id=p.id, position=(p.position or "--")) for p in players_qs]
 
-        payload = CreateLineupInput(
-            team_id=team_id,
-            players=players_input,
-            requested_user_id=(request.user.id if request.user.is_authenticated else None),
-        )
-        # TODO: decide where to validate the data
-        # Run the algorithm using the constructed payload. The algorithm will
-        # validate the payload and raise domain errors if the team/players are invalid.
-        # Pass the dataclass payload directly so the algorithm can run its own
-        # validation lifecycle (avoid double-validating here).
-        lineup, lineup_players = algorithm_create_lineup(payload)
+        # Run algorithm logic inline to get batting order WITHOUT saving
+        from .services.algorithm_logic import calculate_spot_scores
 
-        # Validate the produced Lineup model to ensure algorithm output is valid
-        # raises exception if invalid
-        validate_lineup_model(lineup)
+        # Greedy assignment algorithm (same as in algorithm_logic.py but without saving)
+        available_indices = set(range(len(players_qs)))
+        assignments = {}  # batting_order -> player_index
 
-        # Build response from the returned Lineup model. The algorithm returns
-        # `lineup_players` as the persisted LineupPlayer instances, so we can
-        # read `lp.player_id`, `lp.position` and `lp.batting_order` directly.
-        out = LineupOut(
-            {
-                "id": lineup.id,
-                "team_id": lineup.team_id,
-                "name": lineup.name,
-                "players": [
-                    {
-                        "player_id": lp.player_id,
-                        "player_name": lp.player.name,
-                        "position": lp.position,
-                        "batting_order": lp.batting_order,
-                    }
-                    for lp in lineup_players
-                ],
-                "created_by": lineup.created_by_id,
-                "created_at": lineup.created_at,
-            }
-        )
-        return Response(out.data, status=status.HTTP_201_CREATED)
+        for spot in range(1, 10):  # Spots 1 through 9
+            scores = calculate_spot_scores(players_qs, spot)
+            best_idx = None
+            best_score = -float("inf") if spot != 9 else float("inf")
+
+            for idx in available_indices:
+                if spot == 9:
+                    if scores[idx] < best_score:
+                        best_score = scores[idx]
+                        best_idx = idx
+                else:
+                    if scores[idx] > best_score:
+                        best_score = scores[idx]
+                        best_idx = idx
+
+            if best_idx is not None:
+                assignments[spot] = best_idx
+                available_indices.remove(best_idx)
+
+        # Build response with suggested lineup (NO DATABASE SAVE)
+        suggested_players = []
+        for batting_order, player_idx in sorted(assignments.items()):
+            player = players_qs[player_idx]
+            suggested_players.append(
+                {
+                    "player_id": player.id,
+                    "player_name": player.name,
+                    "position": player.position or "DH",
+                    "batting_order": batting_order,
+                }
+            )
+
+        # Return the suggested lineup WITHOUT saving to database
+        # Frontend will display this and user can save it later with their chosen name
+        out = {
+            "team_id": team_id,
+            "players": suggested_players,
+        }
+        return Response(out, status=status.HTTP_200_OK)
 
 
 # TODO: decide if we need this
@@ -91,10 +200,15 @@ class LineupDetailView(APIView):
             {
                 "id": lineup.id,
                 "team_id": lineup.team_id,
+                "name": lineup.name,
                 "players": [
                     {
                         "player_id": lp.player_id,
-                        "player_name": lp.player.name if getattr(lp, "player", None) is not None else None,
+                        "player_name": (
+                            lp.player.name
+                            if getattr(lp, "player", None) is not None
+                            else None
+                        ),
                         "position": lp.position,
                         "batting_order": lp.batting_order,
                     }
