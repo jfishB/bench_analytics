@@ -1,6 +1,11 @@
 """
-Simulation service for running baseball game simulations.
-Orchestrates the simulation workflow using Bram's baseball simulator library.
+runs monte carlo baseball simulations using bram's simulator library.
+converts batterstats dtos to batter probability objects,
+runs thousands of game simulations (default 10k),
+calculates aggregate statistics (mean, median, std dev),
+and returns simulationresult dto.
+called by views.py after player_service.py fetches data.
+uses lib/baseball-simulator for game mechanics.
 """
 
 import statistics
@@ -27,7 +32,7 @@ class SimulationService:
     def simulate_lineup(
         self, 
         batter_stats: List[BatterStats], 
-        num_games: int = 1000
+        num_games: int = 10000
     ) -> SimulationResult:
         """
         Simulate multiple games with the given lineup.

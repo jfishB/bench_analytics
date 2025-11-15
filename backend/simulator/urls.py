@@ -1,5 +1,9 @@
 """
-URL configuration for simulator app.
+url routing for simulator api endpoints.
+maps three url patterns to view functions in views.py:
+- simulate-by-ids/ -> simulate_by_player_ids
+- simulate-by-names/ -> simulate_by_player_names
+- simulate-by-team/ -> simulate_by_team
 """
 
 from django.urls import path

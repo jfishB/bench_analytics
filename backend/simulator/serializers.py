@@ -1,6 +1,8 @@
 """
-Serializers for the simulator app.
-Handles request/response validation and transformation.
+serializers for validating api request inputs and formatting response outputs.
+uses django rest framework serializers to enforce constraints like 9 players required,
+game count limits (100-100k), and structure simulation results consistently.
+called by views.py for all three endpoints (by ids, names, team).
 """
 
 from rest_framework import serializers
@@ -15,7 +17,7 @@ class PlayerInputSerializer(serializers.Serializer):
         help_text="List of exactly 9 player IDs in batting order"
     )
     num_games = serializers.IntegerField(
-        default=1000,
+        default=10000,
         min_value=100,
         max_value=100000,
         help_text="Number of games to simulate"
@@ -31,7 +33,7 @@ class PlayerNameInputSerializer(serializers.Serializer):
         help_text="List of exactly 9 player names in batting order"
     )
     num_games = serializers.IntegerField(
-        default=1000,
+        default=10000,
         min_value=100,
         max_value=100000,
         help_text="Number of games to simulate"
@@ -42,7 +44,7 @@ class TeamInputSerializer(serializers.Serializer):
     """Input serializer for using a team's top players."""
     team_id = serializers.IntegerField(help_text="Team ID to use")
     num_games = serializers.IntegerField(
-        default=1000,
+        default=10000,
         min_value=100,
         max_value=100000,
         help_text="Number of games to simulate"

@@ -1,6 +1,10 @@
 """
-API views for the simulator app.
-Exposes endpoints for running baseball game simulations.
+rest api endpoints for running baseball simulations.
+three endpoints: simulate by player ids, player names, or team id.
+uses player_service.py to fetch data from database,
+simulation.py to run monte carlo simulations,
+and serializers.py to validate input/output.
+requires authentication via isAuthenticated permission.
 """
 
 from rest_framework import status

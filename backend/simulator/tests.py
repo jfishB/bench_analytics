@@ -1,5 +1,9 @@
 """
-Tests for the simulator app.
+comprehensive test suite for simulator app.
+tests dto probability calculations, simulation service monte carlo logic,
+player service database queries, and api endpoint functionality.
+uses django testcase and drf apitestcase for integration testing.
+run with: python manage.py test simulator
 """
 
 from django.test import TestCase

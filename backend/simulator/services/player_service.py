@@ -1,6 +1,9 @@
 """
-Player service for accessing player data from the database.
-Handles database queries and converts Django models to DTOs.
+fetches player data from database and converts to simulation format.
+queries roster.models.Player using django orm, maintains player order,
+and converts to batterstats dtos for simulation.
+called by views.py to get player data before running simulations.
+uses dto.py for batterstats structure.
 """
 
 from typing import List

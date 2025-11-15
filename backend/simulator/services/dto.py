@@ -1,6 +1,9 @@
 """
-Data Transfer Objects (DTOs) for the baseball simulator.
-Dataclasses for passing data between layers.
+data transfer objects for moving data between layers.
+batterstats converts raw player stats into simulation probabilities.
+simulationresult holds monte carlo output (avg, median, std dev, all scores).
+used by player_service.py (creates batterstats from db) and 
+simulation.py (creates simulationresult from games).
 """
 
 from dataclasses import dataclass
