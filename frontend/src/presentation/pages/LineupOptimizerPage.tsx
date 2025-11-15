@@ -34,6 +34,8 @@ export function LineupOptimizer() {
     new Set()
   );
   const [selectionWarning, setSelectionWarning] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("current");
+  const [lineupCreated, setLineupCreated] = useState<boolean>(false);
 
   // lineup generation states
   const [lineupPlayers, setLineupPlayers] = useState<any[]>([]);
@@ -49,6 +51,7 @@ export function LineupOptimizer() {
       if (newSet.has(playerId)) {
         newSet.delete(playerId);
         setSelectionWarning(null); // Clear warning when deselecting
+        setLineupCreated(false); // Reset lineup when changing selection
       } else {
         if (newSet.size >= 9) {
           setSelectionWarning(
@@ -58,6 +61,7 @@ export function LineupOptimizer() {
           return prev;
         }
         newSet.add(playerId);
+        setLineupCreated(false); // Reset lineup when changing selection
       }
       return newSet;
     });
@@ -116,7 +120,7 @@ export function LineupOptimizer() {
         </p>
       </div>
 
-      <Tabs defaultValue="current" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="current">Current Roster</TabsTrigger>
           <TabsTrigger value="optimizer">Generate Lineup</TabsTrigger>
@@ -216,11 +220,17 @@ export function LineupOptimizer() {
                       className="w-full disabled:bg-gray-200 disabled:cursor-not-allowed"
                       disabled={selectedPlayerIds.size !== 9}
                       onClick={() => {
-                        // TODO: Switch to Generate Lineup tab with selected players
-                        console.log(
-                          "Create lineup with:",
-                          Array.from(selectedPlayerIds)
-                        );
+                        // Get selected players from the players array
+                        const selectedPlayers = players
+                          .filter((p) => selectedPlayerIds.has(p.id))
+                          .map((p, index) => ({
+                            ...p,
+                            batting_order: index + 1, // Assign batting order 1-9
+                          }));
+
+                        setLineupPlayers(selectedPlayers);
+                        setLineupCreated(true); // Mark lineup as created
+                        setActiveTab("optimizer"); // Switch to Generate Lineup tab
                       }}
                     >
                       Create Lineup
@@ -282,89 +292,132 @@ export function LineupOptimizer() {
 
         {/* LINEUP OPTIMIZER */}
         <TabsContent value="optimizer" className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-6">
+          {!lineupCreated ? (
             <Card>
               <CardHeader>
                 <CardTitle>Lineup Optimizer</CardTitle>
                 <CardDescription>
-                  Generate an optimal batting order based on current roster
+                  Select 9 players to create your lineup
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-sm text-muted-foreground">
-                  Use the tester below to call the backend generator.
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <svg
+                    className="h-16 w-16 text-gray-400 mb-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Select 9 Players From Your Roster First
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Go to the Current Roster tab, select 9 players using the
+                    checkboxes, then click "Create Lineup".
+                  </p>
+                  <p className="text-sm font-medium text-gray-700">
+                    Currently selected: {selectedPlayerIds.size}/9 players
+                  </p>
                 </div>
-                <div className="pt-4">
-                  <PlayersOrderedList
-                    players={lineupPlayers}
-                    onItemClick={(p) =>
-                      setSelected(players.find((x) => x.id === p.id) ?? null)
-                    }
-                    badgeClassName="bg-primary text-white dark:bg-primary"
-                  />
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Lineup Optimizer</CardTitle>
+                  <CardDescription>
+                    Generate an optimal batting order based on current roster
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-muted-foreground">
+                    Use the tester below to call the backend generator.
+                  </div>
                   <div className="pt-4">
-                    <Button
-                      onClick={async () => {
-                        setGenerating(true);
-                        try {
-                          const payload = { team_id: teamId };
-                          const res = await fetch(`${API_BASE}/lineups/`, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify(payload),
-                          });
-                          if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                          const data = await res.json();
-                          const ordered = (data.players || []).map((p: any) => {
-                            const full = players.find(
-                              (r) => r.id === p.player_id
-                            ) || {
-                              id: p.player_id,
-                              name: p.player_name ?? "Unknown",
-                              position: p.position,
-                              team: String(p.team ?? teamId),
-                            };
-                            return { ...full, batting_order: p.batting_order };
-                          });
-                          setGeneratedLineup(ordered);
-                        } catch (err: any) {
-                          console.error("Lineup generation failed:", err);
-                        } finally {
-                          setGenerating(false);
-                        }
-                      }}
-                    >
-                      {generating ? "Generating…" : "Generate Lineup"}
-                    </Button>
+                    <PlayersOrderedList
+                      players={lineupPlayers}
+                      onItemClick={(p) =>
+                        setSelected(players.find((x) => x.id === p.id) ?? null)
+                      }
+                      badgeClassName="bg-primary text-white dark:bg-primary"
+                    />
+                    <div className="pt-4">
+                      <Button
+                        onClick={async () => {
+                          setGenerating(true);
+                          try {
+                            const payload = { team_id: teamId };
+                            const res = await fetch(`${API_BASE}/lineups/`, {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify(payload),
+                            });
+                            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                            const data = await res.json();
+                            const ordered = (data.players || []).map(
+                              (p: any) => {
+                                const full = players.find(
+                                  (r) => r.id === p.player_id
+                                ) || {
+                                  id: p.player_id,
+                                  name: p.player_name ?? "Unknown",
+                                  position: p.position,
+                                  team: String(p.team ?? teamId),
+                                };
+                                return {
+                                  ...full,
+                                  batting_order: p.batting_order,
+                                };
+                              }
+                            );
+                            setGeneratedLineup(ordered);
+                          } catch (err: any) {
+                            console.error("Lineup generation failed:", err);
+                          } finally {
+                            setGenerating(false);
+                          }
+                        }}
+                      >
+                        {generating ? "Generating…" : "Generate Lineup"}
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Generated Lineup</CardTitle>
-                <CardDescription>
-                  Results from the backend generator
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {generatedLineup.length > 0 ? (
-                  <PlayersOrderedList
-                    players={generatedLineup}
-                    onItemClick={(p) =>
-                      setSelected(players.find((x) => x.id === p.id) ?? null)
-                    }
-                    badgeClassName="bg-primary text-white dark:bg-primary"
-                  />
-                ) : (
-                  <div className="text-center text-muted-foreground py-8">
-                    Use the generator to get a preview here.
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Generated Lineup</CardTitle>
+                  <CardDescription>
+                    Results from the backend generator
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {generatedLineup.length > 0 ? (
+                    <PlayersOrderedList
+                      players={generatedLineup}
+                      onItemClick={(p) =>
+                        setSelected(players.find((x) => x.id === p.id) ?? null)
+                      }
+                      badgeClassName="bg-primary text-white dark:bg-primary"
+                    />
+                  ) : (
+                    <div className="text-center text-muted-foreground py-8">
+                      Use the generator to get a preview here.
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </TabsContent>
 
         {/* ANALYSIS */}
