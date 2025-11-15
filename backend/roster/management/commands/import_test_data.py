@@ -7,7 +7,9 @@ class Command(BaseCommand):
     help = "Import test roster CSV into Player/Team models."
 
     def add_arguments(self, parser):
-        parser.add_argument("--file", "-f", dest="file", required=True, help="Path to CSV file to import")
+        parser.add_argument(
+            "--file", "-f", dest="file", required=True, help="Path to CSV file to import"
+        )
         parser.add_argument(
             "--team-id",
             "-t",

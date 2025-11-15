@@ -1,5 +1,5 @@
-from numpy.random import choice
 import pandas as pd
+from numpy.random import choice
 
 
 def compute_probs_from_dataset(dataset, batter_id):
@@ -10,19 +10,19 @@ def compute_probs_from_dataset(dataset, batter_id):
     :param batter_id: the player id as in the first column of the Excel file
     :return: a list of probs
     """
-    df = dataset.loc[dataset['playerID'] == batter_id].iloc[0]
+    df = dataset.loc[dataset["playerID"] == batter_id].iloc[0]
     # options = ["strike-out", "in-play-out", "walk",
     #            "single", "double", "triple", "homerun"]
     probs = []
-    plate_appears = df['tap']
+    plate_appears = df["tap"]
 
-    strike_outs = df['SO'] / plate_appears
-    outs = (plate_appears - df['SO'] - df['BB'] - df['H']) / plate_appears
-    walks = df['BB'] / plate_appears
-    singles = (df['H'] - df['db'] - df['tr'] - df['HR']) / plate_appears
-    doubles = df['db'] / plate_appears
-    triples = df['tr'] / plate_appears
-    homeruns = df['HR'] / plate_appears
+    strike_outs = df["SO"] / plate_appears
+    outs = (plate_appears - df["SO"] - df["BB"] - df["H"]) / plate_appears
+    walks = df["BB"] / plate_appears
+    singles = (df["H"] - df["db"] - df["tr"] - df["HR"]) / plate_appears
+    doubles = df["db"] / plate_appears
+    triples = df["tr"] / plate_appears
+    homeruns = df["HR"] / plate_appears
 
     probs.append(strike_outs)
     probs.append(outs)
@@ -49,8 +49,15 @@ class Batter:
         else:
             self.probs = probabilities
             self.name = name
-        self.options = ["strike-out", "in-play-out", "walk",
-                        "single", "double", "triple", "homerun"]
+        self.options = [
+            "strike-out",
+            "in-play-out",
+            "walk",
+            "single",
+            "double",
+            "triple",
+            "homerun",
+        ]
 
     def swing(self):
         """
@@ -60,12 +67,12 @@ class Batter:
         return choice(self.options, p=self.probs)
 
     def print_probabilities(self):
-        print(f"strike-out: {self.probs[0]:.3f} \t "
-              f"in-play-out: {self.probs[1]:.3f} \t "
-              f"walk: {self.probs[2]:.3f} \t "
-              f"single: {self.probs[3]:.3f} \t "
-              f"double: {self.probs[4]:.3f} \t "
-              f"triple: {self.probs[5]:.3f} \t "
-              f"homerun: {self.probs[6]:.3f}")
-
-
+        print(
+            f"strike-out: {self.probs[0]:.3f} \t "
+            f"in-play-out: {self.probs[1]:.3f} \t "
+            f"walk: {self.probs[2]:.3f} \t "
+            f"single: {self.probs[3]:.3f} \t "
+            f"double: {self.probs[4]:.3f} \t "
+            f"triple: {self.probs[5]:.3f} \t "
+            f"homerun: {self.probs[6]:.3f}"
+        )

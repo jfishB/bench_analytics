@@ -14,7 +14,9 @@ from django.db import transaction
 from roster.models import Player
 
 
-def load_csv_file(file: str | Path, year: int | None = None, dry_run: bool = False) -> Tuple[int, int, int]:
+def load_csv_file(
+    file: str | Path, year: int | None = None, dry_run: bool = False
+) -> Tuple[int, int, int]:
     """Load CSV into roster.Player.
 
     Returns a tuple (imported, updated, skipped).
