@@ -29,11 +29,39 @@ export function LineupOptimizer() {
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<any | null>(null);
 
+  // Player selection state
+  const [selectedPlayerIds, setSelectedPlayerIds] = useState<Set<number>>(
+    new Set()
+  );
+  const [selectionWarning, setSelectionWarning] = useState<string | null>(null);
+
   // lineup generation states
   const [lineupPlayers, setLineupPlayers] = useState<any[]>([]);
   const [generatedLineup, setGeneratedLineup] = useState<any[]>([]);
   const [generating, setGenerating] = useState(false);
   const [teamId, setTeamId] = useState<number | undefined>(1);
+
+  // Toggle player selection
+  const togglePlayerSelection = (player: any) => {
+    const playerId = player.id;
+    setSelectedPlayerIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(playerId)) {
+        newSet.delete(playerId);
+        setSelectionWarning(null); // Clear warning when deselecting
+      } else {
+        if (newSet.size >= 9) {
+          setSelectionWarning(
+            "A maximum of 9 players can be selected for a lineup!"
+          );
+          setTimeout(() => setSelectionWarning(null), 4000); // Auto-dismiss after 4 seconds
+          return prev;
+        }
+        newSet.add(playerId);
+      }
+      return newSet;
+    });
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -105,6 +133,34 @@ export function LineupOptimizer() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {/* Selection Warning Banner */}
+              {selectionWarning && (
+                <div className="mb-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r flex items-center justify-between">
+                  <div className="flex items-center">
+                    <svg
+                      className="h-5 w-5 text-yellow-400 mr-3"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <p className="text-sm font-medium text-yellow-800">
+                      {selectionWarning}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setSelectionWarning(null)}
+                    className="text-yellow-600 hover:text-yellow-800 font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
               <div className="grid md:grid-cols-2 gap-4 h-full">
                 <div className="w-full">
                   {loading ? (
@@ -121,7 +177,7 @@ export function LineupOptimizer() {
                       <div className="mb-2 text-sm">
                         Loaded {players.length} players.
                       </div>
-                      <div className="overflow-y-auto max-h-[400px]">
+                      <div className="overflow-y-auto max-h-[350px]">
                         <PlayersOrderedList
                           players={players.map((p) => ({
                             id: p.id,
@@ -129,19 +185,49 @@ export function LineupOptimizer() {
                             position: p.position,
                             team: String(p.team),
                             batting_order: p.batting_order,
+                            isSelected: selectedPlayerIds.has(p.id),
                           }))}
                           onItemClick={(p) =>
                             setSelected(
                               players.find((x) => x.id === p.id) ?? null
                             )
                           }
+                          onSelectionToggle={togglePlayerSelection}
+                          showCheckboxes={true}
                         />
                       </div>
                     </>
                   )}
                 </div>
 
-                <div className="h-full flex items-start">
+                <div className="h-full flex flex-col">
+                  {/* Selection count and Create Lineup button - Always visible */}
+                  <div className="mb-4 p-3 bg-white border rounded">
+                    <div
+                      className={`text-sm font-medium mb-3 ${
+                        selectedPlayerIds.size === 9
+                          ? "text-green-700"
+                          : "text-gray-700"
+                      }`}
+                    >
+                      Batters selected: {selectedPlayerIds.size}/9
+                    </div>
+                    <Button
+                      className="w-full disabled:bg-gray-200 disabled:cursor-not-allowed"
+                      disabled={selectedPlayerIds.size !== 9}
+                      onClick={() => {
+                        // TODO: Switch to Generate Lineup tab with selected players
+                        console.log(
+                          "Create lineup with:",
+                          Array.from(selectedPlayerIds)
+                        );
+                      }}
+                    >
+                      Create Lineup
+                    </Button>
+                  </div>
+
+                  {/* Player details card */}
                   {selected ? (
                     <div className="w-full">
                       <PlayerCard
@@ -185,7 +271,7 @@ export function LineupOptimizer() {
                     </div>
                   ) : (
                     <div className="text-sm text-gray-500 italic py-6">
-                      Select a player to view details.
+                      Click on a player to view details.
                     </div>
                   )}
                 </div>
