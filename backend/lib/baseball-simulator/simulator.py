@@ -62,25 +62,17 @@ def play_multiple_lineups(lineups, nr_games=10_000):
     scores = []
     for idx, lineup in enumerate(lineups):
         print(f"\n=== Playing lineup {idx+1}/{len(lineups)} ===")
-        avg_score, median_score, std_dev = play_many_games(
-            lineup, nr_games=nr_games, print_stats=False
-        )
+        avg_score, median_score, std_dev = play_many_games(lineup, nr_games=nr_games, print_stats=False)
         scores.append((avg_score, median_score, std_dev))
     print("\n=== Summary of all lineups ===")
     for idx, stats in enumerate(scores):
-        print(
-            f"Lineup {idx+1}: avg_score = {stats[0]:.3f}, median = {stats[1]:.3f}, std_dev = {stats[2]:.3f}"
-        )
+        print(f"Lineup {idx+1}: avg_score = {stats[0]:.3f}, median = {stats[1]:.3f}, std_dev = {stats[2]:.3f}")
 
 
 def make_multiple_lineups_with_one_power_hitter():
     # probabilities for:                 K      out   walk    1B     2B     3B     HR
-    batter_avg = Batter(
-        probabilities=[0.150, 0.500, 0.150, 0.150, 0.045, 0.005, 0.000], name="JoeAverage"
-    )
-    batter_pow = Batter(
-        probabilities=[0.150, 0.400, 0.150, 0.150, 0.045, 0.005, 0.100], name="MikeHomerun"
-    )
+    batter_avg = Batter(probabilities=[0.150, 0.500, 0.150, 0.150, 0.045, 0.005, 0.000], name="JoeAverage")
+    batter_pow = Batter(probabilities=[0.150, 0.400, 0.150, 0.150, 0.045, 0.005, 0.100], name="MikeHomerun")
 
     # Create 9 lineups with all avg batters except one power hitter at each position
     lineups = []

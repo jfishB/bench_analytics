@@ -57,9 +57,7 @@ class BatterStats:
         prob_homerun = self.home_runs / pa
 
         # Remaining probability is in-play outs
-        prob_out = 1.0 - (
-            prob_strikeout + prob_walk + prob_single + prob_double + prob_triple + prob_homerun
-        )
+        prob_out = 1.0 - (prob_strikeout + prob_walk + prob_single + prob_double + prob_triple + prob_homerun)
 
         # Ensure non-negative
         prob_out = max(0.0, prob_out)

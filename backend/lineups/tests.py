@@ -44,9 +44,7 @@ class LineupViewsTests(TestCase):
         lineup = Lineup.objects.create(team=self.team, created_by=self.creator, name="Test")
         lineup_players = []
         for idx, p in enumerate(self.players[:9], start=1):
-            lp = LineupPlayer.objects.create(
-                lineup=lineup, player=p, position="1B", batting_order=idx
-            )
+            lp = LineupPlayer.objects.create(lineup=lineup, player=p, position="1B", batting_order=idx)
             lineup_players.append(lp)
 
         mock_algorithm.return_value = (lineup, lineup_players)
@@ -74,9 +72,7 @@ class LineupViewsTests(TestCase):
             team=self.team,
             created_by=self.creator,
         )
-        LineupPlayer.objects.create(
-            lineup=lineup, player=self.players[0], position="P", batting_order="1"
-        )
+        LineupPlayer.objects.create(lineup=lineup, player=self.players[0], position="P", batting_order="1")
 
         url = f"{self.base_url}{lineup.id}/"
         resp = self.client.get(url)

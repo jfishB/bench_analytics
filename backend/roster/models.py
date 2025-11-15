@@ -18,9 +18,7 @@ class Player(models.Model):
     name = models.CharField(max_length=100, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    team = models.ForeignKey(
-        Team, on_delete=models.CASCADE, related_name="players", null=True, blank=True
-    )
+    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="players", null=True, blank=True)
     position = models.CharField(max_length=3, default="DH")  # e.g., SS/CF/DH
 
     # Baseball Savant (2025) batter stats snapshot
@@ -39,12 +37,8 @@ class Player(models.Model):
     walk = models.PositiveIntegerField(null=True, blank=True)  # Walks (BB)
 
     # Derived percentages (legacy/for display)
-    k_percent = models.FloatField(
-        null=True, blank=True
-    )  # Frequency of strikeouts per plate appearance - K% = (SO / PA) * 100
-    bb_percent = models.FloatField(
-        null=True, blank=True
-    )  # Frequency of walks per plate appearance - BB% = (BB / PA) * 100
+    k_percent = models.FloatField(null=True, blank=True)  # Frequency of strikeouts per plate appearance - K% = (SO / PA) * 100
+    bb_percent = models.FloatField(null=True, blank=True)  # Frequency of walks per plate appearance - BB% = (BB / PA) * 100
     slg_percent = models.FloatField(
         null=True, blank=True
     )  # Measures total bases per at-bat, emphasizes extra-base hits - SLG = (1B + 2*2B + 3*3B + 4*HR) / AB
@@ -54,9 +48,7 @@ class Player(models.Model):
     isolated_power = models.FloatField(
         null=True, blank=True
     )  # Shows extra bases per at-bat (pure power) - ISO = SLG - AVG | (AVG = H / AB)
-    r_total_stolen_base = models.FloatField(
-        null=True, blank=True
-    )  # Stolen bases - Count of successful stolen base attempts
+    r_total_stolen_base = models.FloatField(null=True, blank=True)  # Stolen bases - Count of successful stolen base attempts
     woba = models.FloatField(
         null=True, blank=True
     )  # Weighted On-Base Average: Weights each event by its average run value (Weights vary slightly each season) - wOBA = ((0.69*uBB) + (0.72*HBP) + (0.89*1B) + (1.27*2B) + (1.62*3B) + (2.10*HR)) / (AB + BB - IBB + SF + HBP)

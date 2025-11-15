@@ -31,9 +31,7 @@ class LineupCreateView(APIView):
         team_id = data["team_id"]
         # TODO: clean architecture for querying players
         players_qs = list(RosterPlayer.objects.filter(team_id=team_id))
-        players_input = [
-            LineupPlayerInput(player_id=p.id, position=(p.position or "--")) for p in players_qs
-        ]
+        players_input = [LineupPlayerInput(player_id=p.id, position=(p.position or "--")) for p in players_qs]
 
         payload = CreateLineupInput(
             team_id=team_id,
@@ -96,9 +94,7 @@ class LineupDetailView(APIView):
                 "players": [
                     {
                         "player_id": lp.player_id,
-                        "player_name": (
-                            lp.player.name if getattr(lp, "player", None) is not None else None
-                        ),
+                        "player_name": (lp.player.name if getattr(lp, "player", None) is not None else None),
                         "position": lp.position,
                         "batting_order": lp.batting_order,
                     }

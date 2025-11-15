@@ -48,15 +48,11 @@ class TeamInputSerializer(serializers.Serializer):
 class SimulationResultSerializer(serializers.Serializer):
     """Output serializer for simulation results."""
 
-    lineup = serializers.ListField(
-        child=serializers.CharField(), help_text="Player names in batting order"
-    )
+    lineup = serializers.ListField(child=serializers.CharField(), help_text="Player names in batting order")
     num_games = serializers.IntegerField()
     avg_score = serializers.FloatField()
     median_score = serializers.FloatField()
     std_dev = serializers.FloatField()
     min_score = serializers.IntegerField()
     max_score = serializers.IntegerField()
-    score_distribution = serializers.DictField(
-        child=serializers.IntegerField(), help_text="Mapping of score -> frequency"
-    )
+    score_distribution = serializers.DictField(child=serializers.IntegerField(), help_text="Mapping of score -> frequency")

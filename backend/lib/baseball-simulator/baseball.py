@@ -112,17 +112,9 @@ class Game:
     def walk(self):
         if self.printing:
             print("Walk.")
-        if (
-            self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        if self.game_state["1st_base"] and self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             self.game_state["score"] += 1
-        elif (
-            self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and not self.game_state["3rd_base"]
-        ):
+        elif self.game_state["1st_base"] and self.game_state["2nd_base"] and not self.game_state["3rd_base"]:
             self.game_state["3rd_base"] = True
         elif self.game_state["1st_base"] and not self.game_state["2nd_base"]:
             self.game_state["2nd_base"] = True
@@ -132,11 +124,7 @@ class Game:
     def single(self):
         if self.printing:
             print("Hits a single.")
-        if (
-            self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        if self.game_state["1st_base"] and self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             # bases loaded
             self.game_state["score"] += 1
             if np.random.rand() < self.prob_score_from_2nd_on_single:
@@ -145,11 +133,7 @@ class Game:
                 if np.random.rand() < self.prob_1st_to_3rd:
                     self.game_state["3rd_base"] = True
                     self.game_state["2nd_base"] = False
-        elif (
-            self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and not self.game_state["3rd_base"]
-        ):
+        elif self.game_state["1st_base"] and self.game_state["2nd_base"] and not self.game_state["3rd_base"]:
             # 1st and 2nd
             self.game_state["3rd_base"] = True
             if np.random.rand() < self.prob_score_from_2nd_on_single:
@@ -158,11 +142,7 @@ class Game:
                 if np.random.rand() < self.prob_1st_to_3rd:
                     self.game_state["3rd_base"] = True
                     self.game_state["2nd_base"] = False
-        elif (
-            self.game_state["1st_base"]
-            and not self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        elif self.game_state["1st_base"] and not self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             # 1st and 3rd
             self.game_state["score"] += 1
             self.game_state["3rd_base"] = False
@@ -170,21 +150,13 @@ class Game:
             if np.random.rand() < self.prob_1st_to_3rd:
                 self.game_state["3rd_base"] = True
                 self.game_state["2nd_base"] = False
-        elif (
-            self.game_state["1st_base"]
-            and not self.game_state["2nd_base"]
-            and not self.game_state["3rd_base"]
-        ):
+        elif self.game_state["1st_base"] and not self.game_state["2nd_base"] and not self.game_state["3rd_base"]:
             # 1st only
             self.game_state["2nd_base"] = True
             if np.random.rand() < self.prob_1st_to_3rd:
                 self.game_state["3rd_base"] = True
                 self.game_state["2nd_base"] = False
-        elif (
-            not self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        elif not self.game_state["1st_base"] and self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             # 2nd and 3rd
             self.game_state["1st_base"] = True
             self.game_state["score"] += 1
@@ -192,11 +164,7 @@ class Game:
             if np.random.rand() < self.prob_score_from_2nd_on_single:
                 self.game_state["score"] += 1
                 self.game_state["3rd_base"] = False
-        elif (
-            not self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and not self.game_state["3rd_base"]
-        ):
+        elif not self.game_state["1st_base"] and self.game_state["2nd_base"] and not self.game_state["3rd_base"]:
             # 2nd only
             self.game_state["1st_base"] = True
             self.game_state["2nd_base"] = False
@@ -204,11 +172,7 @@ class Game:
             if np.random.rand() < self.prob_score_from_2nd_on_single:
                 self.game_state["score"] += 1
                 self.game_state["3rd_base"] = False
-        elif (
-            not self.game_state["1st_base"]
-            and not self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        elif not self.game_state["1st_base"] and not self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             # 3rd only
             self.game_state["1st_base"] = True
             self.game_state["score"] += 1
@@ -220,22 +184,14 @@ class Game:
     def double(self):
         if self.printing:
             print("Hits a double!")
-        if (
-            self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        if self.game_state["1st_base"] and self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             # bases loaded
             self.game_state["score"] += 2
             self.game_state["1st_base"] = False
             if np.random.rand() < self.prob_score_from_1st_on_double:
                 self.game_state["score"] += 1
                 self.game_state["3rd_base"] = False
-        elif (
-            self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and not self.game_state["3rd_base"]
-        ):
+        elif self.game_state["1st_base"] and self.game_state["2nd_base"] and not self.game_state["3rd_base"]:
             # 1st and 2nd
             self.game_state["1st_base"] = False
             self.game_state["3rd_base"] = True
@@ -243,11 +199,7 @@ class Game:
             if np.random.rand() < self.prob_score_from_1st_on_double:
                 self.game_state["score"] += 1
                 self.game_state["3rd_base"] = False
-        elif (
-            self.game_state["1st_base"]
-            and not self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        elif self.game_state["1st_base"] and not self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             # 1st and 3rd
             self.game_state["score"] += 1
             self.game_state["1st_base"] = False
@@ -255,11 +207,7 @@ class Game:
             if np.random.rand() < self.prob_score_from_1st_on_double:
                 self.game_state["score"] += 1
                 self.game_state["3rd_base"] = False
-        elif (
-            self.game_state["1st_base"]
-            and not self.game_state["2nd_base"]
-            and not self.game_state["3rd_base"]
-        ):
+        elif self.game_state["1st_base"] and not self.game_state["2nd_base"] and not self.game_state["3rd_base"]:
             # 1st only
             self.game_state["1st_base"] = False
             self.game_state["2nd_base"] = True
@@ -267,26 +215,14 @@ class Game:
             if np.random.rand() < self.prob_score_from_1st_on_double:
                 self.game_state["score"] += 1
                 self.game_state["3rd_base"] = False
-        elif (
-            not self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        elif not self.game_state["1st_base"] and self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             # 2nd and 3rd
             self.game_state["score"] += 2
             self.game_state["3rd_base"] = False
-        elif (
-            not self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and not self.game_state["3rd_base"]
-        ):
+        elif not self.game_state["1st_base"] and self.game_state["2nd_base"] and not self.game_state["3rd_base"]:
             # 2nd only
             self.game_state["score"] += 1
-        elif (
-            not self.game_state["1st_base"]
-            and not self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        elif not self.game_state["1st_base"] and not self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             # 3rd only
             self.game_state["score"] += 1
             self.game_state["2nd_base"] = True
@@ -298,64 +234,36 @@ class Game:
     def triple(self):
         if self.printing:
             print("Hits a triple!")
-        if (
-            self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        if self.game_state["1st_base"] and self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             # bases loaded
             self.game_state["score"] += 3
             self.game_state["1st_base"] = False
             self.game_state["2nd_base"] = False
-        elif (
-            self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and not self.game_state["3rd_base"]
-        ):
+        elif self.game_state["1st_base"] and self.game_state["2nd_base"] and not self.game_state["3rd_base"]:
             # 1st and 2nd
             self.game_state["score"] += 2
             self.game_state["1st_base"] = False
             self.game_state["2nd_base"] = False
             self.game_state["3rd_base"] = True
-        elif (
-            self.game_state["1st_base"]
-            and not self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        elif self.game_state["1st_base"] and not self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             # 1st and 3rd
             self.game_state["score"] += 2
             self.game_state["1st_base"] = False
-        elif (
-            self.game_state["1st_base"]
-            and not self.game_state["2nd_base"]
-            and not self.game_state["3rd_base"]
-        ):
+        elif self.game_state["1st_base"] and not self.game_state["2nd_base"] and not self.game_state["3rd_base"]:
             # 1st only
             self.game_state["score"] += 1
             self.game_state["1st_base"] = False
             self.game_state["3rd_base"] = True
-        elif (
-            not self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        elif not self.game_state["1st_base"] and self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             # 2nd and 3rd
             self.game_state["score"] += 2
             self.game_state["2nd_base"] = False
-        elif (
-            not self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and not self.game_state["3rd_base"]
-        ):
+        elif not self.game_state["1st_base"] and self.game_state["2nd_base"] and not self.game_state["3rd_base"]:
             # 2nd only
             self.game_state["score"] += 1
             self.game_state["2nd_base"] = False
             self.game_state["3rd_base"] = True
-        elif (
-            not self.game_state["1st_base"]
-            and not self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        elif not self.game_state["1st_base"] and not self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             # 3rd only
             self.game_state["score"] += 1
         else:
@@ -406,58 +314,30 @@ class Game:
         self.game_state["outs"] += 1
         if self.printing:
             print("Double play!")
-        if (
-            self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        if self.game_state["1st_base"] and self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             # bases loaded, dp over home and 1st
             self.game_state["1st_base"] = False
-        elif (
-            self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and not self.game_state["3rd_base"]
-        ):
+        elif self.game_state["1st_base"] and self.game_state["2nd_base"] and not self.game_state["3rd_base"]:
             # 1st and 2nd, dp over 2nd and 1st
             self.game_state["1st_base"] = False
             self.game_state["2nd_base"] = False
             self.game_state["3rd_base"] = True
-        elif (
-            self.game_state["1st_base"]
-            and not self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        elif self.game_state["1st_base"] and not self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             # 1st and 3rd, dp over 2nd and 1st
             if self.game_state["outs"] < 3:
                 self.game_state["score"] += 1
             self.game_state["1st_base"] = False
             self.game_state["3rd_base"] = False
-        elif (
-            self.game_state["1st_base"]
-            and not self.game_state["2nd_base"]
-            and not self.game_state["3rd_base"]
-        ):
+        elif self.game_state["1st_base"] and not self.game_state["2nd_base"] and not self.game_state["3rd_base"]:
             # 1st only, std dp
             self.game_state["1st_base"] = False
-        elif (
-            not self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        elif not self.game_state["1st_base"] and self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             # 2nd and 3rd, sac fly out at home
             self.game_state["3rd_base"] = False
-        elif (
-            not self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and not self.game_state["3rd_base"]
-        ):
+        elif not self.game_state["1st_base"] and self.game_state["2nd_base"] and not self.game_state["3rd_base"]:
             # 2nd only, sac fly out at 3rd
             self.game_state["2nd_base"] = False
-        elif (
-            not self.game_state["1st_base"]
-            and not self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        elif not self.game_state["1st_base"] and not self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             # 3rd only, sac fly out at home
             self.game_state["3rd_base"] = False
         # else, bases empty, dp not possible
@@ -465,61 +345,33 @@ class Game:
     def sac_fly_or_bunt(self):
         if self.printing:
             print("Runner(s) advance(s) on the play.")
-        if (
-            self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        if self.game_state["1st_base"] and self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             # bases loaded, all runners move up
             self.game_state["score"] += 1
             self.game_state["1st_base"] = False
-        elif (
-            self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and not self.game_state["3rd_base"]
-        ):
+        elif self.game_state["1st_base"] and self.game_state["2nd_base"] and not self.game_state["3rd_base"]:
             # 1st and 2nd, both move up
             self.game_state["1st_base"] = False
             self.game_state["3rd_base"] = True
-        elif (
-            self.game_state["1st_base"]
-            and not self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        elif self.game_state["1st_base"] and not self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             # 1st and 3rd, both move up
             self.game_state["score"] += 1
             self.game_state["1st_base"] = False
             self.game_state["2nd_base"] = True
             self.game_state["3rd_base"] = False
-        elif (
-            self.game_state["1st_base"]
-            and not self.game_state["2nd_base"]
-            and not self.game_state["3rd_base"]
-        ):
+        elif self.game_state["1st_base"] and not self.game_state["2nd_base"] and not self.game_state["3rd_base"]:
             # 1st only, moves up
             self.game_state["1st_base"] = False
             self.game_state["2nd_base"] = True
-        elif (
-            not self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        elif not self.game_state["1st_base"] and self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             # 2nd and 3rd, both move up
             self.game_state["score"] += 1
             self.game_state["2nd_base"] = False
-        elif (
-            not self.game_state["1st_base"]
-            and self.game_state["2nd_base"]
-            and not self.game_state["3rd_base"]
-        ):
+        elif not self.game_state["1st_base"] and self.game_state["2nd_base"] and not self.game_state["3rd_base"]:
             # 2nd only, moves up
             self.game_state["2nd_base"] = False
             self.game_state["3rd_base"] = True
-        elif (
-            not self.game_state["1st_base"]
-            and not self.game_state["2nd_base"]
-            and self.game_state["3rd_base"]
-        ):
+        elif not self.game_state["1st_base"] and not self.game_state["2nd_base"] and self.game_state["3rd_base"]:
             # 3rd only, scores
             self.game_state["score"] += 1
             self.game_state["3rd_base"] = False

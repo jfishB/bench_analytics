@@ -25,9 +25,7 @@ def test_smoke():
 class AccountServiceTests(TestCase):
     def setUp(self):
         # Create a sample user for login tests
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="test123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="test123")
 
     def test_register_user_success(self):
         user = register_user("newuser", "new@example.com", "pass1234")
@@ -66,9 +64,7 @@ class AccountViewTests(TestCase):
         self.protected_url = "/api/v1/auth/protected/"
 
         # Create a sample user for login tests
-        self.user = User.objects.create_user(
-            username="testuser", email="test@example.com", password="test123"
-        )
+        self.user = User.objects.create_user(username="testuser", email="test@example.com", password="test123")
 
     def test_register_api_success(self):
         data = {"username": "newuser", "email": "new@example.com", "password": "pass1234"}

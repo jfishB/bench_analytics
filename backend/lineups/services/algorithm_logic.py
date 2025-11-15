@@ -96,13 +96,7 @@ def calculate_spot_scores(players_list: List[Player], spot: int) -> List[float]:
     for i in range(n):
         if spot == 1:
             # Leadoff: High OBP, speed, stolen bases, walks
-            score = (
-                0.50 * obp[i]
-                + 0.20 * sprint_speed[i]
-                + 0.15 * sb[i]
-                + 0.10 * bb_pct[i]
-                + 0.05 * k_pct[i]
-            )
+            score = 0.50 * obp[i] + 0.20 * sprint_speed[i] + 0.15 * sb[i] + 0.10 * bb_pct[i] + 0.05 * k_pct[i]
 
         elif spot == 2:
             # Elite balanced hitter: wOBA, OBP, walks, avoid strikeouts
@@ -114,13 +108,7 @@ def calculate_spot_scores(players_list: List[Player], spot: int) -> List[float]:
 
         elif spot == 4:
             # Cleanup (power hitter): ISO, SLG, barrels, hard hits, HR rate
-            score = (
-                0.3 * iso[i]
-                + 0.25 * slg[i]
-                + 0.2 * barrel_pct[i]
-                + 0.15 * hard_hit_pct[i]
-                + 0.1 * hr_rate[i]
-            )
+            score = 0.3 * iso[i] + 0.25 * slg[i] + 0.2 * barrel_pct[i] + 0.15 * hard_hit_pct[i] + 0.1 * hr_rate[i]
 
         elif spot == 5:
             # Secondary power hitter: SLG, ISO, wOBA, barrels

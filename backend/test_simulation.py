@@ -54,9 +54,7 @@ def main():
 
         # Show player stats
         avg = hits / pa if pa > 0 else 0
-        print(
-            f"{i}. {name:30s} PA:{pa:3d}  AVG:.{int(avg*1000):03d}  HR:{hrs:2d}  K:{ks:3d}  BB:{walks:2d}"
-        )
+        print(f"{i}. {name:30s} PA:{pa:3d}  AVG:.{int(avg*1000):03d}  HR:{hrs:2d}  K:{ks:3d}  BB:{walks:2d}")
 
     # Run simulation
     print("\n" + "=" * 70)

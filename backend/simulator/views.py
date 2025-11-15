@@ -67,9 +67,7 @@ def simulate_by_player_ids(request):
     except ValueError as e:
         return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
-        return Response(
-            {"error": f"Simulation failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        return Response({"error": f"Simulation failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(["POST"])
@@ -99,9 +97,7 @@ def simulate_by_player_names(request):
     except ValueError as e:
         return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
-        return Response(
-            {"error": f"Simulation failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        return Response({"error": f"Simulation failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(["POST"])
@@ -138,9 +134,7 @@ def simulate_by_team(request):
     except ValueError as e:
         return Response({"error": str(e)}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
-        return Response(
-            {"error": f"Simulation failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        return Response({"error": f"Simulation failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 def _calculate_distribution(scores):

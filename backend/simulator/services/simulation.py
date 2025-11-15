@@ -29,9 +29,7 @@ from batter import Batter  # type: ignore
 class SimulationService:
     """Service for running baseball game simulations."""
 
-    def simulate_lineup(
-        self, batter_stats: List[BatterStats], num_games: int = 10000
-    ) -> SimulationResult:
+    def simulate_lineup(self, batter_stats: List[BatterStats], num_games: int = 10000) -> SimulationResult:
         """
         Simulate multiple games with the given lineup.
 
