@@ -1,15 +1,15 @@
 """
-Infrastructure layer: Data access for Player models.
-Handles database queries and model-to-domain conversions.
+Player service for accessing player data from the database.
+Handles database queries and converts Django models to DTOs.
 """
 
-from typing import List, Optional
+from typing import List
 
-from simulator.domain.entities import BatterStats
+from .dto import BatterStats
 
 
-class PlayerRepository:
-    """Repository for accessing player data from the database."""
+class PlayerService:
+    """Service for fetching player data and converting to simulation DTOs."""
     
     def __init__(self):
         # Import here to avoid circular dependencies

@@ -49,18 +49,6 @@ class TeamInputSerializer(serializers.Serializer):
     )
 
 
-class BatterStatsOutputSerializer(serializers.Serializer):
-    """Output serializer for individual batter stats."""
-    name = serializers.CharField()
-    plate_appearances = serializers.IntegerField()
-    hits = serializers.IntegerField()
-    doubles = serializers.IntegerField()
-    triples = serializers.IntegerField()
-    home_runs = serializers.IntegerField()
-    strikeouts = serializers.IntegerField()
-    walks = serializers.IntegerField()
-
-
 class SimulationResultSerializer(serializers.Serializer):
     """Output serializer for simulation results."""
     lineup = serializers.ListField(

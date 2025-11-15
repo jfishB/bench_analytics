@@ -1,14 +1,24 @@
 """
-Application layer: Orchestrates simulation use cases.
-Contains business logic but no infrastructure concerns.
+Simulation service for running baseball game simulations.
+Orchestrates the simulation workflow using Bram's baseball simulator library.
 """
 
 import statistics
+import sys
+from pathlib import Path
 from typing import List
 
-from simulator.domain.entities import BatterStats, SimulationResult
-from simulator.batter import Batter
-from simulator.baseball import Game
+from .dto import BatterStats, SimulationResult
+
+# Import Bram's baseball simulator from lib directory
+# Add lib path dynamically since it's not a proper Python package
+import os
+lib_path = os.path.join(os.path.dirname(__file__), '..', '..', 'lib', 'baseball-simulator')
+if lib_path not in sys.path:
+    sys.path.insert(0, lib_path)
+
+from batter import Batter  # type: ignore
+from baseball import Game  # type: ignore
 
 
 class SimulationService:
@@ -65,24 +75,3 @@ class SimulationService:
             std_dev=std_dev,
             all_scores=scores
         )
-    
-    def compare_lineups(
-        self,
-        lineup_list: List[List[BatterStats]],
-        num_games: int = 1000
-    ) -> List[SimulationResult]:
-        """
-        Compare multiple lineup configurations.
-        
-        Args:
-            lineup_list: List of lineups, each with 9 BatterStats
-            num_games: Number of games to simulate per lineup
-            
-        Returns:
-            List of SimulationResults, one per lineup
-        """
-        results = []
-        for lineup in lineup_list:
-            result = self.simulate_lineup(lineup, num_games)
-            results.append(result)
-        return results

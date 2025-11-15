@@ -1,6 +1,6 @@
 """
-Domain entities for the baseball simulator.
-Pure business logic with no external dependencies.
+Data Transfer Objects (DTOs) for the baseball simulator.
+Dataclasses for passing data between layers.
 """
 
 from dataclasses import dataclass

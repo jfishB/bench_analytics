@@ -8,14 +8,37 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from simulator.application.simulation_service import SimulationService
-from simulator.infrastructure.player_repository import PlayerRepository
-from simulator.serializers import (
+from .services.simulation import SimulationService
+from .services.player_service import PlayerService
+from .serializers import (
     PlayerInputSerializer,
     PlayerNameInputSerializer,
     TeamInputSerializer,
     SimulationResultSerializer,
 )
+
+
+def _run_simulation_and_format_response(batter_stats, num_games):
+    """
+    Helper function to run simulation and format response.
+    Eliminates code duplication across view functions.
+    """
+    service = SimulationService()
+    result = service.simulate_lineup(batter_stats, num_games=num_games)
+    
+    response_data = {
+        "lineup": result.lineup_names,
+        "num_games": result.num_games,
+        "avg_score": result.avg_score,
+        "median_score": result.median_score,
+        "std_dev": result.std_dev,
+        "min_score": min(result.all_scores),
+        "max_score": max(result.all_scores),
+        "score_distribution": _calculate_distribution(result.all_scores),
+    }
+    
+    output_serializer = SimulationResultSerializer(response_data)
+    return Response(output_serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])
@@ -38,28 +61,9 @@ def simulate_by_player_ids(request):
     num_games = serializer.validated_data["num_games"]
     
     try:
-        # Get player stats from repository
-        repository = PlayerRepository()
-        batter_stats = repository.get_players_by_ids(player_ids)
-        
-        # Run simulation
-        service = SimulationService()
-        result = service.simulate_lineup(batter_stats, num_games=num_games)
-        
-        # Format response
-        response_data = {
-            "lineup": result.lineup_names,
-            "num_games": result.num_games,
-            "avg_score": result.avg_score,
-            "median_score": result.median_score,
-            "std_dev": result.std_dev,
-            "min_score": min(result.all_scores),
-            "max_score": max(result.all_scores),
-            "score_distribution": _calculate_distribution(result.all_scores),
-        }
-        
-        output_serializer = SimulationResultSerializer(response_data)
-        return Response(output_serializer.data, status=status.HTTP_200_OK)
+        player_service = PlayerService()
+        batter_stats = player_service.get_players_by_ids(player_ids)
+        return _run_simulation_and_format_response(batter_stats, num_games)
         
     except ValueError as e:
         return Response(
@@ -93,25 +97,9 @@ def simulate_by_player_names(request):
     num_games = serializer.validated_data["num_games"]
     
     try:
-        repository = PlayerRepository()
-        batter_stats = repository.get_players_by_names(player_names)
-        
-        service = SimulationService()
-        result = service.simulate_lineup(batter_stats, num_games=num_games)
-        
-        response_data = {
-            "lineup": result.lineup_names,
-            "num_games": result.num_games,
-            "avg_score": result.avg_score,
-            "median_score": result.median_score,
-            "std_dev": result.std_dev,
-            "min_score": min(result.all_scores),
-            "max_score": max(result.all_scores),
-            "score_distribution": _calculate_distribution(result.all_scores),
-        }
-        
-        output_serializer = SimulationResultSerializer(response_data)
-        return Response(output_serializer.data, status=status.HTTP_200_OK)
+        player_service = PlayerService()
+        batter_stats = player_service.get_players_by_names(player_names)
+        return _run_simulation_and_format_response(batter_stats, num_games)
         
     except ValueError as e:
         return Response(
@@ -145,8 +133,8 @@ def simulate_by_team(request):
     num_games = serializer.validated_data["num_games"]
     
     try:
-        repository = PlayerRepository()
-        batter_stats = repository.get_team_players(team_id, limit=9)
+        player_service = PlayerService()
+        batter_stats = player_service.get_team_players(team_id, limit=9)
         
         if len(batter_stats) < 9:
             return Response(
@@ -154,22 +142,7 @@ def simulate_by_team(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        service = SimulationService()
-        result = service.simulate_lineup(batter_stats, num_games=num_games)
-        
-        response_data = {
-            "lineup": result.lineup_names,
-            "num_games": result.num_games,
-            "avg_score": result.avg_score,
-            "median_score": result.median_score,
-            "std_dev": result.std_dev,
-            "min_score": min(result.all_scores),
-            "max_score": max(result.all_scores),
-            "score_distribution": _calculate_distribution(result.all_scores),
-        }
-        
-        output_serializer = SimulationResultSerializer(response_data)
-        return Response(output_serializer.data, status=status.HTTP_200_OK)
+        return _run_simulation_and_format_response(batter_stats, num_games)
         
     except ValueError as e:
         return Response(
