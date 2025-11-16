@@ -27,7 +27,12 @@ class Player(models.Model):
     savant_player_id = models.PositiveIntegerField(null=True, blank=True)  # External player_id
     year = models.PositiveIntegerField(null=True, blank=True)  # Season year (e.g., 2025)
     pa = models.PositiveIntegerField(null=True, blank=True)  # Plate appearances
+    hit = models.PositiveIntegerField(null=True, blank=True)  # Plate appearances
+    single = models.PositiveIntegerField(null=True, blank=True)  # Singles
+    double = models.PositiveIntegerField(null=True, blank=True)  # Doubles
+    triple = models.PositiveIntegerField(null=True, blank=True)  # Triples
     home_run = models.FloatField(null=True, blank=True)  # Home run rate - HR per PA
+    walk = models.PositiveIntegerField(null=True, blank=True)  # Walks - BB
     k_percent = models.FloatField(null=True, blank=True)  # Frequency of strikeouts per plate appearance - K% = (SO / PA) * 100
     bb_percent = models.FloatField(null=True, blank=True)  # Frequency of walks per plate appearance - BB% = (BB / PA) * 100
     slg_percent = models.FloatField(
@@ -40,6 +45,8 @@ class Player(models.Model):
         null=True, blank=True
     )  # Shows extra bases per at-bat (pure power) - ISO = SLG - AVG | (AVG = H / AB)
     r_total_stolen_base = models.FloatField(null=True, blank=True)  # Stolen bases - Count of successful stolen base attempts
+    b_game = models.FloatField(null=True, blank=True)  # Games played - Total games played in a season
+    b_hit_by_pitch = models.FloatField(null=True, blank=True)  # A hit-by-pitch occurs when a batter is struck by a pitched ball without swinging at it.
     woba = models.FloatField(
         null=True, blank=True
     )  # Weighted On-Base Average: Weights each event by its average run value (Weights vary slightly each season) - wOBA = ((0.69*uBB) + (0.72*HBP) + (0.89*1B) + (1.27*2B) + (1.62*3B) + (2.10*HR)) / (AB + BB - IBB + SF + HBP)
