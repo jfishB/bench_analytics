@@ -57,7 +57,7 @@ jobs:
 
     - name: Check code formatting with black
       run: |
-        black --check backend
+        black --line-length 127 --check backend
 
     - name: Check import sorting with isort
       run: |
