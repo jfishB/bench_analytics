@@ -29,36 +29,6 @@ PA_MULTIPLIERS = {
 }
 
 
-# -------- PA scale factor for a given player for a game -------- #
-def calculate_player_pa_scale_factor(p: Player, position: int) -> float:
-    """Calculate players PA scale factor value with given formula.
-
-    Args:
-        p: player in lineup
-        position: batting order position (1-9)
-
-    Constants:
-        wOBAlg: League average wOBA - From Baseball Savant
-        wOBAscale: League wOBA scale - From Fangraphs
-        R/PAlg: League average R/PA - From Fangraphs
-
-    Formula:
-        Adjusted PA = ((total PA / total games) * PA_MULTIPLIERS[position])
-        PA Scale Factor = (Adjusted PA) / (total PA)
-
-    Returns:
-        Float value reperesenting the PA Scale factor for this player
-    """
-    pa_game = 0
-    if p.pa is not None and p.b_game is not None and p.b_game > 0:
-        pa_game = p.pa / p.b_game
-    adjusted_pa = pa_game * PA_MULTIPLIERS[position]
-    if p.pa is not None and p.pa > 0:
-        scale_factor = adjusted_pa / p.pa
-        return scale_factor
-    return 0
-
-
 # -------- Calculate adjusted player metrics to use for BaseRuns formula -------- #
 def calculate_player_adjustments(p: Player, position: int, adjustments: Dict[str, float]) -> Dict[str, float]:
     """Calculate given players scaled stats and from there A,B,C,D values to use in BaseRun formula.
@@ -69,27 +39,34 @@ def calculate_player_adjustments(p: Player, position: int, adjustments: Dict[str
         position: batting order position (1-9)
         adjustments: Dict to fill with calculated adjustments
 
+    Formula:
+        PA Scale Factor = (PA Multipier based on position) / (total games)
+
     Returns:
         Dict of float value containg cumulative stat adjustments for the team (updated adjustments list)
         0 - H adjust, 1 - HR adjust, 2 - BB adjust, 3 - IBB adjust, 4 - HBP adjust, 5 - SB adjust, 6 - CS adjust, 7 - GIDP adjust, 8 - SF adjust, 9 - SH adjust, 10 - TB adjust
     """
-    pa_scale = calculate_player_pa_scale_factor(p, position)
+    if p.b_game is None or p.b_game == 0:
+        return adjustments
+    pa_scale = (
+        PA_MULTIPLIERS[position] / p.b_game
+    )  # Since the stats we will be adjusting are all season long we need to divide by the number of games the player played to get game average stats
 
-    # -------- Adjstuing values based on PA scale -------- #
+    # -------- Adjusting values based on PA scale -------- #
     adjustments["pa_team"] += (
-        p.pa * pa_scale
-    )  # Getting adjusted PA value for player and adding them all up to get team PA value for 1 game
-    adjustments["h_adjust"] += p.hit * pa_scale
-    adjustments["hr_adjust"] += p.home_run * pa_scale
-    adjustments["bb_adjust"] += p.walk * pa_scale
-    adjustments["ibb_adjust"] += p.b_intent_walk * pa_scale
-    adjustments["hbp_adjust"] += p.b_hit_by_pitch * pa_scale
-    adjustments["sb_adjust"] += p.r_total_stolen_base * pa_scale
-    adjustments["cs_adjust"] += p.r_total_caught_stealing * pa_scale
-    adjustments["gidp_adjust"] += p.b_gnd_into_dp * pa_scale
-    adjustments["sf_adjust"] += p.b_sac_fly * pa_scale
-    adjustments["sh_adjust"] += p.b_total_sacrifices * pa_scale
-    adjustments["tb_adjust"] += p.b_total_bases * pa_scale
+        p.pa or 0
+    ) * pa_scale  # Getting adjusted PA value for player and adding them all up to get team PA value for 1 game
+    adjustments["h_adjust"] += (p.hit or 0) * pa_scale
+    adjustments["hr_adjust"] += (p.home_run or 0) * pa_scale
+    adjustments["bb_adjust"] += (p.walk or 0) * pa_scale
+    adjustments["ibb_adjust"] += (p.b_intent_walk or 0) * pa_scale
+    adjustments["hbp_adjust"] += (p.b_hit_by_pitch or 0) * pa_scale
+    adjustments["sb_adjust"] += (p.r_total_stolen_base or 0) * pa_scale
+    adjustments["cs_adjust"] += (p.r_total_caught_stealing or 0) * pa_scale
+    adjustments["gidp_adjust"] += (p.b_gnd_into_dp or 0) * pa_scale
+    adjustments["sf_adjust"] += (p.b_sac_fly or 0) * pa_scale
+    adjustments["sh_adjust"] += (p.b_total_sacrifices or 0) * pa_scale
+    adjustments["tb_adjust"] += (p.b_total_bases or 0) * pa_scale
 
     return adjustments
 
@@ -112,7 +89,7 @@ def calculate_player_baserun_values(lineup: tuple[Player]) -> float:
         BaseRun = [(A*B) / (B + C)] + D
 
     Returns:
-        Float value reperesenting the Expected runs scored by given player
+        Float value representing the Expected runs scored by given player
     """
     adjustments = {
         "pa_team": 0.0,
@@ -188,21 +165,20 @@ def algorithm_create_lineup(payload):
     created_by_id = validated["created_by_id"]
 
     # Build position mapping from payload
-    position_map = {p.player_id: p.position for p in players_list}
+    position_map = {p.id: p.position for p in players_list}
+
+    best_runs = -float("inf")
+    best_lineup = None
 
     # -------- Brute Force Optimization -------- #
     for lineup in permutations(players_list):  # Going through all 9! possible lineups
         # Calculate scores for all available players for this spot
         runs = calculate_player_baserun_values(lineup)  # Expected Runs for current lineup
 
-        best_runs = -999
-        best_lineup = None
-
         if runs > best_runs:
             best_runs = runs
             best_lineup = lineup
-    print(best_lineup)
-    print("best runs:", best_runs)
+    print(best_runs)
     # Create the Lineup and LineupPlayer objects in a transaction
     # TODO: seperate for clean architecture
     with transaction.atomic():
