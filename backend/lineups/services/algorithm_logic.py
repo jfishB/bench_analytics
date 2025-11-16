@@ -6,7 +6,7 @@ logic for creating batting lineups.
 ###########################################
 
 from itertools import permutations
-from typing import Dict, List
+from typing import Dict
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -192,8 +192,7 @@ def algorithm_create_lineup(payload):
 
         # Create LineupPlayer entries
         lineup_players = []
-        for i in range(0, len(best_lineup)):
-            player = best_lineup[i]
+        for i, player in enumerate(best_lineup):
             position = position_map.get(player.id, player.position)
 
             lineup_player = LineupPlayer.objects.create(
