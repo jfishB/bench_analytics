@@ -15,7 +15,8 @@ def _to_float(v):
             return float(str(v).replace("%", ""))
         except Exception:
             return None
-        
+
+
 def _to_int(v):
     if v is None or v == "":
         return None

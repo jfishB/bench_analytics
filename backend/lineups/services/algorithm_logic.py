@@ -5,8 +5,8 @@ logic for creating batting lineups.
 """
 ###########################################
 
-from typing import Dict, List
 from itertools import permutations
+from typing import Dict, List
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -36,7 +36,7 @@ def calculate_player_pa_scale_factor(p: Player, position: int) -> float:
     Args:
         p: player in lineup
         position: batting order position (1-9)
-    
+
     Constants:
         wOBAlg: League average wOBA - From Baseball Savant
         wOBAscale: League wOBA scale - From Fangraphs
@@ -49,20 +49,21 @@ def calculate_player_pa_scale_factor(p: Player, position: int) -> float:
     Returns:
         Float value reperesenting the PA Scale factor for this player
     """
-    pa_game =  0 
+    pa_game = 0
     if p.pa is not None and p.b_game is not None and p.b_game > 0:
-        pa_game =  p.pa / p.b_game 
+        pa_game = p.pa / p.b_game
     adjusted_pa = pa_game * PA_MULTIPLIERS[position]
     if p.pa is not None and p.pa > 0:
         scale_factor = adjusted_pa / p.pa
         return scale_factor
     return 0
 
+
 # -------- Calculate adjusted player metrics to use for BaseRuns formula -------- #
 def calculate_player_adjustments(p: Player, position: int, adjustments: Dict[str, float]) -> Dict[str, float]:
     """Calculate given players scaled stats and from there A,B,C,D values to use in BaseRun formula.
         BaseRun Formula and method source: https://library.fangraphs.com/features/baseruns/
-    
+
     Args:
         p: given player in lineup
         position: batting order position (1-9)
@@ -75,7 +76,9 @@ def calculate_player_adjustments(p: Player, position: int, adjustments: Dict[str
     pa_scale = calculate_player_pa_scale_factor(p, position)
 
     # -------- Adjstuing values based on PA scale -------- #
-    adjustments["pa_team"] += p.pa * pa_scale # Getting adjusted PA value for player and adding them all up to get team PA value for 1 game
+    adjustments["pa_team"] += (
+        p.pa * pa_scale
+    )  # Getting adjusted PA value for player and adding them all up to get team PA value for 1 game
     adjustments["h_adjust"] += p.hit * pa_scale
     adjustments["hr_adjust"] += p.home_run * pa_scale
     adjustments["bb_adjust"] += p.walk * pa_scale
@@ -90,14 +93,15 @@ def calculate_player_adjustments(p: Player, position: int, adjustments: Dict[str
 
     return adjustments
 
+
 # -------- BaseRun formula to calculate lineups expected runs for a game -------- #
 def calculate_player_baserun_values(lineup: tuple[Player]) -> float:
     """Calculate given players scaled stats and from there A,B,C,D values to use in BaseRun formula.
         BaseRun Formula and method source: https://library.fangraphs.com/features/baseruns/
-    
+
     Args:
         lineup: lineup of 9 players
-    
+
     Value Meanings and Calculations:
         A: Base runners = H + BB + HBP - (0.5*IBB) - HR
         B: Runner advancement = 1.1*[1.4*TB - 0.6*H - 3*HR + 0.1*(BB + HBP - IBB) + 0.9*(SB - CS - GDP)]
@@ -130,16 +134,37 @@ def calculate_player_baserun_values(lineup: tuple[Player]) -> float:
         adjustments = calculate_player_adjustments(p, spot, adjustments)
 
     # -------- Calculating BaseRun formula inputs -------- #
-    a = adjustments["h_adjust"] + adjustments["bb_adjust"] + adjustments["hbp_adjust"] - (0.5 * adjustments["ibb_adjust"]) - adjustments["hr_adjust"]
-    b = 1.1 * (1.4 * adjustments["tb_adjust"] - 0.6 * adjustments["h_adjust"] - 3 * adjustments["hr_adjust"] + 0.1 * (adjustments["bb_adjust"] + adjustments["hbp_adjust"] - adjustments["ibb_adjust"]) + 0.9 * (adjustments["sb_adjust"] - adjustments["cs_adjust"] - adjustments["gidp_adjust"]))
-    c = adjustments["pa_team"] - adjustments["bb_adjust"] - adjustments["sf_adjust"] - adjustments["sh_adjust"] - adjustments["hbp_adjust"] - adjustments["h_adjust"] + adjustments["cs_adjust"] + adjustments["gidp_adjust"] # (pa_scale * p.pa) - to get PA_adjust back. We dont want to use native PA since that is entire season PA and we are calculating for 1 game 
+    a = (
+        adjustments["h_adjust"]
+        + adjustments["bb_adjust"]
+        + adjustments["hbp_adjust"]
+        - (0.5 * adjustments["ibb_adjust"])
+        - adjustments["hr_adjust"]
+    )
+    b = 1.1 * (
+        1.4 * adjustments["tb_adjust"]
+        - 0.6 * adjustments["h_adjust"]
+        - 3 * adjustments["hr_adjust"]
+        + 0.1 * (adjustments["bb_adjust"] + adjustments["hbp_adjust"] - adjustments["ibb_adjust"])
+        + 0.9 * (adjustments["sb_adjust"] - adjustments["cs_adjust"] - adjustments["gidp_adjust"])
+    )
+    c = (
+        adjustments["pa_team"]
+        - adjustments["bb_adjust"]
+        - adjustments["sf_adjust"]
+        - adjustments["sh_adjust"]
+        - adjustments["hbp_adjust"]
+        - adjustments["h_adjust"]
+        + adjustments["cs_adjust"]
+        + adjustments["gidp_adjust"]
+    )  # (pa_scale * p.pa) - to get PA_adjust back. We dont want to use native PA since that is entire season PA and we are calculating for 1 game
     d = adjustments["hr_adjust"]
 
     # -------- BaseRun Calculation -------- #
     if (b + c) > 0:
         expected_runs = ((a * b) / (b + c)) + d
         return expected_runs
-    
+
     return 0
 
 
@@ -168,7 +193,7 @@ def algorithm_create_lineup(payload):
     # -------- Brute Force Optimization -------- #
     for lineup in permutations(players_list):  # Going through all 9! possible lineups
         # Calculate scores for all available players for this spot
-        runs = calculate_player_baserun_values(lineup) # Expected Runs for current lineup
+        runs = calculate_player_baserun_values(lineup)  # Expected Runs for current lineup
 
         best_runs = -999
         best_lineup = None
@@ -177,7 +202,7 @@ def algorithm_create_lineup(payload):
             best_runs = runs
             best_lineup = lineup
     print(best_lineup)
-    print('best runs:', best_runs)
+    print("best runs:", best_runs)
     # Create the Lineup and LineupPlayer objects in a transaction
     # TODO: seperate for clean architecture
     with transaction.atomic():

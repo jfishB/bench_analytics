@@ -54,7 +54,7 @@ def load_csv_file(file: str | Path, year: int | None = None, dry_run: bool = Fal
                     return float(str(v).replace('"', "").replace("%", "").strip())
                 except ValueError:
                     return None
-                
+
             def to_int_cell(key: str):
                 v = r.get(key)
                 if v is None or v == "":
