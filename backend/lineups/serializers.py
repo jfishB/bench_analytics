@@ -16,14 +16,19 @@ class LineupPlayerIn(serializers.Serializer):
     player_id = serializers.IntegerField()
     position = serializers.CharField(max_length=3)
     # bating order is optional because the algorithm may assign it
-    batting_order = serializers.IntegerField(min_value=1, max_value=9, required=False, allow_null=True)
+    batting_order = serializers.IntegerField(
+        min_value=1, max_value=9, required=False, allow_null=True
+    )
 
 
 class LineupCreate(serializers.Serializer):
     """This is the entire request body to save a lineup."""
 
     team_id = serializers.IntegerField()
-    players = LineupPlayerIn(many=True, min_length=9, max_length=9)  # calls LineupPlayerIn from above
+    players = LineupPlayerIn(
+        many=True, min_length=9, max_length=9
+    )  # calls LineupPlayerIn from above
+    name = serializers.CharField(max_length=120, required=False, allow_blank=False)
 
 
 class LineupCreateByTeam(serializers.Serializer):
@@ -34,6 +39,7 @@ class LineupCreateByTeam(serializers.Serializer):
     """
 
     team_id = serializers.IntegerField()
+    name = serializers.CharField(max_length=120, required=False, allow_blank=False)
 
 
 # ---- Response schema (server -> client) ----
@@ -72,6 +78,33 @@ class LineupOut(serializers.Serializer):
 
     id = serializers.IntegerField()
     team_id = serializers.IntegerField()
+    name = serializers.CharField(max_length=120)
     players = LineupPlayerOut(many=True)
     created_by = serializers.IntegerField()
     created_at = serializers.DateTimeField()
+
+
+class LineupModelSerializer(serializers.ModelSerializer):
+    """ModelSerializer for Lineup - used by ViewSet for list/retrieve operations."""
+
+    players = serializers.SerializerMethodField()
+
+    class Meta:
+        from .models import Lineup
+
+        model = Lineup
+        fields = ["id", "team_id", "name", "created_by", "created_at", "players"]
+        read_only_fields = ["id", "created_at"]
+
+    def get_players(self, obj):
+        """Return the lineup players in batting order."""
+        lineup_players = obj.players.order_by("batting_order")
+        return [
+            {
+                "player_id": lp.player_id,
+                "player_name": lp.player.name if lp.player else None,
+                "position": lp.position,
+                "batting_order": lp.batting_order,
+            }
+            for lp in lineup_players
+        ]

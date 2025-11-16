@@ -3,10 +3,14 @@ import PlayerList from "../../../ui/components/player-list";
 import type { Player } from "../../../shared/types"; // player type defined in shared/types
 
 interface PlayersOrderedListProps {
-  players: Array<Partial<Player> & { batting_order?: number | null }>;
+  players: Array<
+    Partial<Player> & { batting_order?: number | null; isSelected?: boolean }
+  >;
   className?: string;
   onItemClick?: (player: Player) => void;
   badgeClassName?: string;
+  onSelectionToggle?: (player: Player) => void;
+  showCheckboxes?: boolean;
 }
 
 /**
@@ -23,6 +27,8 @@ export function PlayersOrderedList({
   className = "",
   onItemClick,
   badgeClassName = "bg-primary text-white dark:bg-primary",
+  onSelectionToggle,
+  showCheckboxes = false,
 }: PlayersOrderedListProps) {
   // Copy and sort: players with undefined/null batting_order go to the end.
   const sorted = [...players].sort((a, b) => {
@@ -40,11 +46,17 @@ export function PlayersOrderedList({
     name: p.name ?? "Unnamed",
     battingOrder: p.batting_order ?? null,
     payload: p,
+    isSelected: p.isSelected || false,
   }));
 
   // Type guard: ensure a Partial<Player> is a complete Player before calling the consumer
   function isCompletePlayer(p: Partial<Player> | undefined): p is Player {
-    return !!p && typeof p.id !== "undefined" && typeof p.name === "string" && typeof p.position !== "undefined";
+    return (
+      !!p &&
+      typeof p.id !== "undefined" &&
+      typeof p.name === "string" &&
+      typeof p.position !== "undefined"
+    );
   }
 
   return (
@@ -57,9 +69,24 @@ export function PlayersOrderedList({
         if (onItemClick && isCompletePlayer(payload)) {
           onItemClick(payload);
         } else {
-          console.warn("PlayersOrderedList: onItemClick skipped due to incomplete player data", payload);
+          console.warn(
+            "PlayersOrderedList: onItemClick skipped due to incomplete player data",
+            payload
+          );
         }
       }}
+      onSelectionToggle={
+        onSelectionToggle
+          ? (it) => {
+              const payload = it.payload as Partial<Player> | undefined;
+              if (!payload) return;
+              if (isCompletePlayer(payload)) {
+                onSelectionToggle(payload);
+              }
+            }
+          : undefined
+      }
+      showCheckboxes={showCheckboxes}
       badgeClassName={badgeClassName}
     />
   );
