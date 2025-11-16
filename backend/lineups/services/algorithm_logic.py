@@ -6,6 +6,7 @@ logic for creating batting lineups.
 ###########################################
 
 from typing import Dict, List
+from itertools import permutations
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -14,125 +15,74 @@ from lineups.models import Lineup, LineupPlayer
 from lineups.services.validator import validate_data
 from roster.models import Player
 
+# -------- Batting Spot PA% Multipliers -------- # Source https://www.bluebirdbanter.com/2012/10/12/3490578/lineup-optimization-part-1-of-2?utm_source and https://www.insidethebook.com/ {Page 128}
+PA_MULTIPLIERS = {
+    1: 1.10,
+    2: 1.075,
+    3: 1.05,
+    4: 1.025,
+    5: 1.00,
+    6: 0.975,
+    7: 0.95,
+    8: 0.925,
+    9: 0.90,
+}
 
-def normalize_stat(values: List[float], invert: bool = False) -> Dict[int, float]:
-    """Normalize a list of stat values to 0-1 scale.
+# -------- League Averages for R/PA Calculation -------- #
+WOBA_LEAGUE_AVG = 0.313  # League average wOBA # Source: Baseball Savant https://baseballsavant.mlb.com/leaderboard/expected_statistics
+WOBA_SCALE = 1.232  # League wOBA scale # Source: Fangraphs https://www.fangraphs.com/tools/guts?type=cn
+RPA_LEAGUE_AVG = 0.118  # League average RPA # Source: Fangraphs https://www.fangraphs.com/tools/guts?type=cn
+
+
+def calculate_player_rpa(players_list: List[Player]) -> Dict[Player, float]:
+    """Calculate each players R/PA with given formula.
 
     Args:
-        values: List of stat values
-        invert: If True, invert the scale (lower is better, e.g., K%)
+        players_list: List of 9 players in lineup
+    
+    Constants:
+        wOBAlg: League average wOBA - From Baseball Savant
+        wOBAscale: League wOBA scale - From Fangraphs
+        R/PAlg: League average R/PA - From Fangraphs
+
+    Formula:
+        R/PA(p) = ((wOBA(p) - wOBA(lg)) / wOBAscale) + R/PA(lg) 
 
     Returns:
-        Dictionary mapping index to normalized value
+        Dictionary mapping index(player) to R/PA value(float)
     """
-    # Handle cases where all values are None or empty
-    valid_values = [v for v in values if v is not None]
-    if not valid_values:
-        return {i: 0.5 for i in range(len(values))}
-
-    min_val = min(valid_values)
-    max_val = max(valid_values)
-
-    # Avoid division by zero
-    if max_val == min_val:
-        return {i: 1.0 for i in range(len(values))}
-
-    normalized = {}
-    for i, val in enumerate(values):
-        if val is None:
-            normalized[i] = 0.0  # Treat missing stats as worst
+    player_rpas = {}
+    for Player in players_list:
+        if Player.woba is not None and Player.pa is not None and Player.pa > 0:
+            rpa = ((Player.woba - WOBA_LEAGUE_AVG) / WOBA_SCALE) + RPA_LEAGUE_AVG  # See formula above
+            player_rpas[Player] = rpa
         else:
-            norm_val = (val - min_val) / (max_val - min_val)
-            normalized[i] = (1 - norm_val) if invert else norm_val
+            player_rpas[Player] = 0.0  # Default R/PA for players with no data
+    return player_rpas
 
-    return normalized
-
-
-def blend_woba_xwoba(woba_norm: Dict[int, float], xwoba_norm: Dict[int, float]) -> Dict[int, float]:
-    """Blend woba (60%) and xwoba (40%) for predictive accuracy.
-
+# -------- Expected Runs for a Given Lineup -------- #
+def compute_expected_runs(lineup: tuple[Player], player_rpas: Dict[Player, float]) -> float:
+    """
     Args:
-        woba_norm: Normalized wOBA values
-        xwoba_norm: Normalized xwOBA values
+        players_list: List of 9 players in lineup
+
+    Constants:
+        PA_MULTIPLIERS: Dict mapping batting spot to PA multiplier 
 
     Returns:
-        Dictionary mapping index to blended wOBA value
+        Expected run count for given lineup as a float
     """
-    return {i: 0.6 * woba_norm[i] + 0.4 * xwoba_norm[i] for i in woba_norm}
+    total_runs = 0.0
 
+    for id, player in enumerate(lineup):
+        spot = id + 1
 
-def calculate_spot_scores(players_list: List[Player], spot: int) -> List[float]:
-    """Calculate scores for each player for a specific lineup spot.
+        player_rpa = player_rpas[player]
+        weight = PA_MULTIPLIERS[spot]
 
-    Args:
-        players_list: List of Player objects with stats
-        spot: Lineup spot number (1-9)
+        total_runs += player_rpa * weight
 
-    Returns:
-        List of scores (one per player)
-    """
-    n = len(players_list)
-
-    # Extract and normalize all relevant stats
-    obp = normalize_stat([p.on_base_percent for p in players_list])
-    slg = normalize_stat([p.slg_percent for p in players_list])
-    iso = normalize_stat([p.isolated_power for p in players_list])
-    woba = normalize_stat([p.woba for p in players_list])
-    xwoba = normalize_stat([p.xwoba for p in players_list])
-    combined_woba = blend_woba_xwoba(woba, xwoba)
-    bb_pct = normalize_stat([p.bb_percent for p in players_list])
-    k_pct = normalize_stat([p.k_percent for p in players_list], invert=True)  # Lower is better
-    barrel_pct = normalize_stat([p.barrel_batted_rate for p in players_list])
-    hard_hit_pct = normalize_stat([p.hard_hit_percent for p in players_list])
-    sprint_speed = normalize_stat([p.sprint_speed for p in players_list])
-    hr_rate = normalize_stat([p.home_run for p in players_list])
-    sb = normalize_stat([p.r_total_stolen_base for p in players_list])
-
-    # Extract PA values for sample size confidence weighting
-    pa_values = [p.pa for p in players_list]
-
-    scores = []
-
-    for i in range(n):
-        if spot == 1:
-            # Leadoff: High OBP, speed, stolen bases, walks
-            score = 0.50 * obp[i] + 0.20 * sprint_speed[i] + 0.15 * sb[i] + 0.10 * bb_pct[i] + 0.05 * k_pct[i]
-
-        elif spot == 2:
-            # Elite balanced hitter: wOBA, OBP, walks, avoid strikeouts
-            score = 0.4 * combined_woba[i] + 0.3 * obp[i] + 0.2 * bb_pct[i] + 0.1 * k_pct[i]
-
-        elif spot == 3:
-            # Strong consistent hitter: wOBA, SLG, walks
-            score = 0.45 * combined_woba[i] + 0.25 * slg[i] + 0.2 * bb_pct[i] + 0.1 * k_pct[i]
-
-        elif spot == 4:
-            # Cleanup (power hitter): ISO, SLG, barrels, hard hits, HR rate
-            score = 0.3 * iso[i] + 0.25 * slg[i] + 0.2 * barrel_pct[i] + 0.15 * hard_hit_pct[i] + 0.1 * hr_rate[i]
-
-        elif spot == 5:
-            # Secondary power hitter: SLG, ISO, wOBA, barrels
-            score = 0.35 * slg[i] + 0.25 * iso[i] + 0.25 * combined_woba[i] + 0.15 * barrel_pct[i]
-
-        elif spot == 6:
-            # Decent hitter with speed and baserunning: OBP, sprint speed, stolen bases, wOBA
-            score = 0.35 * obp[i] + 0.25 * sprint_speed[i] + 0.20 * sb[i] + 0.20 * combined_woba[i]
-
-        elif spot in [7, 8]:
-            # Average hitters: wOBA as primary metric
-            score = combined_woba[i]
-
-        else:  # spot == 9
-            # Weakest hitter: wOBA (will select lowest)
-            score = combined_woba[i]
-
-        # Apply sample size confidence weighting (penalize players with < 100 PA)
-        if pa_values[i] is not None and pa_values[i] < 100:
-            score *= min(1.0, pa_values[i] / 100.0)
-
-        scores.append(score)
-
-    return scores
+    return total_runs
 
 
 def algorithm_create_lineup(payload):
@@ -157,35 +107,22 @@ def algorithm_create_lineup(payload):
     # Build position mapping from payload
     position_map = {p.player_id: p.position for p in players_list}
 
-    # Greedy assignment algorithm
-    available_indices = set(range(len(players_list)))
-    assignments = {}  # batting_order -> player_index
+    # -------- R/PA Calculation -------- #
+    player_rpas = calculate_player_rpa(players_list)
 
-    for spot in range(1, 10):  # Spots 1 through 9
+    # -------- Brute Force Optimization -------- #
+    for lineup in permutations(players_list):  # Going through all 9! possible lineups
         # Calculate scores for all available players for this spot
-        scores = calculate_spot_scores(players_list, spot)
+        runs = compute_expected_runs(lineup, player_rpas)
 
-        # Find the best available player for this spot
-        best_idx = None
-        best_score = -float("inf") if spot != 9 else float("inf")
+        best_runs = -999
+        best_lineup = None
 
-        for idx in available_indices:
-            if spot == 9:
-                # For spot 9, we want the LOWEST score (worst hitter)
-                if scores[idx] < best_score:
-                    best_score = scores[idx]
-                    best_idx = idx
-            else:
-                # For spots 1-8, we want the HIGHEST score
-                if scores[idx] > best_score:
-                    best_score = scores[idx]
-                    best_idx = idx
-
-        # Assign this player to this spot
-        if best_idx is not None:
-            assignments[spot] = best_idx
-            available_indices.remove(best_idx)
-
+        if runs > best_runs:
+            best_runs = runs
+            best_lineup = lineup
+    print(best_lineup)
+    print('best runs:', best_runs)
     # Create the Lineup and LineupPlayer objects in a transaction
     # TODO: seperate for clean architecture
     with transaction.atomic():
@@ -199,15 +136,15 @@ def algorithm_create_lineup(payload):
 
         # Create LineupPlayer entries
         lineup_players = []
-        for batting_order, player_idx in assignments.items():
-            player = players_list[player_idx]
+        for i in range(0, len(best_lineup)):
+            player = best_lineup[i]
             position = position_map.get(player.id, player.position)
 
             lineup_player = LineupPlayer.objects.create(
                 lineup=lineup,
                 player=player,
                 position=position,
-                batting_order=batting_order,
+                batting_order=i + 1,
             )
             lineup_players.append(lineup_player)
 
