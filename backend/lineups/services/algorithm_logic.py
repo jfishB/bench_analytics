@@ -34,11 +34,13 @@ WOBA_SCALE = 1.232  # League wOBA scale # Source: Fangraphs https://www.fangraph
 RPA_LEAGUE_AVG = 0.118  # League average RPA # Source: Fangraphs https://www.fangraphs.com/tools/guts?type=cn
 
 
-def calculate_player_rpa(players_list: List[Player]) -> Dict[Player, float]:
-    """Calculate each players R/PA with given formula.
+# -------- PA scale factor for a given player for a game -------- #
+def calculate_player_pa_scale_factor(p: Player, position: int) -> float:
+    """Calculate players PA scale factor value with given formula.
 
     Args:
-        players_list: List of 9 players in lineup
+        p: player in lineup
+        position: batting order position (1-9)
     
     Constants:
         wOBAlg: League average wOBA - From Baseball Savant
@@ -46,22 +48,72 @@ def calculate_player_rpa(players_list: List[Player]) -> Dict[Player, float]:
         R/PAlg: League average R/PA - From Fangraphs
 
     Formula:
-        R/PA(p) = ((wOBA(p) - wOBA(lg)) / wOBAscale) + R/PA(lg) 
+        Adjusted PA = ((total PA / total games) * PA_MULTIPLIERS[position])
+        PA Scale Factor = (Adjusted PA) / (total PA)
 
     Returns:
-        Dictionary mapping index(player) to R/PA value(float)
+        Float value reperesenting the PA Scale factor for this player
     """
-    player_rpas = {}
-    for Player in players_list:
-        if Player.woba is not None and Player.pa is not None and Player.pa > 0:
-            rpa = ((Player.woba - WOBA_LEAGUE_AVG) / WOBA_SCALE) + RPA_LEAGUE_AVG  # See formula above
-            player_rpas[Player] = rpa
-        else:
-            player_rpas[Player] = 0.0  # Default R/PA for players with no data
-    return player_rpas
+    pa_game =  0 
+    if p.pa is not None and p.b_game is not None and p.b_game > 0:
+        pa_game =  p.pa / p.b_game 
+    adjusted_pa = pa_game * PA_MULTIPLIERS[position]
+    if p.pa is not None and p.pa > 0:
+        scale_factor = adjusted_pa / p.pa
+        return scale_factor
+    return 0
+
+# -------- PA scale factor for a given player for a game -------- #
+def calculate_player_baserun_values(p: Player, position: int) -> float:
+    """Calculate given players scaled stats and from there A,B,C,D values to use in BaseRun formula.
+        BaseRun Formula and method source: https://library.fangraphs.com/features/baseruns/
+    
+    Args:
+        p: player in lineup
+        position: batting order position (1-9)
+    
+    Value Meanings and Calculations:
+        A: Base runners = H + BB + HBP - (0.5*IBB) - HR
+        B: Runner advancement = 1.1*[1.4*TB - 0.6*H - 3*HR + 0.1*(BB + HBP - IBB) + 0.9*(SB - CS - GDP)]
+        C: Outs = PAadjust - BB - SF - SH - HBP - H + CS + GDP
+        D: Home runs = HR
+
+    Formula:
+        BaseRun = [(A*B) / (B + C)] + D
+
+    Returns:
+        Float value reperesenting the Expected runs scored by given player
+    """
+    pa_scale = calculate_player_pa_scale_factor(p, position)
+
+    # -------- Adjstuing values based on PA scale -------- #
+    h_adjust = p.hit * pa_scale
+    hr_adjust = p.home_run * pa_scale
+    bb_adjust = p.walk * pa_scale
+    ibb_adjust = p.b_intent_walk * pa_scale
+    hbp_adjust = p.b_hit_by_pitch * pa_scale
+    sb_adjust = p.r_total_stolen_base * pa_scale
+    cs_adjust = p.r_total_caught_stealing * pa_scale
+    gidp_adjust = p.b_gnd_into_dp * pa_scale
+    sf_adjust = p.b_sac_fly * pa_scale
+    sh_adjust = p.b_total_sacrifices * pa_scale
+    tb_adjust = p.b_total_bases * pa_scale
+
+    # -------- Calculating BaseRun formula inputs -------- #
+    a = h_adjust + bb_adjust + hbp_adjust - (0.5 * ibb_adjust) - hr_adjust
+    b = 1.1 * (1.4 * tb_adjust - 0.6 * h_adjust - 3 * hr_adjust + 0.1 * (bb_adjust + hbp_adjust - ibb_adjust) + 0.9 * (sb_adjust - cs_adjust - gidp_adjust))
+    c = (pa_scale * p.pa) - bb_adjust - sf_adjust - sh_adjust - hbp_adjust - h_adjust + cs_adjust + gidp_adjust # (pa_scale * p.pa) - to get PA_adjust back. We dont want to use native PA since that is entire season PA and we are calculating for 1 game 
+    d = hr_adjust
+
+    # -------- BaseRun Calculation -------- #
+    if (b + c) > 0:
+        expected_runs = ((a * b) / (b + c)) + d
+        return expected_runs
+    
+    return 0
 
 # -------- Expected Runs for a Given Lineup -------- #
-def compute_expected_runs(lineup: tuple[Player], player_rpas: Dict[Player, float]) -> float:
+def compute_expected_runs(lineup: tuple[Player]) -> float:
     """
     Args:
         players_list: List of 9 players in lineup
@@ -77,10 +129,9 @@ def compute_expected_runs(lineup: tuple[Player], player_rpas: Dict[Player, float
     for id, player in enumerate(lineup):
         spot = id + 1
 
-        player_rpa = player_rpas[player]
-        weight = PA_MULTIPLIERS[spot]
+        player_expected_runs = calculate_player_baserun_values(player, spot)
 
-        total_runs += player_rpa * weight
+        total_runs += player_expected_runs
 
     return total_runs
 
@@ -107,13 +158,10 @@ def algorithm_create_lineup(payload):
     # Build position mapping from payload
     position_map = {p.player_id: p.position for p in players_list}
 
-    # -------- R/PA Calculation -------- #
-    player_rpas = calculate_player_rpa(players_list)
-
     # -------- Brute Force Optimization -------- #
     for lineup in permutations(players_list):  # Going through all 9! possible lineups
         # Calculate scores for all available players for this spot
-        runs = compute_expected_runs(lineup, player_rpas)
+        runs = compute_expected_runs(lineup)
 
         best_runs = -999
         best_lineup = None
@@ -147,5 +195,5 @@ def algorithm_create_lineup(payload):
                 batting_order=i + 1,
             )
             lineup_players.append(lineup_player)
-
+    print('best_runs', best_runs)
     return lineup, lineup_players

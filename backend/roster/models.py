@@ -28,7 +28,7 @@ class Player(models.Model):
     year = models.PositiveIntegerField(null=True, blank=True)  # Season year (e.g., 2025)
     ab = models.PositiveIntegerField(null=True, blank=True)  # At bat count
     pa = models.PositiveIntegerField(null=True, blank=True)  # Plate appearances
-    hit = models.PositiveIntegerField(null=True, blank=True)  # Plate appearances
+    hit = models.PositiveIntegerField(null=True, blank=True)  # Hits
     single = models.PositiveIntegerField(null=True, blank=True)  # Singles
     double = models.PositiveIntegerField(null=True, blank=True)  # Doubles
     triple = models.PositiveIntegerField(null=True, blank=True)  # Triples

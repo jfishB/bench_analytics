@@ -28,7 +28,7 @@ class PlayerSerializer(PlayerNameValidationMixin, serializers.ModelSerializer):
         model = Player
         fields = [
             "name",
-            "player_id",
+            "savant_player_id",
             "team",
             "position",
             "year",
@@ -96,7 +96,6 @@ class PlayerCreateSerializer(PlayerNameValidationMixin, serializers.ModelSeriali
         model = Player
         fields = [
             "name",
-            "player_id",
             "team",
             "position",
             "year",
@@ -137,7 +136,6 @@ class PlayerPartialUpdateSerializer(serializers.ModelSerializer):
         model = Player
         fields = [
             "name",
-            "player_id",
             "team",
             "position",
             "year",
