@@ -178,7 +178,6 @@ def algorithm_create_lineup(payload):
         if runs > best_runs:
             best_runs = runs
             best_lineup = lineup
-    print(best_runs)
     # Create the Lineup and LineupPlayer objects in a transaction
     # TODO: seperate for clean architecture
     with transaction.atomic():
