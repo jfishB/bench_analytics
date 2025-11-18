@@ -96,9 +96,6 @@ export function PlayerList({
                   onChange={(e) => {
                     e.stopPropagation();
                     onSelectionToggle(it);
-                    if (onItemClick) {
-                      onItemClick(it);
-                    }
                   }}
                   className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
                   onClick={(e) => e.stopPropagation()}
