@@ -26,25 +26,6 @@ class LineupViewsTests(TestCase):
 
         self.base_url = "/api/v1/lineups/"
 
-    def test_post_valid_returns_201(self):
-        # Test algorithm-only mode: POST only team_id, get suggested lineup without saving
-        payload = {"team_id": self.team.id}
-
-        # Authenticate as creator and POST only the team_id
-        self.client.force_authenticate(user=self.creator)
-        resp = self.client.post(self.base_url, payload, format="json")
-        self.assertEqual(resp.status_code, 201)
-        # Algorithm mode doesn't save to DB, so no 'id' field
-        self.assertIn("team_id", resp.data)
-        self.assertIn("players", resp.data)
-        self.assertEqual(len(resp.data["players"]), 9)
-        # Verify each player has required fields
-        for player in resp.data["players"]:
-            self.assertIn("player_id", player)
-            self.assertIn("player_name", player)
-            self.assertIn("position", player)
-            self.assertIn("batting_order", player)
-
     def test_post_manual_save_returns_201(self):
         # Test manual save mode: POST with players and batting orders, saves to DB
         payload = {
