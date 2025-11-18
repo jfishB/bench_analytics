@@ -34,7 +34,7 @@ class LineupCreateView(APIView):
         # Determine request mode and get validated data if applicable
         mode, data = determine_request_mode(request.data)
 
-        if mode == 'manual_save':
+        if mode == "manual_save":
             # Manual or sabermetrics save - process and save to database
             lineup, lineup_players = handle_manual_lineup_save(data, request.user)
 

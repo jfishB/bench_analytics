@@ -78,8 +78,8 @@ export function LineupSimulatorTab({
                       Batting Order:
                     </div>
                     <div className="space-y-1">
-                      {lineup.players
-                        ?.sort((a, b) => a.batting_order - b.batting_order)
+                      {(lineup.players ?? [])
+                        .sort((a, b) => a.batting_order - b.batting_order)
                         .map((player) => (
                           <div
                             key={player.player_id}
