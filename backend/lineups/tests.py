@@ -1,12 +1,8 @@
-from unittest.mock import patch
-
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework.test import APIClient
 
 from lineups.models import Lineup, LineupPlayer
-from lineups.services.algorithm_logic import algorithm_create_lineup
-from lineups.services.input_data import CreateLineupInput, LineupPlayerInput
 from roster.models import Player, Team
 
 
@@ -30,42 +26,56 @@ class LineupViewsTests(TestCase):
 
         self.base_url = "/api/v1/lineups/"
 
-    @patch("lineups.views.validate_data")
-    @patch("lineups.views.validate_lineup_model")
-    @patch("lineups.views.algorithm_create_lineup")
-    def test_post_valid_returns_201(self, mock_algorithm, mock_validate, mock_validate_data):
-        # The view expects the frontend to send only a team_id. The view
-        # will load players server-side and pass a CreateLineupInput to the
-        # algorithm. Patch the algorithm to return (lineup, lineup_players)
-        # as the real implementation does.
+    def test_post_valid_returns_201(self):
+        # Test algorithm-only mode: POST only team_id, get suggested lineup without saving
         payload = {"team_id": self.team.id}
-
-        # Prepare a persisted lineup and its LineupPlayer rows to return
-        lineup = Lineup.objects.create(team=self.team, created_by=self.creator, name="Test")
-        lineup_players = []
-        for idx, p in enumerate(self.players[:9], start=1):
-            lp = LineupPlayer.objects.create(lineup=lineup, player=p, position="1B", batting_order=idx)
-            lineup_players.append(lp)
-
-        mock_algorithm.return_value = (lineup, lineup_players)
-        # Mock validate_data to return the validated payload structure the
-        # algorithm expects. This avoids the view hitting domain validation
-        # that we don't want exercised in this unit test.
-        mock_validate_data.return_value = {
-            "team": self.team,
-            "players": self.players[:9],
-            "created_by_id": self.creator.id,
-        }
-        # The view calls validate_lineup_model(lineup) after the algorithm
-        # returns; patch it to True so this unit test focuses on the
-        # view/algorithm contract rather than re-running domain validation.
-        mock_validate.return_value = True
 
         # Authenticate as creator and POST only the team_id
         self.client.force_authenticate(user=self.creator)
         resp = self.client.post(self.base_url, payload, format="json")
         self.assertEqual(resp.status_code, 201)
+        # Algorithm mode doesn't save to DB, so no 'id' field
+        self.assertIn("team_id", resp.data)
+        self.assertIn("players", resp.data)
+        self.assertEqual(len(resp.data["players"]), 9)
+        # Verify each player has required fields
+        for player in resp.data["players"]:
+            self.assertIn("player_id", player)
+            self.assertIn("player_name", player)
+            self.assertIn("position", player)
+            self.assertIn("batting_order", player)
+
+    def test_post_manual_save_returns_201(self):
+        # Test manual save mode: POST with players and batting orders, saves to DB
+        payload = {
+            "team_id": self.team.id,
+            "name": "Manual Lineup",
+            "players": [
+                {
+                    "player_id": self.players[i].id,
+                    "position": "1B",
+                    "batting_order": i + 1,
+                }
+                for i in range(9)
+            ],
+        }
+
+        # Authenticate as creator and POST full lineup
+        self.client.force_authenticate(user=self.creator)
+        resp = self.client.post(self.base_url, payload, format="json")
+        self.assertEqual(resp.status_code, 201)
+        # Manual save mode saves to DB, so 'id' field should be present
         self.assertIn("id", resp.data)
+        self.assertIn("team_id", resp.data)
+        self.assertIn("name", resp.data)
+        self.assertIn("players", resp.data)
+        self.assertEqual(resp.data["name"], "Manual Lineup")
+        self.assertEqual(len(resp.data["players"]), 9)
+        # Verify lineup was saved to database
+        lineup = Lineup.objects.get(id=resp.data["id"])
+        self.assertEqual(lineup.name, "Manual Lineup")
+        self.assertEqual(lineup.team_id, self.team.id)
+        self.assertEqual(lineup.players.count(), 9)
 
     def test_get_detail_returns_200(self):
         lineup = Lineup.objects.create(
