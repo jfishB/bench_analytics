@@ -6,7 +6,6 @@ interface PlayerCardProps {
   name: string; // player name
   teamID?: string; // optional team ID
   teamName?: string; // optional team name (prefer this when available)
-  battingPosition?: string | number | null; // optional batting position
   className?: string; // additional styling classes
   // new stats
 }
@@ -17,7 +16,6 @@ interface PlayerCardProps {
  * Displays a single player's key info:
  * - Prominent player name
  * - Subtle team name
- * - Optional batting position (shows "--" when not provided)
  *
  * Layout is flexible and allows additional meta fields to be added below the main info.
  * Add comments here when additional fields are created.
@@ -27,7 +25,6 @@ export function PlayerCard({
   name,
   teamID,
   teamName,
-  battingPosition,
   className = "",
 }: PlayerCardProps) {
   return (
@@ -48,20 +45,12 @@ export function PlayerCard({
         </h3>
       </header>
 
-      {/* Team and Position Info */}
-      <div className="flex items-center justify-between text-sm text-gray-600 mb-3">
+      {/* Team Info */}
+      <div className="text-sm text-gray-600 mb-3">
         <div className="flex flex-col">
           <span className="text-xs text-gray-500">Team</span>
           <span className="text-sm font-medium text-gray-800">
             {teamName ?? teamID ?? "--"}
-          </span>
-        </div>
-
-        {/* Batting position */}
-        <div className="flex flex-col items-end">
-          <span className="text-xs text-gray-500">Position</span>
-          <span className="text-sm font-medium text-gray-800">
-            {battingPosition ?? "--"}
           </span>
         </div>
       </div>

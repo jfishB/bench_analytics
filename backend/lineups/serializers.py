@@ -8,6 +8,8 @@ for saving a lineup
 
 from rest_framework import serializers
 
+from .models import Lineup
+
 
 # ---- Request schema (client -> server) ----
 class LineupPlayerIn(serializers.Serializer):
@@ -24,6 +26,7 @@ class LineupCreate(serializers.Serializer):
 
     team_id = serializers.IntegerField()
     players = LineupPlayerIn(many=True, min_length=9, max_length=9)  # calls LineupPlayerIn from above
+    name = serializers.CharField(max_length=120, required=False, allow_blank=False)
 
 
 class LineupCreateByTeam(serializers.Serializer):
@@ -31,6 +34,7 @@ class LineupCreateByTeam(serializers.Serializer):
 
     The frontend may supply only a team_id (and optional metadata). The
     server will load players for that team and run the algorithm.
+    This is used for algorithm-only mode and does not save to database.
     """
 
     team_id = serializers.IntegerField()
@@ -72,6 +76,35 @@ class LineupOut(serializers.Serializer):
 
     id = serializers.IntegerField()
     team_id = serializers.IntegerField()
+    name = serializers.CharField(max_length=120)
     players = LineupPlayerOut(many=True)
     created_by = serializers.IntegerField()
     created_at = serializers.DateTimeField()
+
+
+class LineupModelSerializer(serializers.ModelSerializer):
+    """ModelSerializer for Lineup - used by ViewSet for list/retrieve operations."""
+
+    players = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Lineup
+        fields = ["id", "team_id", "name", "created_by", "created_at", "players"]
+        read_only_fields = ["id", "created_at"]
+
+    def get_players(self, obj):
+        """Return the lineup players in batting order.
+
+        Filters out players with None batting_order to handle incomplete lineups.
+        """
+        lineup_players = obj.players.order_by("batting_order")
+        return [
+            {
+                "player_id": lp.player_id,
+                "player_name": lp.player.name if lp.player else None,
+                "position": lp.position,
+                "batting_order": lp.batting_order,
+            }
+            for lp in lineup_players
+            if lp.batting_order is not None  # Filter out None batting orders
+        ]

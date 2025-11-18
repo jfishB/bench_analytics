@@ -8,6 +8,7 @@ export interface PlayerListItem {
   battingOrder?: number | null;
   // Payload may be partial player data
   payload: Partial<Player>;
+  isSelected?: boolean;
 }
 
 export interface PlayerListProps {
@@ -15,6 +16,8 @@ export interface PlayerListProps {
   className?: string;
   onItemClick?: (item: PlayerListItem) => void;
   badgeClassName?: string;
+  onSelectionToggle?: (item: PlayerListItem) => void;
+  showCheckboxes?: boolean;
 }
 
 /**
@@ -30,6 +33,8 @@ export function PlayerList({
   className = "",
   onItemClick,
   badgeClassName = "bg-primary text-white dark:bg-primary",
+  onSelectionToggle,
+  showCheckboxes = false,
 }: PlayerListProps) {
   // Empty state: display friendly fallback
   if (!items || items.length === 0) {
@@ -83,9 +88,24 @@ export function PlayerList({
             </div>
 
             {/* Optional area for extra actions or badges */}
-            <div className="ml-3 text-xs text-gray-500">
-              {/* ADDITIONAL FIELDS */}
-            </div>
+            {showCheckboxes && onSelectionToggle ? (
+              <div className="ml-3 flex items-center">
+                <input
+                  type="checkbox"
+                  checked={it.isSelected || false}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    onSelectionToggle(it);
+                  }}
+                  className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              </div>
+            ) : (
+              <div className="ml-3 text-xs text-gray-500">
+                {/* ADDITIONAL FIELDS */}
+              </div>
+            )}
           </div>
         </li>
       ))}

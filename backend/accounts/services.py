@@ -3,12 +3,7 @@ from django.contrib.auth.models import User
 from django.db import IntegrityError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .exceptions import (
-    EmailAlreadyExistsError,
-    InvalidCredentialsError,
-    MissingFieldsError,
-    UserAlreadyExistsError,
-)
+from .exceptions import EmailAlreadyExistsError, InvalidCredentialsError, MissingFieldsError, UserAlreadyExistsError
 
 
 def register_user(username, email, password) -> User:
