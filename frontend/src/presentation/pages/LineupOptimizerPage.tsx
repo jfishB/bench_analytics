@@ -29,6 +29,7 @@ import {
 } from "@dnd-kit/sortable";
 import PlayerList from "../../ui/components/player-list";
 import { ManualModePanel } from "../../features/lineup/components/ManualModePanel";
+import { SabermetricsModePanel } from "../../features/lineup/components/SabermetricsModePanel";
 
 // Simple debugging page: fetch roster players and display basic status
 
@@ -102,6 +103,62 @@ export function LineupOptimizer() {
         team_id: teamId!,
         name: lineupName,
         players: battingOrderLineup.map((p) => ({
+          player_id: p.id,
+          position: p.position || "DH",
+          batting_order: p.batting_order!,
+        })),
+      };
+
+      await lineupService.saveLineup(payload);
+
+      setSaveStatus("saved");
+      fetchSavedLineups(); // Refresh lineup list
+      setTimeout(() => {
+        setSaveStatus("idle");
+        setLineupName(""); // Clear the name field for next lineup
+      }, 1000);
+    } catch (err: any) {
+      console.error("Failed to save lineup:", err);
+      setError(err?.message || "Failed to save lineup");
+      setSaveStatus("idle");
+    }
+  };
+
+  // Handle generate for sabermetrics mode
+  const handleSabermetricsGenerate = async () => {
+    setGenerating(true);
+    setError(null);
+    try {
+      const data = await lineupService.generateLineup(teamId!);
+      const ordered = (data.players || []).map((p: any) => {
+        const full = players.find((r) => r.id === p.player_id) || {
+          id: p.player_id,
+          name: p.player_name ?? "Unknown",
+          position: p.position,
+          team: String(p.team ?? teamId),
+        };
+        return {
+          ...full,
+          batting_order: p.batting_order,
+        };
+      });
+      setGeneratedLineup(ordered);
+    } catch (err: any) {
+      console.error("Generation failed:", err);
+      setError(err?.message || "Failed to generate");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  // Handle save for sabermetrics mode
+  const handleSabermetricsSave = async () => {
+    setSaveStatus("saving");
+    try {
+      const payload: lineupService.SaveLineupPayload = {
+        team_id: teamId!,
+        name: lineupName,
+        players: generatedLineup.map((p) => ({
           player_id: p.id,
           position: p.position || "DH",
           batting_order: p.batting_order!,
@@ -452,161 +509,19 @@ export function LineupOptimizer() {
                 />
               ) : (
                 /* Sabermetrics Mode */
-                <div className="grid md:grid-cols-2 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Algorithm Generator</CardTitle>
-                      <CardDescription>
-                        Generate an optimal batting order using sabermetrics
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-sm text-muted-foreground mb-4">
-                        Use the algorithm to generate an optimal lineup based on
-                        player statistics.
-                      </div>
-                      <div className="pt-4">
-                        <PlayersOrderedList
-                          players={lineupPlayers}
-                          onItemClick={(p) =>
-                            setSelected(
-                              players.find((x) => x.id === p.id) ?? null
-                            )
-                          }
-                          badgeClassName="bg-gray-400 text-white"
-                        />
-                        <div className="pt-4">
-                          <Button
-                            className="w-full"
-                            onClick={async () => {
-                              setGenerating(true);
-                              setError(null);
-                              try {
-                                const data = await lineupService.generateLineup(teamId!);
-                                const ordered = (data.players || []).map(
-                                  (p: any) => {
-                                    const full = players.find(
-                                      (r) => r.id === p.player_id
-                                    ) || {
-                                      id: p.player_id,
-                                      name: p.player_name ?? "Unknown",
-                                      position: p.position,
-                                      team: String(p.team ?? teamId),
-                                    };
-                                    return {
-                                      ...full,
-                                      batting_order: p.batting_order,
-                                    };
-                                  }
-                                );
-                                setGeneratedLineup(ordered);
-                              } catch (err: any) {
-                                console.error("Generation failed:", err);
-                                setError(err?.message || "Failed to generate");
-                              } finally {
-                                setGenerating(false);
-                              }
-                            }}
-                          >
-                            {generating ? "Generating…" : "Generate Lineup"}
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Generated Lineup</CardTitle>
-                      <CardDescription>
-                        Optimal batting order generated by the algorithm
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {generatedLineup.length > 0 ? (
-                        <>
-                          <PlayersOrderedList
-                            players={generatedLineup}
-                            onItemClick={(p) =>
-                              setSelected(
-                                players.find((x) => x.id === p.id) ?? null
-                              )
-                            }
-                            badgeClassName="bg-primary text-white dark:bg-primary"
-                          />
-                          <div className="mt-6 space-y-3">
-                            <div>
-                              <label
-                                htmlFor="lineup-name-sabermetrics"
-                                className="block text-sm font-medium text-gray-700 mb-1"
-                              >
-                                Lineup Name
-                              </label>
-                              <input
-                                id="lineup-name-sabermetrics"
-                                type="text"
-                                value={lineupName}
-                                onChange={(e) => setLineupName(e.target.value)}
-                                placeholder="Enter lineup name..."
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                              />
-                            </div>
-                            <Button
-                              className={`w-full ${
-                                saveStatus === "saved"
-                                  ? "bg-green-600 hover:bg-green-600"
-                                  : ""
-                              } disabled:bg-gray-200 disabled:cursor-not-allowed`}
-                              disabled={
-                                !lineupName.trim() || saveStatus === "saving"
-                              }
-                              onClick={async () => {
-                                setSaveStatus("saving");
-                                try {
-                                  const payload: lineupService.SaveLineupPayload = {
-                                    team_id: teamId!,
-                                    name: lineupName,
-                                    players: generatedLineup.map((p) => ({
-                                      player_id: p.id,
-                                      position: p.position || "DH",
-                                      batting_order: p.batting_order!,
-                                    })),
-                                  };
-
-                                  await lineupService.saveLineup(payload);
-
-                                  setSaveStatus("saved");
-                                  fetchSavedLineups(); // Refresh lineup list
-                                  setTimeout(() => {
-                                    setSaveStatus("idle");
-                                    setLineupName(""); // Clear the name field for next lineup
-                                  }, 1000);
-                                } catch (err: any) {
-                                  console.error("Failed to save lineup:", err);
-                                  setError(
-                                    err?.message || "Failed to save lineup"
-                                  );
-                                  setSaveStatus("idle");
-                                }
-                              }}
-                            >
-                              {saveStatus === "saving"
-                                ? "Saving..."
-                                : saveStatus === "saved"
-                                ? "Saved ✓"
-                                : "Save Lineup"}
-                            </Button>
-                          </div>
-                        </>
-                      ) : (
-                        <div className="text-center text-muted-foreground py-8">
-                          Click "Generate Lineup" to see the optimal batting
-                          order.
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
+                <SabermetricsModePanel
+                  lineupPlayers={lineupPlayers}
+                  generatedLineup={generatedLineup}
+                  lineupName={lineupName}
+                  saveStatus={saveStatus}
+                  generating={generating}
+                  onPlayerClick={(p) =>
+                    setSelected(players.find((x) => x.id === p.id) ?? null)
+                  }
+                  onLineupNameChange={setLineupName}
+                  onGenerate={handleSabermetricsGenerate}
+                  onSave={handleSabermetricsSave}
+                />
               )}
             </>
           )}
