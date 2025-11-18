@@ -29,10 +29,11 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { Player } from "../../../shared/types";
 
 // Sortable player item component for drag and drop
 interface SortablePlayerItemProps {
-  player: any;
+  player: Player;
   index: number;
 }
 
@@ -89,11 +90,11 @@ function SortablePlayerItem({ player, index }: SortablePlayerItemProps) {
 }
 
 interface ManualModePanelProps {
-  lineupPlayers: any[];
-  battingOrderLineup: any[];
+  lineupPlayers: Player[];
+  battingOrderLineup: Player[];
   lineupName: string;
   saveStatus: "idle" | "saving" | "saved";
-  onPlayerClick: (player: any) => void;
+  onPlayerClick: (player: Player) => void;
   onLineupNameChange: (name: string) => void;
   onDragEnd: (event: DragEndEvent) => void;
   onSave: () => Promise<void>;

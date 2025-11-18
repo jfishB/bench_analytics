@@ -12,14 +12,15 @@ import {
 } from "../../../ui/components/card";
 import { Button } from "../../../ui/components/button";
 import PlayersOrderedList from "../../players/components/PlayersOrderedList";
+import { Player } from "../../../shared/types";
 
 interface SabermetricsModePanelProps {
-  lineupPlayers: any[];
-  generatedLineup: any[];
+  lineupPlayers: Player[];
+  generatedLineup: Player[];
   lineupName: string;
   saveStatus: "idle" | "saving" | "saved";
   generating: boolean;
-  onPlayerClick: (player: any) => void;
+  onPlayerClick: (player: Player) => void;
   onLineupNameChange: (name: string) => void;
   onGenerate: () => Promise<void>;
   onSave: () => Promise<void>;

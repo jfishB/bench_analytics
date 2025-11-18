@@ -11,4 +11,8 @@ export type Player = {
   obp?: number;
   ops?: number;
   batting_order?: number;
+  xwoba?: number;
+  bb_percent?: number;
+  k_percent?: number;
+  barrel_batted_rate?: number;
 }

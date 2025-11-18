@@ -29,15 +29,16 @@ import { ManualModePanel } from "../../features/lineup/components/ManualModePane
 import { SabermetricsModePanel } from "../../features/lineup/components/SabermetricsModePanel";
 import { LineupSimulatorTab } from "../../features/lineup/components/LineupSimulatorTab";
 import { Alert, AlertDescription, AlertTitle } from "../../ui/components/alert";
+import { Player } from "../../shared/types";
 
 // Simple debugging page: fetch roster players and display basic status
 
 // Main page: tabs with Roster, Optimizer (generate) and Analysis
 export function LineupOptimizer() {
   const [loading, setLoading] = useState(true);
-  const [players, setPlayers] = useState<any[]>([]);
+  const [players, setPlayers] = useState<Player[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<any | null>(null);
+  const [selected, setSelected] = useState<Player | null>(null);
 
   // Player selection state
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<Set<number>>(
@@ -51,9 +52,9 @@ export function LineupOptimizer() {
   );
 
   // lineup generation states
-  const [lineupPlayers, setLineupPlayers] = useState<any[]>([]);
-  const [battingOrderLineup, setBattingOrderLineup] = useState<any[]>([]);
-  const [generatedLineup, setGeneratedLineup] = useState<any[]>([]);
+  const [lineupPlayers, setLineupPlayers] = useState<Player[]>([]);
+  const [battingOrderLineup, setBattingOrderLineup] = useState<Player[]>([]);
+  const [generatedLineup, setGeneratedLineup] = useState<Player[]>([]);
   const [generating, setGenerating] = useState(false);
   const [teamId, setTeamId] = useState<number | undefined>(1);
 
@@ -70,7 +71,9 @@ export function LineupOptimizer() {
   >("idle");
 
   // Saved lineups (for Lineup Simulator tab)
-  const [savedLineups, setSavedLineups] = useState<any[]>([]);
+  const [savedLineups, setSavedLineups] = useState<lineupService.SavedLineup[]>(
+    []
+  );
   const [loadingLineups, setLoadingLineups] = useState(false);
 
   // Drag and drop sensors
@@ -103,7 +106,7 @@ export function LineupOptimizer() {
   // Generic save handler for both modes
   const saveLineup = async (
     name: string,
-    players: any[],
+    players: Player[],
     setSaveStatus: React.Dispatch<
       React.SetStateAction<"idle" | "saving" | "saved">
     >,
@@ -184,7 +187,7 @@ export function LineupOptimizer() {
   };
 
   // Toggle player selection
-  const togglePlayerSelection = (player: any) => {
+  const togglePlayerSelection = (player: Player) => {
     const playerId = player.id;
     setSelectedPlayerIds((prev) => {
       const newSet = new Set(prev);
