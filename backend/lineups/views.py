@@ -26,6 +26,16 @@ from .services.validator import validate_batting_orders, validate_data, validate
 # lineups endpoint
 #############################################################################
 class LineupCreateView(APIView):
+    """Create or generate a lineup.
+    
+    Supports two modes:
+    1. Manual/Sabermetrics save: Accepts full payload with players and batting orders,
+       saves to database, returns HTTP 201 with saved lineup.
+    2. Algorithm-only generation: Accepts only team_id, generates suggested lineup
+       without saving to database, returns HTTP 201 with suggested lineup.
+    
+    Both modes return HTTP 201 Created for API consistency.
+    """
     permission_classes = [permissions.AllowAny]  # adjust as needed
 
     def post(self, request):
@@ -184,11 +194,12 @@ class LineupCreateView(APIView):
 
         # Return the suggested lineup WITHOUT saving to database
         # Frontend will display this and user can save it later with their chosen name
+        # Use HTTP 201 Created for consistency with save endpoint (both create lineup resources)
         out = {
             "team_id": team_id,
             "players": suggested_players,
         }
-        return Response(out, status=status.HTTP_200_OK)
+        return Response(out, status=status.HTTP_201_CREATED)
 
 
 # TODO: decide if we need this
