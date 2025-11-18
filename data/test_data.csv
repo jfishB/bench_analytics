@@ -1,4 +1,4 @@
-"last_name, first_name","player_id","year","pa","hit","single","double","triple","home_run","strikeout","walk","k_percent","bb_percent","slg_percent","on_base_percent","isolated_power","b_total_bases","r_total_caught_stealing","r_total_stolen_base","b_game","b_gnd_into_dp","b_hit_by_pitch","b_intent_walk","b_sac_bunt","b_sac_fly","team_id"
+"last_name, first_name","player_id","year","ab","pa","hit","single","double","triple","home_run","strikeout","walk","k_percent","bb_percent","slg_percent","on_base_percent","isolated_power","b_total_bases","r_total_caught_stealing","r_total_stolen_base","b_game","b_gnd_into_dp","b_hit_by_pitch","b_intent_walk","b_sac_bunt","b_sac_fly","team_id"
 "Springer, George",543807,2025,498,586,154,94,27,1,32,111,69,18.9,11.8,".560",".399","0.251","279","1","18","140","14","8","3","0","4",1
 "Lukes, Nathan",664770,2025,388,438,99,66,19,2,12,60,38,13.7,8.7,".407",".323","0.152","158","4","2","135","12","2","2","7","3",1
 "Guerrero Jr., Vladimir",665489,2025,589,680,172,115,34,0,23,94,81,13.8,11.9,".467",".381","0.175","275","3","6","156","17","6","8","0","4",1
