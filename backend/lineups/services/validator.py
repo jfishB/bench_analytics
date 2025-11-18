@@ -9,13 +9,7 @@ from django.contrib.auth import get_user_model
 
 from roster.models import Player, Team
 
-from .exceptions import (
-    BadBattingOrder,
-    NoCreator,
-    PlayersNotFound,
-    PlayersWrongTeam,
-    TeamNotFound,
-)
+from .exceptions import BadBattingOrder, NoCreator, PlayersNotFound, PlayersWrongTeam, TeamNotFound
 from .input_data import LineupPlayerInput
 
 
@@ -45,9 +39,7 @@ def validate_batting_orders(players):
 
     # Check that we have exactly 9 players
     if len(batting_orders) != 9:
-        raise BadBattingOrder(
-            f"Lineup must have exactly 9 players, got {len(batting_orders)}"
-        )
+        raise BadBattingOrder(f"Lineup must have exactly 9 players, got {len(batting_orders)}")
 
     # Check for uniqueness
     if len(set(batting_orders)) != len(batting_orders):
@@ -119,9 +111,7 @@ def validate_data(payload):
     created_by_id = _get(payload, "requested_user_id")
     User = get_user_model()
     if not created_by_id:
-        created_by_id = (
-            User.objects.filter(is_superuser=True).values_list("id", flat=True).first()
-        )
+        created_by_id = User.objects.filter(is_superuser=True).values_list("id", flat=True).first()
         if created_by_id is None:
             raise NoCreator()
 

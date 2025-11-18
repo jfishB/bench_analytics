@@ -9,13 +9,7 @@ from rest_framework.views import APIView
 from roster.models import Player as RosterPlayer
 
 from .models import Lineup, LineupPlayer
-from .serializers import (
-    LineupCreate,
-    LineupCreateByTeam,
-    LineupModelSerializer,
-    LineupOut,
-    LineupPlayerOut,
-)
+from .serializers import LineupCreate, LineupCreateByTeam, LineupModelSerializer, LineupOut, LineupPlayerOut
 from .services.algorithm_logic import algorithm_create_lineup
 from .services.auth_user import authorize_lineup_deletion
 from .services.input_data import CreateLineupInput, LineupPlayerInput
@@ -27,15 +21,16 @@ from .services.validator import validate_batting_orders, validate_data, validate
 #############################################################################
 class LineupCreateView(APIView):
     """Create or generate a lineup.
-    
+
     Supports two modes:
     1. Manual/Sabermetrics save: Accepts full payload with players and batting orders,
        saves to database, returns HTTP 201 with saved lineup.
     2. Algorithm-only generation: Accepts only team_id, generates suggested lineup
        without saving to database, returns HTTP 201 with suggested lineup.
-    
+
     Both modes return HTTP 201 Created for API consistency.
     """
+
     permission_classes = [permissions.AllowAny]  # adjust as needed
 
     def post(self, request):
@@ -46,17 +41,12 @@ class LineupCreateView(APIView):
             # Full payload provided - check if batting orders are set
             data = req_full.validated_data
             players_data = data["players"]
-            all_have_batting_order = all(
-                p.get("batting_order") is not None for p in players_data
-            )
+            all_have_batting_order = all(p.get("batting_order") is not None for p in players_data)
 
             if all_have_batting_order:
                 # Manual or sabermetrics save - skip algorithm and save directly
                 team_id = data["team_id"]
-                lineup_name = (
-                    data.get("name")
-                    or f"Lineup - {timezone.now().strftime('%Y-%m-%d %H:%M')}"
-                )
+                lineup_name = data.get("name") or f"Lineup - {timezone.now().strftime('%Y-%m-%d %H:%M')}"
 
                 # Build CreateLineupInput with provided batting orders
                 players_input = [
@@ -71,9 +61,7 @@ class LineupCreateView(APIView):
                 payload = CreateLineupInput(
                     team_id=team_id,
                     players=players_input,
-                    requested_user_id=(
-                        request.user.id if request.user.is_authenticated else None
-                    ),
+                    requested_user_id=(request.user.id if request.user.is_authenticated else None),
                 )
 
                 # Validate batting orders are unique and cover 1-9
@@ -224,11 +212,7 @@ class LineupDetailView(APIView):
                 "players": [
                     {
                         "player_id": lp.player_id,
-                        "player_name": (
-                            lp.player.name
-                            if getattr(lp, "player", None) is not None
-                            else None
-                        ),
+                        "player_name": (lp.player.name if getattr(lp, "player", None) is not None else None),
                         "position": lp.position,
                         "batting_order": lp.batting_order,
                     }
