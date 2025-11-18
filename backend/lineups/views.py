@@ -19,7 +19,7 @@ from .serializers import (
 from .services.algorithm_logic import algorithm_create_lineup
 from .services.auth_user import authorize_lineup_deletion
 from .services.input_data import CreateLineupInput, LineupPlayerInput
-from .services.validator import validate_data, validate_lineup_model
+from .services.validator import validate_batting_orders, validate_data, validate_lineup_model
 
 
 #############################################################################
@@ -65,6 +65,9 @@ class LineupCreateView(APIView):
                         request.user.id if request.user.is_authenticated else None
                     ),
                 )
+
+                # Validate batting orders are unique and cover 1-9
+                validate_batting_orders(payload.players)
 
                 # Validate data
                 validated = validate_data(payload)

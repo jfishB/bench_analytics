@@ -10,6 +10,44 @@ from django.contrib.auth import get_user_model
 from roster.models import Player, Team
 
 from .exceptions import BadBattingOrder, NoCreator, PlayersNotFound, PlayersWrongTeam, TeamNotFound
+from .input_data import LineupPlayerInput
+
+
+def validate_batting_orders(players):
+    """Validate that batting orders are unique and cover positions 1-9.
+    
+    Args:
+        players: List of LineupPlayerInput objects or similar objects with batting_order attribute
+        
+    Raises:
+        BadBattingOrder: If batting orders are invalid (missing, not unique, or don't cover 1-9)
+    """
+    # Extract batting orders
+    batting_orders = []
+    for p in players:
+        # Support both dataclass attributes and dict keys
+        if hasattr(p, 'batting_order'):
+            bo = p.batting_order
+        elif isinstance(p, dict):
+            bo = p.get('batting_order')
+        else:
+            bo = None
+            
+        if bo is None:
+            raise BadBattingOrder("All players must have a batting order assigned")
+        batting_orders.append(bo)
+    
+    # Check that we have exactly 9 players
+    if len(batting_orders) != 9:
+        raise BadBattingOrder(f"Lineup must have exactly 9 players, got {len(batting_orders)}")
+    
+    # Check for uniqueness
+    if len(set(batting_orders)) != len(batting_orders):
+        raise BadBattingOrder("Batting orders must be unique")
+    
+    # Check that orders cover exactly 1-9
+    if sorted(batting_orders) != list(range(1, 10)):
+        raise BadBattingOrder("Batting orders must cover positions 1 through 9")
 
 
 def validate_data(payload):
