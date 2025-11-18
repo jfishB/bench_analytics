@@ -8,6 +8,8 @@ for saving a lineup
 
 from rest_framework import serializers
 
+from .models import Lineup
+
 
 # ---- Request schema (client -> server) ----
 class LineupPlayerIn(serializers.Serializer):
@@ -36,10 +38,10 @@ class LineupCreateByTeam(serializers.Serializer):
 
     The frontend may supply only a team_id (and optional metadata). The
     server will load players for that team and run the algorithm.
+    This is used for algorithm-only mode and does not save to database.
     """
 
     team_id = serializers.IntegerField()
-    name = serializers.CharField(max_length=120, required=False, allow_blank=False)
 
 
 # ---- Response schema (server -> client) ----
@@ -90,14 +92,15 @@ class LineupModelSerializer(serializers.ModelSerializer):
     players = serializers.SerializerMethodField()
 
     class Meta:
-        from .models import Lineup
-
         model = Lineup
         fields = ["id", "team_id", "name", "created_by", "created_at", "players"]
         read_only_fields = ["id", "created_at"]
 
     def get_players(self, obj):
-        """Return the lineup players in batting order."""
+        """Return the lineup players in batting order.
+
+        Filters out players with None batting_order to handle incomplete lineups.
+        """
         lineup_players = obj.players.order_by("batting_order")
         return [
             {
@@ -107,4 +110,5 @@ class LineupModelSerializer(serializers.ModelSerializer):
                 "batting_order": lp.batting_order,
             }
             for lp in lineup_players
+            if lp.batting_order is not None  # Filter out None batting orders
         ]
