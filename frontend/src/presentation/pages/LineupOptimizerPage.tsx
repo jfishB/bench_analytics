@@ -56,11 +56,17 @@ export function LineupOptimizer() {
   const [generating, setGenerating] = useState(false);
   const [teamId, setTeamId] = useState<number | undefined>(1);
 
-  // Lineup name and save status
-  const [lineupName, setLineupName] = useState<string>("");
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved">(
-    "idle"
-  );
+  // Separate lineup name and save status for each mode
+  const [manualLineupName, setManualLineupName] = useState<string>("");
+  const [manualSaveStatus, setManualSaveStatus] = useState<
+    "idle" | "saving" | "saved"
+  >("idle");
+
+  const [sabermetricsLineupName, setSabermetricsLineupName] =
+    useState<string>("");
+  const [sabermetricsSaveStatus, setSabermetricsSaveStatus] = useState<
+    "idle" | "saving" | "saved"
+  >("idle");
 
   // Saved lineups (for Lineup Simulator tab)
   const [savedLineups, setSavedLineups] = useState<any[]>([]);
@@ -93,14 +99,21 @@ export function LineupOptimizer() {
     }
   };
 
-  // Handle save for manual mode
-  const handleManualSave = async () => {
+  // Generic save handler for both modes
+  const saveLineup = async (
+    name: string,
+    players: any[],
+    setSaveStatus: React.Dispatch<
+      React.SetStateAction<"idle" | "saving" | "saved">
+    >,
+    clearName: () => void
+  ) => {
     setSaveStatus("saving");
     try {
       const payload: lineupService.SaveLineupPayload = {
         team_id: teamId!,
-        name: lineupName,
-        players: battingOrderLineup.map((p) => ({
+        name,
+        players: players.map((p) => ({
           player_id: p.id,
           position: p.position || "DH",
           batting_order: p.batting_order!,
@@ -113,13 +126,23 @@ export function LineupOptimizer() {
       fetchSavedLineups(); // Refresh lineup list
       setTimeout(() => {
         setSaveStatus("idle");
-        setLineupName(""); // Clear the name field for next lineup
+        clearName(); // Clear the name field for next lineup
       }, 1000);
     } catch (err: any) {
       console.error("Failed to save lineup:", err);
       setError(err?.message || "Failed to save lineup");
       setSaveStatus("idle");
     }
+  };
+
+  // Handle save for manual mode
+  const handleManualSave = async () => {
+    await saveLineup(
+      manualLineupName,
+      battingOrderLineup,
+      setManualSaveStatus,
+      () => setManualLineupName("")
+    );
   };
 
   // Handle generate for sabermetrics mode
@@ -151,31 +174,12 @@ export function LineupOptimizer() {
 
   // Handle save for sabermetrics mode
   const handleSabermetricsSave = async () => {
-    setSaveStatus("saving");
-    try {
-      const payload: lineupService.SaveLineupPayload = {
-        team_id: teamId!,
-        name: lineupName,
-        players: generatedLineup.map((p) => ({
-          player_id: p.id,
-          position: p.position || "DH",
-          batting_order: p.batting_order!,
-        })),
-      };
-
-      await lineupService.saveLineup(payload);
-
-      setSaveStatus("saved");
-      fetchSavedLineups(); // Refresh lineup list
-      setTimeout(() => {
-        setSaveStatus("idle");
-        setLineupName(""); // Clear the name field for next lineup
-      }, 1000);
-    } catch (err: any) {
-      console.error("Failed to save lineup:", err);
-      setError(err?.message || "Failed to save lineup");
-      setSaveStatus("idle");
-    }
+    await saveLineup(
+      sabermetricsLineupName,
+      generatedLineup,
+      setSabermetricsSaveStatus,
+      () => setSabermetricsLineupName("")
+    );
   };
 
   // Toggle player selection
@@ -496,12 +500,12 @@ export function LineupOptimizer() {
                 <ManualModePanel
                   lineupPlayers={lineupPlayers}
                   battingOrderLineup={battingOrderLineup}
-                  lineupName={lineupName}
-                  saveStatus={saveStatus}
+                  lineupName={manualLineupName}
+                  saveStatus={manualSaveStatus}
                   onPlayerClick={(p) =>
                     setSelected(players.find((x) => x.id === p.id) ?? null)
                   }
-                  onLineupNameChange={setLineupName}
+                  onLineupNameChange={setManualLineupName}
                   onDragEnd={handleDragEnd}
                   onSave={handleManualSave}
                 />
@@ -510,13 +514,13 @@ export function LineupOptimizer() {
                 <SabermetricsModePanel
                   lineupPlayers={lineupPlayers}
                   generatedLineup={generatedLineup}
-                  lineupName={lineupName}
-                  saveStatus={saveStatus}
+                  lineupName={sabermetricsLineupName}
+                  saveStatus={sabermetricsSaveStatus}
                   generating={generating}
                   onPlayerClick={(p) =>
                     setSelected(players.find((x) => x.id === p.id) ?? null)
                   }
-                  onLineupNameChange={setLineupName}
+                  onLineupNameChange={setSabermetricsLineupName}
                   onGenerate={handleSabermetricsGenerate}
                   onSave={handleSabermetricsSave}
                 />
