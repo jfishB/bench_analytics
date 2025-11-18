@@ -16,15 +16,8 @@ import {
   TabsTrigger,
 } from "../../ui/components/tabs";
 import * as lineupService from "../../features/lineup/services/lineupService";
-import {
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent,
-} from "@dnd-kit/core";
-import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import PlayerList from "../../ui/components/player-list";
+import { DragEndEvent } from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
 import { ManualModePanel } from "../../features/lineup/components/ManualModePanel";
 import { SabermetricsModePanel } from "../../features/lineup/components/SabermetricsModePanel";
 import { LineupSimulatorTab } from "../../features/lineup/components/LineupSimulatorTab";
@@ -75,14 +68,6 @@ export function LineupOptimizer() {
     []
   );
   const [loadingLineups, setLoadingLineups] = useState(false);
-
-  // Drag and drop sensors
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  );
 
   // Handle drag end for batting order
   const handleDragEnd = (event: DragEndEvent) => {
@@ -260,6 +245,7 @@ export function LineupOptimizer() {
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
