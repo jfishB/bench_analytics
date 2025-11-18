@@ -1,11 +1,12 @@
 """
-runs monte carlo baseball simulations using bram's simulator library.
+runs monte carlo baseball simulations using bram stoker's baseball-simulator library.
+source: https://github.com/BramStoker/baseball-simulator
+
 converts batterstats dtos to batter probability objects,
 runs thousands of game simulations (default 10k),
 calculates aggregate statistics (mean, median, std dev),
 and returns simulationresult dto.
 called by views.py after player_service.py fetches data.
-uses lib/baseball-simulator for game mechanics.
 """
 
 # Import Bram's baseball simulator from lib directory
@@ -13,7 +14,6 @@ uses lib/baseball-simulator for game mechanics.
 import os
 import statistics
 import sys
-from pathlib import Path
 from typing import List
 
 from .dto import BatterStats, SimulationResult
@@ -53,10 +53,11 @@ class SimulationService:
             batter = Batter(probabilities=probabilities, name=stats.name)
             lineup.append(batter)
 
-        # Run simulations
+        # Run simulations - reuse Game object for efficiency
+        # Creating new Game objects each iteration wastes memory for large simulations
+        game = Game(lineup=lineup, printing=False)
         scores = []
         for _ in range(num_games):
-            game = Game(lineup=lineup, printing=False)
             game.reset_game_state()
             game.play()
             scores.append(game.get_score())

@@ -5,6 +5,4 @@ all simulation results are computed on-demand and returned via api.
 player data comes from roster.models.Player.
 """
 
-from django.db import models
-
 # no models needed - simulator is stateless

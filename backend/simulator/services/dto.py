@@ -31,8 +31,12 @@ class BatterStats:
     def to_probabilities(self) -> List[float]:
         """
         Convert raw stats to at-bat outcome probabilities.
+        Validates that probabilities don't exceed 1.0 (data quality check).
 
         Returns list of 7 probabilities: [K, out, walk, 1B, 2B, 3B, HR]
+
+        Raises:
+            ValueError: If outcome counts exceed plate appearances (invalid data)
         """
         if self.plate_appearances == 0:
             # Default to all outs if no data
@@ -47,10 +51,20 @@ class BatterStats:
         prob_triple = self.triples / pa
         prob_homerun = self.home_runs / pa
 
-        # Remaining probability is in-play outs
-        prob_out = 1.0 - (prob_strikeout + prob_walk + prob_single + prob_double + prob_triple + prob_homerun)
+        # Calculate sum to validate data quality
+        prob_sum = prob_strikeout + prob_walk + prob_single + prob_double + prob_triple + prob_homerun
 
-        # Ensure non-negative
+        # Check for data inconsistency (probabilities exceeding 1.0)
+        if prob_sum > 1.0 + 1e-8:  # Allow tiny floating point error
+            raise ValueError(
+                f"Invalid data for player '{self.name}': outcome probabilities sum to {prob_sum:.6f} (> 1.0). "
+                f"This indicates counting stats exceed plate appearances. Check data integrity."
+            )
+
+        # Remaining probability is in-play outs
+        prob_out = 1.0 - prob_sum
+
+        # Ensure non-negative (handle floating point precision)
         prob_out = max(0.0, prob_out)
 
         return [

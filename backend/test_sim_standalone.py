@@ -1,11 +1,15 @@
 """
 Standalone test of the simulator without Django.
 Tests the first 9 batters from the Blue Jays CSV file.
+
+Uses Bram Stoker's baseball-simulator library:
+https://github.com/BramStoker/baseball-simulator
 """
 
 import os
 import statistics
 import sys
+from collections import Counter
 from dataclasses import dataclass
 from typing import List
 
@@ -161,13 +165,11 @@ def main():
     print(f"Std Deviation:      {std_dev:.2f}")
     print(f"Score Range:        {min(all_scores)} - {max(all_scores)} runs")
 
-    # Show score distribution
+    # Show score distribution using Counter for efficiency
     print("\n📈 SCORE DISTRIBUTION (Top 15 most common):")
     print("-" * 70)
 
-    score_counts = {}
-    for score in all_scores:
-        score_counts[score] = score_counts.get(score, 0) + 1
+    score_counts = Counter(all_scores)
 
     for score in sorted(score_counts.keys())[:15]:
         count = score_counts[score]
