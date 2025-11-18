@@ -45,10 +45,7 @@ const Home: React.FC = () => {
       <section className="text-center py-12">
         <div className="max-w-3xl mx-auto space-y-6">
           <h1 className="text-4xl md:text-6xl text-primary">
-            Your lineup. Our analytics.
-          </h1>
-          <h1 className="text-4xl md:text-6xl text-primary text-red-600">
-            Their problem.
+            Optimize Your Baseball Lineups
           </h1>
           <p className="text-xl text-muted-foreground">
             Advanced analytics and data-powered insights to help coaches build
@@ -56,19 +53,19 @@ const Home: React.FC = () => {
             situations.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" onClick={() => navigate("/lineup")}>
+            <Button
+              size="lg"
+              onClick={() => navigate("/lineup")}
+              className="px-8 bg-[var(--accent-red)] text-[var(--accent-red-foreground)] hover:bg-[var(--accent-red)]/90"
+            >
               Start Optimizing
             </Button>
 
             <Button
+              variant="outline"
               size="lg"
               onClick={() => navigate("/how-to-guide")}
-              style={{
-                border: "1px solid rgba(0, 0, 0, 0.2)",
-                color: "rgba(0,0,0,0.7)",
-                padding: "0 2rem",
-                backgroundColor: "transparent",
-              }}
+              className="px-8"
             >
               Learn How
             </Button>

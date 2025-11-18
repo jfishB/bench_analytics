@@ -27,10 +27,7 @@ export function Header() {
       <div className="container mx-auto px-4">
         <div className="flex h-20 items-center justify-between">
           {/* --- Logo --- */}
-          <div
-            className="flex items-center space-x-4 cursor-pointer"
-            onClick={() => navigate("/")}
-          >
+          <div className="flex items-center space-x-4 cursor-pointer" onClick={() => navigate("/")}>
             <img src={logo} alt="Bench Analytics" className="h-14 w-auto" />
           </div>
 
@@ -47,9 +44,7 @@ export function Header() {
               </Button>
             ))}
 
-            <span className="text-muted-foreground mx-2 select-none text-lg">
-              |
-            </span>
+            <span className="text-muted-foreground mx-2 select-none text-lg">|</span>
 
             {/* --- Authentication Actions --- */}
             <div className="flex items-center space-x-3">
@@ -69,9 +64,9 @@ export function Header() {
               ) : (
                 <>
                   <Button
-                    variant="default"
+                    variant="outline"
                     onClick={() => navigate("/login")}
-                    className="bg-blue-700 text-white hover:bg-blue-800"
+                    className="bg-blue-600 text-white hover:bg-blue-700"
                   >
                     Login
                   </Button>
