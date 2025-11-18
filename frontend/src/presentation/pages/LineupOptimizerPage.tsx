@@ -386,36 +386,35 @@ export function LineupOptimizer() {
                         id={selected.id}
                         name={selected.name}
                         teamID={String(selected.team)}
-                        battingPosition={selected.position}
                         className="w-full"
                       />
 
                       <div className="mt-3 bg-gray-50 border rounded p-3 text-sm">
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <div className="text-xs text-gray-500">xwOBA</div>
+                            <div className="text-xs text-gray-500">PA</div>
                             <div className="font-medium">
-                              {selected.xwoba ?? "—"}
+                              {selected.pa ?? "—"}
                             </div>
                           </div>
                           <div>
-                            <div className="text-xs text-gray-500">BB %</div>
+                            <div className="text-xs text-gray-500">OBP</div>
                             <div className="font-medium">
-                              {selected.bb_percent ?? "—"}%
+                              {selected.on_base_percent ?? "—"}
                             </div>
                           </div>
                           <div>
-                            <div className="text-xs text-gray-500">K %</div>
+                            <div className="text-xs text-gray-500">Hits</div>
                             <div className="font-medium">
-                              {selected.k_percent ?? "—"}%
+                              {selected.hit ?? "—"}
                             </div>
                           </div>
                           <div>
                             <div className="text-xs text-gray-500">
-                              Barrel %
+                              Walks
                             </div>
                             <div className="font-medium">
-                              {selected.barrel_batted_rate ?? "—"}%
+                              {selected.walk ?? "—"}
                             </div>
                           </div>
                         </div>

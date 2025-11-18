@@ -68,7 +68,6 @@ function SortablePlayerItem({ player, index }: SortablePlayerItemProps) {
       </div>
       <div className="ml-3 flex-1">
         <div className="text-sm font-medium text-gray-900">{player.name}</div>
-        <div className="text-xs text-gray-500">{player.position || "—"}</div>
       </div>
       <div className="ml-3">
         <svg

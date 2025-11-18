@@ -52,7 +52,7 @@ export async function fetchPlayers(teamId?: number): Promise<Player[]> {
   const res = await fetch(`${ROSTER_BASE}/players/`);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
-  const playersArray = Array.isArray(data) ? data : data.results || [];
+  const playersArray = Array.isArray(data) ? data : data.players || data.results || [];
   
   return playersArray.map((p: any) => ({
     id: p.id,
@@ -63,6 +63,14 @@ export async function fetchPlayers(teamId?: number): Promise<Player[]> {
     obp: p.obp,
     ops: p.ops,
     batting_order: p.batting_order,
+    pa: p.pa,
+    on_base_percent: p.on_base_percent,
+    hit: p.hit,
+    walk: p.walk,
+    xwoba: p.xwoba,
+    bb_percent: p.bb_percent,
+    k_percent: p.k_percent,
+    barrel_batted_rate: p.barrel_batted_rate,
   }));
 }
 

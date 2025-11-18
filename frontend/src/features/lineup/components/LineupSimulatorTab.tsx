@@ -89,9 +89,6 @@ export function LineupSimulatorTab({
                               {player.batting_order}
                             </span>
                             <span className="flex-1">{player.player_name}</span>
-                            <span className="text-xs text-gray-500">
-                              {player.position}
-                            </span>
                           </div>
                         ))}
                     </div>
