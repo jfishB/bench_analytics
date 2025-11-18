@@ -15,6 +15,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "../../ui/components/tabs";
+import * as lineupService from "../../features/lineup/services/lineupService";
 import {
   DndContext,
   closestCenter,
@@ -32,10 +33,7 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-
-const API_BASE =
-  process.env.REACT_APP_API_BASE || "http://localhost:8000/api/v1";
-const ROSTER_BASE = `${API_BASE}/roster`;
+import PlayerList from "../../ui/components/player-list";
 
 // Sortable player item component for drag and drop
 interface SortablePlayerItemProps {
@@ -187,10 +185,8 @@ export function LineupOptimizer() {
   const fetchSavedLineups = async () => {
     setLoadingLineups(true);
     try {
-      const res = await fetch(`${API_BASE}/lineups/saved/`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
-      setSavedLineups(Array.isArray(data) ? data : data.results || []);
+      const data = await lineupService.fetchSavedLineups();
+      setSavedLineups(data);
     } catch (err: any) {
       console.error("Failed to fetch lineups:", err);
     } finally {
@@ -207,33 +203,22 @@ export function LineupOptimizer() {
 
   useEffect(() => {
     let cancelled = false;
-    async function fetchPlayers() {
+    async function loadPlayers() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`${ROSTER_BASE}/players/`);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        const raw = Array.isArray(data)
-          ? data
-          : data.players ?? data.results ?? [];
+        const raw = await lineupService.fetchPlayers(teamId);
         if (!cancelled) {
           setPlayers(raw);
           // initialize lineupPlayers to the roster mapping shape the list expects
-          setLineupPlayers(
-            raw.map((p: any) => ({
-              id: p.id,
-              name: p.name,
-              position: p.position,
-              team: String(p.team),
-              batting_order: p.batting_order,
-            }))
-          );
+          setLineupPlayers(raw);
           // detect team id if available
           if (raw.length > 0) {
             const first = raw[0];
-            if (typeof first.team === "number") setTeamId(first.team);
-            else if (first.team_id) setTeamId(first.team_id);
+            if (first.team && typeof first.team === "string") {
+              const parsedTeamId = parseInt(first.team, 10);
+              if (!isNaN(parsedTeamId)) setTeamId(parsedTeamId);
+            }
           }
         }
       } catch (err: any) {
@@ -242,7 +227,7 @@ export function LineupOptimizer() {
         if (!cancelled) setLoading(false);
       }
     }
-    fetchPlayers();
+    loadPlayers();
     return () => {
       cancelled = true;
     };
@@ -567,32 +552,17 @@ export function LineupOptimizer() {
                           onClick={async () => {
                             setSaveStatus("saving");
                             try {
-                              const payload = {
-                                team_id: teamId,
+                              const payload: lineupService.SaveLineupPayload = {
+                                team_id: teamId!,
                                 name: lineupName,
                                 players: battingOrderLineup.map((p) => ({
                                   player_id: p.id,
                                   position: p.position || "DH",
-                                  batting_order: p.batting_order,
+                                  batting_order: p.batting_order!,
                                 })),
                               };
 
-                              const res = await fetch(`${API_BASE}/lineups/`, {
-                                method: "POST",
-                                headers: {
-                                  "Content-Type": "application/json",
-                                },
-                                body: JSON.stringify(payload),
-                              });
-
-                              if (!res.ok) {
-                                const errorText = await res.text();
-                                throw new Error(
-                                  `HTTP ${res.status}: ${errorText}`
-                                );
-                              }
-
-                              await res.json();
+                              await lineupService.saveLineup(payload);
 
                               setSaveStatus("saved");
                               fetchSavedLineups(); // Refresh lineup list
@@ -649,20 +619,7 @@ export function LineupOptimizer() {
                               setGenerating(true);
                               setError(null);
                               try {
-                                const payload = { team_id: teamId };
-                                const res = await fetch(
-                                  `${API_BASE}/lineups/`,
-                                  {
-                                    method: "POST",
-                                    headers: {
-                                      "Content-Type": "application/json",
-                                    },
-                                    body: JSON.stringify(payload),
-                                  }
-                                );
-                                if (!res.ok)
-                                  throw new Error(`HTTP ${res.status}`);
-                                const data = await res.json();
+                                const data = await lineupService.generateLineup(teamId!);
                                 const ordered = (data.players || []).map(
                                   (p: any) => {
                                     const full = players.find(
@@ -743,35 +700,17 @@ export function LineupOptimizer() {
                               onClick={async () => {
                                 setSaveStatus("saving");
                                 try {
-                                  const payload = {
-                                    team_id: teamId,
+                                  const payload: lineupService.SaveLineupPayload = {
+                                    team_id: teamId!,
                                     name: lineupName,
                                     players: generatedLineup.map((p) => ({
                                       player_id: p.id,
                                       position: p.position || "DH",
-                                      batting_order: p.batting_order,
+                                      batting_order: p.batting_order!,
                                     })),
                                   };
 
-                                  const res = await fetch(
-                                    `${API_BASE}/lineups/`,
-                                    {
-                                      method: "POST",
-                                      headers: {
-                                        "Content-Type": "application/json",
-                                      },
-                                      body: JSON.stringify(payload),
-                                    }
-                                  );
-
-                                  if (!res.ok) {
-                                    const errorText = await res.text();
-                                    throw new Error(
-                                      `HTTP ${res.status}: ${errorText}`
-                                    );
-                                  }
-
-                                  await res.json();
+                                  await lineupService.saveLineup(payload);
 
                                   setSaveStatus("saved");
                                   fetchSavedLineups(); // Refresh lineup list
@@ -919,15 +858,8 @@ export function LineupGeneratorTester() {
     setError(null);
     setResult(null);
     try {
-      // Minimal payload - backend expects only team_id
-      const payload = { team_id: 1 };
-      const res = await fetch(`${API_BASE}/lineups/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json();
+      // Use lineup service to generate
+      const data = await lineupService.generateLineup(1);
       setResult(data);
     } catch (err: any) {
       setError(err?.message ?? String(err));
