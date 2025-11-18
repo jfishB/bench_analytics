@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 // API base for auth endpoints. Prefer env var when available so it can be
 // overridden per-deployment (REACT_APP_API_BASE). Falls back to localhost.
-const AUTH_BASE = process.env.REACT_APP_API_BASE || "http://127.0.0.1:8000/api/v1/auth";
+const AUTH_BASE =
+  process.env.REACT_APP_API_BASE || "http://127.0.0.1:8000/api/v1/auth";
 
 export default function Register() {
   const [username, setUsername] = useState("");
@@ -74,7 +75,7 @@ export default function Register() {
 
         <button
           type="submit"
-          className="bg-blue-600 text-white w-full py-2 rounded hover:bg-blue-700"
+          className="!bg-blue-700 text-white w-full py-2 rounded !hover:bg-blue-800"
         >
           Register
         </button>
