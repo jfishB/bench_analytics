@@ -5,7 +5,8 @@ logic for creating batting lineups.
 """
 ###########################################
 
-from typing import Dict, List
+from itertools import permutations
+from typing import Dict
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -14,125 +15,134 @@ from lineups.models import Lineup, LineupPlayer
 from lineups.services.validator import validate_data
 from roster.models import Player
 
-
-def normalize_stat(values: List[float], invert: bool = False) -> Dict[int, float]:
-    """Normalize a list of stat values to 0-1 scale.
-
-    Args:
-        values: List of stat values
-        invert: If True, invert the scale (lower is better, e.g., K%)
-
-    Returns:
-        Dictionary mapping index to normalized value
-    """
-    # Handle cases where all values are None or empty
-    valid_values = [v for v in values if v is not None]
-    if not valid_values:
-        return {i: 0.5 for i in range(len(values))}
-
-    min_val = min(valid_values)
-    max_val = max(valid_values)
-
-    # Avoid division by zero
-    if max_val == min_val:
-        return {i: 1.0 for i in range(len(values))}
-
-    normalized = {}
-    for i, val in enumerate(values):
-        if val is None:
-            normalized[i] = 0.0  # Treat missing stats as worst
-        else:
-            norm_val = (val - min_val) / (max_val - min_val)
-            normalized[i] = (1 - norm_val) if invert else norm_val
-
-    return normalized
+# -------- Batting Spot PA% Multipliers -------- # Source https://www.bluebirdbanter.com/2012/10/12/3490578/lineup-optimization-part-1-of-2?utm_source and https://www.insidethebook.com/ {Page 128}
+PA_MULTIPLIERS = {
+    1: 1.10,
+    2: 1.075,
+    3: 1.05,
+    4: 1.025,
+    5: 1.00,
+    6: 0.975,
+    7: 0.95,
+    8: 0.925,
+    9: 0.90,
+}
 
 
-def blend_woba_xwoba(woba_norm: Dict[int, float], xwoba_norm: Dict[int, float]) -> Dict[int, float]:
-    """Blend woba (60%) and xwoba (40%) for predictive accuracy.
+# -------- Calculate adjusted player metrics to use for BaseRuns formula -------- #
+def calculate_player_adjustments(p: Player, position: int, adjustments: Dict[str, float]) -> Dict[str, float]:
+    """Calculate given players scaled stats and from there A,B,C,D values to use in BaseRun formula.
+        BaseRun Formula and method source: https://library.fangraphs.com/features/baseruns/
 
     Args:
-        woba_norm: Normalized wOBA values
-        xwoba_norm: Normalized xwOBA values
+        p: given player in lineup
+        position: batting order position (1-9)
+        adjustments: Dict to fill with calculated adjustments
+
+    Formula:
+        PA Scale Factor = (PA Multipier based on position) / (total games)
 
     Returns:
-        Dictionary mapping index to blended wOBA value
+        Dict of float value containg cumulative stat adjustments for the team (updated adjustments list)
+        0 - H adjust, 1 - HR adjust, 2 - BB adjust, 3 - IBB adjust, 4 - HBP adjust, 5 - SB adjust, 6 - CS adjust, 7 - GIDP adjust, 8 - SF adjust, 9 - SH adjust, 10 - TB adjust
     """
-    return {i: 0.6 * woba_norm[i] + 0.4 * xwoba_norm[i] for i in woba_norm}
+    if p.b_game is None or p.b_game == 0:
+        return adjustments
+    pa_scale = (
+        PA_MULTIPLIERS[position] / p.b_game
+    )  # Since the stats we will be adjusting are all season long we need to divide by the number of games the player played to get game average stats
+
+    # -------- Adjusting values based on PA scale -------- #
+    adjustments["pa_team"] += (
+        p.pa or 0
+    ) * pa_scale  # Getting adjusted PA value for player and adding them all up to get team PA value for 1 game
+    adjustments["h_adjust"] += (p.hit or 0) * pa_scale
+    adjustments["hr_adjust"] += (p.home_run or 0) * pa_scale
+    adjustments["bb_adjust"] += (p.walk or 0) * pa_scale
+    adjustments["ibb_adjust"] += (p.b_intent_walk or 0) * pa_scale
+    adjustments["hbp_adjust"] += (p.b_hit_by_pitch or 0) * pa_scale
+    adjustments["sb_adjust"] += (p.r_total_stolen_base or 0) * pa_scale
+    adjustments["cs_adjust"] += (p.r_total_caught_stealing or 0) * pa_scale
+    adjustments["gidp_adjust"] += (p.b_gnd_into_dp or 0) * pa_scale
+    adjustments["sf_adjust"] += (p.b_sac_fly or 0) * pa_scale
+    adjustments["sh_adjust"] += (p.b_total_sacrifices or 0) * pa_scale
+    adjustments["tb_adjust"] += (p.b_total_bases or 0) * pa_scale
+
+    return adjustments
 
 
-def calculate_spot_scores(players_list: List[Player], spot: int) -> List[float]:
-    """Calculate scores for each player for a specific lineup spot.
+# -------- BaseRun formula to calculate lineups expected runs for a game -------- #
+def calculate_player_baserun_values(lineup: tuple[Player]) -> float:
+    """Calculate given players scaled stats and from there A,B,C,D values to use in BaseRun formula.
+        BaseRun Formula and method source: https://library.fangraphs.com/features/baseruns/
 
     Args:
-        players_list: List of Player objects with stats
-        spot: Lineup spot number (1-9)
+        lineup: lineup of 9 players
+
+    Value Meanings and Calculations:
+        A: Base runners = H + BB + HBP - (0.5*IBB) - HR
+        B: Runner advancement = 1.1*[1.4*TB - 0.6*H - 3*HR + 0.1*(BB + HBP - IBB) + 0.9*(SB - CS - GDP)]
+        C: Outs = PAadjust - BB - SF - SH - HBP - H + CS + GDP
+        D: Home runs = HR
+
+    Formula:
+        BaseRun = [(A*B) / (B + C)] + D
 
     Returns:
-        List of scores (one per player)
+        Float value representing the Expected runs scored by given player
     """
-    n = len(players_list)
+    adjustments = {
+        "pa_team": 0.0,
+        "h_adjust": 0.0,
+        "hr_adjust": 0.0,
+        "bb_adjust": 0.0,
+        "ibb_adjust": 0.0,
+        "hbp_adjust": 0.0,
+        "sb_adjust": 0.0,
+        "cs_adjust": 0.0,
+        "gidp_adjust": 0.0,
+        "sf_adjust": 0.0,
+        "sh_adjust": 0.0,
+        "tb_adjust": 0.0,
+    }
 
-    # Extract and normalize all relevant stats
-    obp = normalize_stat([p.on_base_percent for p in players_list])
-    slg = normalize_stat([p.slg_percent for p in players_list])
-    iso = normalize_stat([p.isolated_power for p in players_list])
-    woba = normalize_stat([p.woba for p in players_list])
-    xwoba = normalize_stat([p.xwoba for p in players_list])
-    combined_woba = blend_woba_xwoba(woba, xwoba)
-    bb_pct = normalize_stat([p.bb_percent for p in players_list])
-    k_pct = normalize_stat([p.k_percent for p in players_list], invert=True)  # Lower is better
-    barrel_pct = normalize_stat([p.barrel_batted_rate for p in players_list])
-    hard_hit_pct = normalize_stat([p.hard_hit_percent for p in players_list])
-    sprint_speed = normalize_stat([p.sprint_speed for p in players_list])
-    hr_rate = normalize_stat([p.home_run for p in players_list])
-    sb = normalize_stat([p.r_total_stolen_base for p in players_list])
+    for id, p in enumerate(lineup):
+        spot = id + 1
+        adjustments = calculate_player_adjustments(p, spot, adjustments)
 
-    # Extract PA values for sample size confidence weighting
-    pa_values = [p.pa for p in players_list]
+    # -------- Calculating BaseRun formula inputs -------- #
+    a = (
+        adjustments["h_adjust"]
+        + adjustments["bb_adjust"]
+        + adjustments["hbp_adjust"]
+        - (0.5 * adjustments["ibb_adjust"])
+        - adjustments["hr_adjust"]
+    )
+    b = 1.1 * (
+        1.4 * adjustments["tb_adjust"]
+        - 0.6 * adjustments["h_adjust"]
+        - 3 * adjustments["hr_adjust"]
+        + 0.1 * (adjustments["bb_adjust"] + adjustments["hbp_adjust"] - adjustments["ibb_adjust"])
+        + 0.9 * (adjustments["sb_adjust"] - adjustments["cs_adjust"] - adjustments["gidp_adjust"])
+    )
+    c = (
+        adjustments["pa_team"]
+        - adjustments["bb_adjust"]
+        - adjustments["sf_adjust"]
+        - adjustments["sh_adjust"]
+        - adjustments["hbp_adjust"]
+        - adjustments["h_adjust"]
+        + adjustments["cs_adjust"]
+        + adjustments["gidp_adjust"]
+    )  # (pa_scale * p.pa) - to get PA_adjust back. We dont want to use native PA since that is entire season PA and we are calculating for 1 game
+    d = adjustments["hr_adjust"]
 
-    scores = []
+    # -------- BaseRun Calculation -------- #
+    if (b + c) > 0:
+        expected_runs = ((a * b) / (b + c)) + d
+        return expected_runs
 
-    for i in range(n):
-        if spot == 1:
-            # Leadoff: High OBP, speed, stolen bases, walks
-            score = 0.50 * obp[i] + 0.20 * sprint_speed[i] + 0.15 * sb[i] + 0.10 * bb_pct[i] + 0.05 * k_pct[i]
-
-        elif spot == 2:
-            # Elite balanced hitter: wOBA, OBP, walks, avoid strikeouts
-            score = 0.4 * combined_woba[i] + 0.3 * obp[i] + 0.2 * bb_pct[i] + 0.1 * k_pct[i]
-
-        elif spot == 3:
-            # Strong consistent hitter: wOBA, SLG, walks
-            score = 0.45 * combined_woba[i] + 0.25 * slg[i] + 0.2 * bb_pct[i] + 0.1 * k_pct[i]
-
-        elif spot == 4:
-            # Cleanup (power hitter): ISO, SLG, barrels, hard hits, HR rate
-            score = 0.3 * iso[i] + 0.25 * slg[i] + 0.2 * barrel_pct[i] + 0.15 * hard_hit_pct[i] + 0.1 * hr_rate[i]
-
-        elif spot == 5:
-            # Secondary power hitter: SLG, ISO, wOBA, barrels
-            score = 0.35 * slg[i] + 0.25 * iso[i] + 0.25 * combined_woba[i] + 0.15 * barrel_pct[i]
-
-        elif spot == 6:
-            # Decent hitter with speed and baserunning: OBP, sprint speed, stolen bases, wOBA
-            score = 0.35 * obp[i] + 0.25 * sprint_speed[i] + 0.20 * sb[i] + 0.20 * combined_woba[i]
-
-        elif spot in [7, 8]:
-            # Average hitters: wOBA as primary metric
-            score = combined_woba[i]
-
-        else:  # spot == 9
-            # Weakest hitter: wOBA (will select lowest)
-            score = combined_woba[i]
-
-        # Apply sample size confidence weighting (penalize players with < 100 PA)
-        if pa_values[i] is not None and pa_values[i] < 100:
-            score *= min(1.0, pa_values[i] / 100.0)
-
-        scores.append(score)
-
-    return scores
+    return 0
 
 
 def algorithm_create_lineup(payload):
@@ -155,37 +165,19 @@ def algorithm_create_lineup(payload):
     created_by_id = validated["created_by_id"]
 
     # Build position mapping from payload
-    position_map = {p.player_id: p.position for p in players_list}
+    position_map = {p.id: p.position for p in players_list}
 
-    # Greedy assignment algorithm
-    available_indices = set(range(len(players_list)))
-    assignments = {}  # batting_order -> player_index
+    best_runs = -float("inf")
+    best_lineup = None
 
-    for spot in range(1, 10):  # Spots 1 through 9
+    # -------- Brute Force Optimization -------- #
+    for lineup in permutations(players_list):  # Going through all 9! possible lineups
         # Calculate scores for all available players for this spot
-        scores = calculate_spot_scores(players_list, spot)
+        runs = calculate_player_baserun_values(lineup)  # Expected Runs for current lineup
 
-        # Find the best available player for this spot
-        best_idx = None
-        best_score = -float("inf") if spot != 9 else float("inf")
-
-        for idx in available_indices:
-            if spot == 9:
-                # For spot 9, we want the LOWEST score (worst hitter)
-                if scores[idx] < best_score:
-                    best_score = scores[idx]
-                    best_idx = idx
-            else:
-                # For spots 1-8, we want the HIGHEST score
-                if scores[idx] > best_score:
-                    best_score = scores[idx]
-                    best_idx = idx
-
-        # Assign this player to this spot
-        if best_idx is not None:
-            assignments[spot] = best_idx
-            available_indices.remove(best_idx)
-
+        if runs > best_runs:
+            best_runs = runs
+            best_lineup = lineup
     # Create the Lineup and LineupPlayer objects in a transaction
     # TODO: seperate for clean architecture
     with transaction.atomic():
@@ -199,16 +191,14 @@ def algorithm_create_lineup(payload):
 
         # Create LineupPlayer entries
         lineup_players = []
-        for batting_order, player_idx in assignments.items():
-            player = players_list[player_idx]
+        for i, player in enumerate(best_lineup):
             position = position_map.get(player.id, player.position)
 
             lineup_player = LineupPlayer.objects.create(
                 lineup=lineup,
                 player=player,
                 position=position,
-                batting_order=batting_order,
+                batting_order=i + 1,
             )
             lineup_players.append(lineup_player)
-
     return lineup, lineup_players

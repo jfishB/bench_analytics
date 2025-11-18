@@ -55,6 +55,15 @@ def load_csv_file(file: str | Path, year: int | None = None, dry_run: bool = Fal
                 except ValueError:
                     return None
 
+            def to_int_cell(key: str):
+                v = r.get(key)
+                if v is None or v == "":
+                    return None
+                try:
+                    return int(float(str(v).replace('"', "").replace("%", "").strip()))
+                except ValueError:
+                    return None
+
             try:
                 savant_id = int(r.get("player_id")) if r.get("player_id") else None
             except ValueError:
@@ -70,14 +79,28 @@ def load_csv_file(file: str | Path, year: int | None = None, dry_run: bool = Fal
 
             player.savant_player_id = savant_id
             player.year = use_year
+            player.ab = to_int_cell("ab")
             player.pa = pa
-            player.home_run = fflt("home_run")
+            player.hit = to_int_cell("hit")
+            player.single = to_int_cell("single")
+            player.double = to_int_cell("double")
+            player.triple = to_int_cell("triple")
+            player.home_run = to_int_cell("home_run")
+            player.walk = to_int_cell("walk")
             player.k_percent = fflt("k_percent")
             player.bb_percent = fflt("bb_percent")
             player.slg_percent = fflt("slg_percent")
             player.on_base_percent = fflt("on_base_percent")
             player.isolated_power = fflt("isolated_power")
-            player.r_total_stolen_base = fflt("r_total_stolen_base")
+            player.b_total_bases = to_int_cell("b_total_bases")
+            player.r_total_caught_stealing = to_int_cell("r_total_caught_stealing")
+            player.r_total_stolen_base = to_int_cell("r_total_stolen_base")
+            player.b_game = fflt("b_game")
+            player.b_gnd_into_dp = fflt("b_gnd_into_dp")
+            player.b_hit_by_pitch = fflt("b_hit_by_pitch")
+            player.b_intent_walk = fflt("b_intent_walk")
+            player.b_sac_fly = fflt("b_sac_fly")
+            player.b_total_sacrifices = fflt("b_total_sacrifices")
             player.woba = fflt("woba")
             player.xwoba = fflt("xwoba")
             player.barrel_batted_rate = fflt("barrel_batted_rate")

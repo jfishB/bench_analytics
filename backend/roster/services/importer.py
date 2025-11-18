@@ -17,6 +17,18 @@ def _to_float(v):
             return None
 
 
+def _to_int(v):
+    if v is None or v == "":
+        return None
+    try:
+        return int(Decimal(v))
+    except Exception:
+        try:
+            return int(str(v).replace("%", ""))
+        except Exception:
+            return None
+
+
 def import_from_csv(path: str, team_id: Optional[int] = None, dry_run: bool = False) -> Dict[str, Any]:
     """Import players from a CSV file into the roster Player model.
 
@@ -70,7 +82,15 @@ def import_from_csv(path: str, team_id: Optional[int] = None, dry_run: bool = Fa
         slg_percent = _to_float(r.get("slg_percent"))
         on_base_percent = _to_float(r.get("on_base_percent"))
         isolated_power = _to_float(r.get("isolated_power"))
+        b_total_bases = _to_int(r.get("b_total_bases"))
+        r_total_caught_stealing = _to_int(r.get("r_total_caught_stealing"))
         r_total_stolen_base = _to_float(r.get("r_total_stolen_base"))
+        b_game = _to_int(r.get("b_game"))
+        b_gnd_into_dp = _to_int(r.get("b_gnd_into_dp"))
+        b_hit_by_pitch = _to_int(r.get("b_hit_by_pitch"))
+        b_intent_walk = _to_int(r.get("b_intent_walk"))
+        b_sac_fly = _to_int(r.get("b_sac_fly"))
+        b_total_sacrifices = _to_int(r.get("b_total_sacrifices"))
         woba = _to_float(r.get("woba"))
         xwoba = _to_float(r.get("xwoba"))
         barrel_batted_rate = _to_float(r.get("barrel_batted_rate"))
@@ -113,7 +133,15 @@ def import_from_csv(path: str, team_id: Optional[int] = None, dry_run: bool = Fa
             "slg_percent": slg_percent,
             "on_base_percent": on_base_percent,
             "isolated_power": isolated_power,
+            "b_total_bases": b_total_bases,
+            "r_total_caught_stealing": r_total_caught_stealing,
             "r_total_stolen_base": r_total_stolen_base,
+            "b_game": b_game,
+            "b_gnd_into_dp": b_gnd_into_dp,
+            "b_hit_by_pitch": b_hit_by_pitch,
+            "b_intent_walk": b_intent_walk,
+            "b_sac_fly": b_sac_fly,
+            "b_total_sacrifices": b_total_sacrifices,
             "woba": woba,
             "xwoba": xwoba,
             "barrel_batted_rate": barrel_batted_rate,
