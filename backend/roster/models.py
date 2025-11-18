@@ -65,12 +65,12 @@ class Player(models.Model):
     b_intent_walk = models.FloatField(
         null=True, blank=True
     )  # IBB: Intentional Base on Balls / Intentional walk - A strategic play where the defending team deliberately allows a batter to reach first base without having to swing at a pitch.
-    b_sac_fly = models.FloatField(
-        null=True, blank=True
-    )  # SF: Sacrifice Fly - Occurs when a batter hits a deep fly ball that is caught by an outfielder (or an infielder playing in the outfield), but a baserunner on third base tags up and scores before the play is over.
     b_sac_bunt = models.FloatField(
         null=True, blank=True
     )  # SH: Sacrfice bunt: Occurs when a batter deliberately bunts the ball to advance a baserunner, usually at the cost of being put out themselves
+    b_sac_fly = models.FloatField(
+        null=True, blank=True
+    )  # SF: Sacrifice Fly - Occurs when a batter hits a deep fly ball that is caught by an outfielder (or an infielder playing in the outfield), but a baserunner on third base tags up and scores before the play is over.
 
     class Meta:
         db_table = "players"

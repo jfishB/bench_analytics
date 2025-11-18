@@ -39,6 +39,7 @@ class PlayerSerializer(PlayerNameValidationMixin, serializers.ModelSerializer):
             "double",
             "triple",
             "home_run",
+            "strikeout",
             "walk",
             "k_percent",
             "bb_percent",
@@ -52,13 +53,8 @@ class PlayerSerializer(PlayerNameValidationMixin, serializers.ModelSerializer):
             "b_gnd_into_dp",
             "b_hit_by_pitch",
             "b_intent_walk",
+            "b_sac_bunt",
             "b_sac_fly",
-            "b_total_sacrifices",
-            "woba",
-            "xwoba",
-            "barrel_batted_rate",
-            "hard_hit_percent",
-            "sprint_speed",
         ]
 
 
@@ -96,6 +92,7 @@ class PlayerCreateSerializer(PlayerNameValidationMixin, serializers.ModelSeriali
         model = Player
         fields = [
             "name",
+            "savant_player_id",
             "team",
             "position",
             "year",
@@ -106,6 +103,7 @@ class PlayerCreateSerializer(PlayerNameValidationMixin, serializers.ModelSeriali
             "double",
             "triple",
             "home_run",
+            "strikeout",
             "walk",
             "k_percent",
             "bb_percent",
@@ -119,13 +117,8 @@ class PlayerCreateSerializer(PlayerNameValidationMixin, serializers.ModelSeriali
             "b_gnd_into_dp",
             "b_hit_by_pitch",
             "b_intent_walk",
+            "b_sac_bunt",
             "b_sac_fly",
-            "b_total_sacrifices",
-            "woba",
-            "xwoba",
-            "barrel_batted_rate",
-            "hard_hit_percent",
-            "sprint_speed",
         ]
 
 
@@ -136,6 +129,7 @@ class PlayerPartialUpdateSerializer(serializers.ModelSerializer):
         model = Player
         fields = [
             "name",
+            "savant_player_id",
             "team",
             "position",
             "year",
@@ -146,6 +140,7 @@ class PlayerPartialUpdateSerializer(serializers.ModelSerializer):
             "double",
             "triple",
             "home_run",
+            "strikeout",
             "walk",
             "k_percent",
             "bb_percent",
@@ -159,13 +154,8 @@ class PlayerPartialUpdateSerializer(serializers.ModelSerializer):
             "b_gnd_into_dp",
             "b_hit_by_pitch",
             "b_intent_walk",
+            "b_sac_bunt",
             "b_sac_fly",
-            "b_total_sacrifices",
-            "woba",
-            "xwoba",
-            "barrel_batted_rate",
-            "hard_hit_percent",
-            "sprint_speed",
         ]
         extra_kwargs = {
             "name": {"required": False},
