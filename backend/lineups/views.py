@@ -12,8 +12,6 @@ from .services.lineup_creation_handler import (
     handle_lineup_save,
 
 )
-from .services.databa_access import saving_lineup_to_db
-
 #############################################################################
 # lineups endpoint
 #############################################################################
