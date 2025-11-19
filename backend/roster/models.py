@@ -32,7 +32,7 @@ class Player(models.Model):
     single = models.PositiveIntegerField(null=True, blank=True)  # Singles
     double = models.PositiveIntegerField(null=True, blank=True)  # Doubles
     triple = models.PositiveIntegerField(null=True, blank=True)  # Triples
-    home_run = models.FloatField(null=True, blank=True)  # Home runs
+    home_run = models.PositiveIntegerField(null=True, blank=True)  # Home runs
     strikeout = models.PositiveIntegerField(null=True, blank=True)  # Strikeouts
     walk = models.PositiveIntegerField(null=True, blank=True)  # Walks - BB
     k_percent = models.FloatField(null=True, blank=True)  # Frequency of strikeouts per plate appearance - K% = (SO / PA) * 100

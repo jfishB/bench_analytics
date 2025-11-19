@@ -27,8 +27,8 @@ class PlayerSerializer(PlayerNameValidationMixin, serializers.ModelSerializer):
     class Meta:
         model = Player
         fields = [
+            "id",
             "name",
-            "savant_player_id",
             "team",
             "position",
             "year",

@@ -67,12 +67,16 @@ def import_from_csv(path: str, team_id: Optional[int] = None, dry_run: bool = Fa
         savant_player_id = r.get("player_id") or r.get("savant_player_id")
         year = r.get("year")
         pa = r.get("pa")
-        hit = _to_int(r.get("hit"))
-        single = _to_int(r.get("single"))
-        double = _to_int(r.get("double"))
-        triple = _to_int(r.get("triple"))
-        home_run = _to_float(r.get("home_run"))
-        walk = _to_int(r.get("walk"))
+
+        # Raw counting stats (for simulation)
+        hit = r.get("hit")
+        double = r.get("double")
+        triple = r.get("triple")
+        home_run = r.get("home_run")
+        strikeout = r.get("strikeout")
+        walk = r.get("walk")
+
+        # Derived percentages
         k_percent = _to_float(r.get("k_percent"))
         bb_percent = _to_float(r.get("bb_percent"))
         slg_percent = _to_float(r.get("slg_percent"))
@@ -113,15 +117,17 @@ def import_from_csv(path: str, team_id: Optional[int] = None, dry_run: bool = Fa
             team_obj, _ = Team.objects.get_or_create(pk=use_team_id)
 
         defaults: Dict[str, Any] = {
-            "savant_player_id": int(savant_player_id) if savant_player_id and str(savant_player_id).isdigit() else None,
+            "savant_player_id": (int(savant_player_id) if savant_player_id and str(savant_player_id).isdigit() else None),
             "year": int(year) if year and str(year).isdigit() else None,
             "pa": int(pa) if pa and str(pa).isdigit() else None,
-            "hit": hit,
-            "single": single,
-            "double": double,
-            "triple": triple,
-            "home_run": home_run,
-            "walk": walk,
+            # Raw counting stats
+            "hit": int(hit) if hit and str(hit).isdigit() else None,
+            "double": int(double) if double and str(double).isdigit() else None,
+            "triple": int(triple) if triple and str(triple).isdigit() else None,
+            "home_run": int(home_run) if home_run and str(home_run).isdigit() else None,
+            "strikeout": int(strikeout) if strikeout and str(strikeout).isdigit() else None,
+            "walk": int(walk) if walk and str(walk).isdigit() else None,
+            # Derived percentages
             "k_percent": k_percent,
             "bb_percent": bb_percent,
             "slg_percent": slg_percent,

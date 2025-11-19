@@ -3,74 +3,77 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from roster.models import Player as RosterPlayer
-
 from .models import Lineup, LineupPlayer
-from .serializers import LineupCreate, LineupCreateByTeam, LineupOut, LineupPlayerOut
-from .services.algorithm_logic import algorithm_create_lineup
+from .serializers import LineupCreateByTeam, LineupModelSerializer, LineupOut, LineupPlayerOut
 from .services.auth_user import authorize_lineup_deletion
-from .services.input_data import CreateLineupInput, LineupPlayerInput
-from .services.validator import validate_data, validate_lineup_model
+from .services.lineup_creation_handler import (
+    determine_request_mode,
+    generate_suggested_lineup,
+    handle_manual_lineup_save,
+)
 
 
 #############################################################################
 # lineups endpoint
 #############################################################################
 class LineupCreateView(APIView):
+    """Create or generate a lineup.
+
+    Supports two modes:
+    1. Manual/Sabermetrics save: Accepts full payload with players and batting orders,
+       saves to database, returns HTTP 201 with saved lineup.
+    2. Algorithm-only generation: Accepts only team_id, generates suggested lineup
+       without saving to database, returns HTTP 201 with suggested lineup.
+
+    Both modes return HTTP 201 Created for API consistency.
+    """
+
     permission_classes = [permissions.AllowAny]  # adjust as needed
 
     def post(self, request):
-        # Validate the body against a lightweight contract (frontend may send only team_id)
+        # Determine request mode and get validated data if applicable
+        mode, data = determine_request_mode(request.data)
+
+        if mode == "manual_save":
+            # Manual or sabermetrics save - process and save to database
+            lineup, lineup_players = handle_manual_lineup_save(data, request.user)
+
+            # Build response
+            out = LineupOut(
+                {
+                    "id": lineup.id,
+                    "team_id": lineup.team_id,
+                    "name": lineup.name,
+                    "players": [
+                        {
+                            "player_id": lp.player_id,
+                            "player_name": lp.player.name,
+                            "position": lp.position,
+                            "batting_order": lp.batting_order,
+                        }
+                        for lp in lineup_players
+                    ],
+                    "created_by": lineup.created_by_id,
+                    "created_at": lineup.created_at,
+                }
+            )
+            return Response(out.data, status=status.HTTP_201_CREATED)
+
+        # Algorithm mode - generate suggested lineup without saving
         req = LineupCreateByTeam(data=request.data)
         req.is_valid(raise_exception=True)
-        data = req.validated_data
+        team_id = req.validated_data["team_id"]
 
-        # Load players for the requested team on the server side and build the
-        # CreateLineupInput payload. This keeps the frontend thin and avoids
-        # trusting client-provided player lists.
-        team_id = data["team_id"]
-        # TODO: clean architecture for querying players
-        players_qs = list(RosterPlayer.objects.filter(team_id=team_id))
-        players_input = [LineupPlayerInput(player_id=p.id, position=(p.position or "--")) for p in players_qs]
+        # Generate suggested lineup (does not save to database)
+        suggested_players = generate_suggested_lineup(team_id)
 
-        payload = CreateLineupInput(
-            team_id=team_id,
-            players=players_input,
-            requested_user_id=(request.user.id if request.user.is_authenticated else None),
-        )
-        # TODO: decide where to validate the data
-        # Run the algorithm using the constructed payload. The algorithm will
-        # validate the payload and raise domain errors if the team/players are invalid.
-        # Pass the dataclass payload directly so the algorithm can run its own
-        # validation lifecycle (avoid double-validating here).
-        lineup, lineup_players = algorithm_create_lineup(payload)
-
-        # Validate the produced Lineup model to ensure algorithm output is valid
-        # raises exception if invalid
-        validate_lineup_model(lineup)
-
-        # Build response from the returned Lineup model. The algorithm returns
-        # `lineup_players` as the persisted LineupPlayer instances, so we can
-        # read `lp.player_id`, `lp.position` and `lp.batting_order` directly.
-        out = LineupOut(
-            {
-                "id": lineup.id,
-                "team_id": lineup.team_id,
-                "name": lineup.name,
-                "players": [
-                    {
-                        "player_id": lp.player_id,
-                        "player_name": lp.player.name,
-                        "position": lp.position,
-                        "batting_order": lp.batting_order,
-                    }
-                    for lp in lineup_players
-                ],
-                "created_by": lineup.created_by_id,
-                "created_at": lineup.created_at,
-            }
-        )
-        return Response(out.data, status=status.HTTP_201_CREATED)
+        # Return suggested lineup for frontend to display
+        # Use HTTP 201 Created for consistency with save endpoint
+        out = {
+            "team_id": team_id,
+            "players": suggested_players,
+        }
+        return Response(out, status=status.HTTP_201_CREATED)
 
 
 # TODO: decide if we need this
@@ -91,10 +94,11 @@ class LineupDetailView(APIView):
             {
                 "id": lineup.id,
                 "team_id": lineup.team_id,
+                "name": lineup.name,
                 "players": [
                     {
                         "player_id": lp.player_id,
-                        "player_name": lp.player.name if getattr(lp, "player", None) is not None else None,
+                        "player_name": (lp.player.name if getattr(lp, "player", None) is not None else None),
                         "position": lp.position,
                         "batting_order": lp.batting_order,
                     }
@@ -133,7 +137,7 @@ class LineupViewSet(viewsets.ModelViewSet):
     """
 
     queryset = Lineup.objects.all()
-    serializer_class = LineupOut
+    serializer_class = LineupModelSerializer
 
 
 class LineupPlayerViewSet(viewsets.ModelViewSet):

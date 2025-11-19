@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "lineups",
     "accounts",  # was "auth"
     "roster",
+    "simulator",
     # project_tests contains lightweight smoke tests that the default
     # Django test runner can discover when `manage.py test` is invoked
     "project_tests",
