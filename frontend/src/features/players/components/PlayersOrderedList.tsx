@@ -55,7 +55,7 @@ export function PlayersOrderedList({
       !!p &&
       typeof p.id !== "undefined" &&
       typeof p.name === "string" &&
-      typeof p.position !== "undefined"
+      true
     );
   }
 

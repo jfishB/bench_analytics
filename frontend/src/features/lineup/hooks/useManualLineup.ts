@@ -28,7 +28,7 @@ export function useManualLineup(
         const newIndex = items.findIndex((item) => item.id === over.id);
 
         const newOrder = arrayMove(items, oldIndex, newIndex);
-        return newOrder.map((player, index) => ({
+        return newOrder.map((player: Player, index: number) => ({
           ...player,
           batting_order: index + 1,
         }));
@@ -48,7 +48,6 @@ export function useManualLineup(
         name: manualLineupName,
         players: battingOrderLineup.map((p) => ({
           player_id: p.id,
-          position: p.position || "DH",
           batting_order: p.batting_order!,
         })),
       };

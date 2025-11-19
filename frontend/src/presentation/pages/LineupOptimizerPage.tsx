@@ -121,7 +121,10 @@ export function LineupOptimizer() {
   const handleSabermetricsGenerate = async () => {
     try {
       setError(null);
-      await generateSabermetricsLineup();
+      // Pass selected player ids to the generator so the backend can
+      // suggest a lineup constrained to the current selection.
+      const selectedIdsArr = Array.from(selectedPlayerIds);
+      await generateSabermetricsLineup(selectedIdsArr);
     } catch (err: any) {
       setError(err?.message || "Failed to generate lineup");
     }
@@ -203,7 +206,6 @@ export function LineupOptimizer() {
                           players={players.map((p) => ({
                             id: p.id,
                             name: p.name,
-                            position: p.position,
                             team: String(p.team),
                             batting_order: p.batting_order,
                             isSelected: selectedPlayerIds.has(p.id),

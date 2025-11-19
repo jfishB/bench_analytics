@@ -19,19 +19,18 @@ export function useSabermetricsLineup(
     "idle" | "saving" | "saved"
   >("idle");
 
-  const generateLineup = async () => {
+  const generateLineup = async (selectedIds?: number[]) => {
     if (!teamId) {
       throw new Error("Team ID is required");
     }
 
     setGenerating(true);
     try {
-      const data = await lineupService.generateLineup(teamId);
+      const data = await lineupService.generateLineup(teamId, selectedIds);
       const ordered = (data.players || []).map((p: any) => {
         const full = players.find((r) => r.id === p.player_id) || {
           id: p.player_id,
           name: p.player_name ?? "Unknown",
-          position: p.position,
           team: String(p.team ?? teamId),
         };
         return {
@@ -60,7 +59,7 @@ export function useSabermetricsLineup(
         name: sabermetricsLineupName,
         players: generatedLineup.map((p) => ({
           player_id: p.id,
-          position: p.position || "DH",
+            // position removed from model; backend will no longer expect it
           batting_order: p.batting_order!,
         })),
       };
