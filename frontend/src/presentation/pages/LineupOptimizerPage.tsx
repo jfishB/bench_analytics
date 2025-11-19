@@ -15,238 +15,125 @@ import {
   TabsList,
   TabsTrigger,
 } from "../../ui/components/tabs";
-import * as lineupService from "../../features/lineup/services/lineupService";
-import { DragEndEvent } from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
 import { ManualModePanel } from "../../features/lineup/components/ManualModePanel";
 import { SabermetricsModePanel } from "../../features/lineup/components/SabermetricsModePanel";
 import { LineupSimulatorTab } from "../../features/lineup/components/LineupSimulatorTab";
 import { Alert, AlertDescription, AlertTitle } from "../../ui/components/alert";
-import { Player } from "../../shared/types";
 
-// Simple debugging page: fetch roster players and display basic status
+// Custom hooks following clean architecture
+import { useRosterData } from "../../features/lineup/hooks/useRosterData";
+import { usePlayerSelection } from "../../features/lineup/hooks/usePlayerSelection";
+import { useLineupCreation } from "../../features/lineup/hooks/useLineupCreation";
+import { useManualLineup } from "../../features/lineup/hooks/useManualLineup";
+import { useSabermetricsLineup } from "../../features/lineup/hooks/useSabermetricsLineup";
+import { useSavedLineups } from "../../features/lineup/hooks/useSavedLineups";
 
-// Main page: tabs with Roster, Optimizer (generate) and Analysis
+/**
+ * LineupOptimizer - Main page component for lineup optimization
+ * Refactored to use custom hooks for clean architecture and better state management
+ */
 export function LineupOptimizer() {
-  const [loading, setLoading] = useState(true);
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [selected, setSelected] = useState<Player | null>(null);
-
-  // Player selection state
-  const [selectedPlayerIds, setSelectedPlayerIds] = useState<Set<number>>(
-    new Set()
-  );
-  const [selectionWarning, setSelectionWarning] = useState<string | null>(null);
+  // UI state (presentation layer)
   const [activeTab, setActiveTab] = useState<string>("current");
-  const [lineupCreated, setLineupCreated] = useState<boolean>(false);
-  const [lineupMode, setLineupMode] = useState<"manual" | "sabermetrics">(
-    "manual"
-  );
 
-  // lineup generation states
-  const [lineupPlayers, setLineupPlayers] = useState<Player[]>([]);
-  const [battingOrderLineup, setBattingOrderLineup] = useState<Player[]>([]);
-  const [generatedLineup, setGeneratedLineup] = useState<Player[]>([]);
-  const [generating, setGenerating] = useState(false);
-  const [teamId, setTeamId] = useState<number | undefined>(1);
+  // Custom hooks (domain/business logic layer)
+  const { loading, players, error, setError, teamId } = useRosterData();
 
-  // Separate lineup name and save status for each mode
-  const [manualLineupName, setManualLineupName] = useState<string>("");
-  const [manualSaveStatus, setManualSaveStatus] = useState<
-    "idle" | "saving" | "saved"
-  >("idle");
+  const {
+    selectedPlayerIds,
+    selectionWarning,
+    setSelectionWarning,
+    togglePlayerSelection,
+  } = usePlayerSelection();
 
-  const [sabermetricsLineupName, setSabermetricsLineupName] =
-    useState<string>("");
-  const [sabermetricsSaveStatus, setSabermetricsSaveStatus] = useState<
-    "idle" | "saving" | "saved"
-  >("idle");
+  const {
+    lineupCreated,
+    setLineupCreated,
+    lineupMode,
+    setLineupMode,
+    lineupPlayers,
+    setLineupPlayers,
+    selected,
+    setSelected,
+    createLineup,
+  } = useLineupCreation();
 
-  // Saved lineups (for Lineup Simulator tab)
-  const [savedLineups, setSavedLineups] = useState<lineupService.SavedLineup[]>(
-    []
-  );
-  const [loadingLineups, setLoadingLineups] = useState(false);
+  const { savedLineups, loadingLineups, fetchSavedLineups } = useSavedLineups();
 
-  // Handle drag end for batting order
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
+  // Manual lineup hook with save callback
+  const {
+    battingOrderLineup,
+    setBattingOrderLineup,
+    manualLineupName,
+    setManualLineupName,
+    manualSaveStatus,
+    handleDragEnd,
+    saveLineup: saveManualLineup,
+  } = useManualLineup(teamId, fetchSavedLineups);
 
-    if (over && active.id !== over.id) {
-      setBattingOrderLineup((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
+  // Sabermetrics lineup hook with save callback
+  const {
+    generatedLineup,
+    generating,
+    sabermetricsLineupName,
+    setSabermetricsLineupName,
+    sabermetricsSaveStatus,
+    generateLineup: generateSabermetricsLineup,
+    saveLineup: saveSabermetricsLineup,
+  } = useSabermetricsLineup(teamId, players, fetchSavedLineups);
 
-        const newOrder = arrayMove(items, oldIndex, newIndex);
-        // Update batting orders
-        return newOrder.map((player, index) => ({
-          ...player,
-          batting_order: index + 1,
-        }));
-      });
+  // Initialize lineupPlayers when roster loads
+  useEffect(() => {
+    if (players.length > 0) {
+      setLineupPlayers(players);
     }
-  };
-
-  // Generic save handler for both modes
-  const saveLineup = async (
-    name: string,
-    players: Player[],
-    setSaveStatus: React.Dispatch<
-      React.SetStateAction<"idle" | "saving" | "saved">
-    >,
-    clearName: () => void
-  ) => {
-    setSaveStatus("saving");
-    try {
-      const payload: lineupService.SaveLineupPayload = {
-        team_id: teamId!,
-        name,
-        players: players.map((p) => ({
-          player_id: p.id,
-          position: p.position || "DH",
-          batting_order: p.batting_order!,
-        })),
-      };
-
-      await lineupService.saveLineup(payload);
-
-      setSaveStatus("saved");
-      fetchSavedLineups(); // Refresh lineup list
-      setTimeout(() => {
-        setSaveStatus("idle");
-        clearName(); // Clear the name field for next lineup
-      }, 1000);
-    } catch (err: any) {
-      console.error("Failed to save lineup:", err);
-      setError(err?.message || "Failed to save lineup");
-      setSaveStatus("idle");
-    }
-  };
-
-  // Handle save for manual mode
-  const handleManualSave = async () => {
-    await saveLineup(
-      manualLineupName,
-      battingOrderLineup,
-      setManualSaveStatus,
-      () => setManualLineupName("")
-    );
-  };
-
-  // Handle generate for sabermetrics mode
-  const handleSabermetricsGenerate = async () => {
-    setGenerating(true);
-    setError(null);
-    try {
-      const data = await lineupService.generateLineup(teamId!);
-      const ordered = (data.players || []).map((p: any) => {
-        const full = players.find((r) => r.id === p.player_id) || {
-          id: p.player_id,
-          name: p.player_name ?? "Unknown",
-          position: p.position,
-          team: String(p.team ?? teamId),
-        };
-        return {
-          ...full,
-          batting_order: p.batting_order,
-        };
-      });
-      setGeneratedLineup(ordered);
-    } catch (err: any) {
-      console.error("Generation failed:", err);
-      setError(err?.message || "Failed to generate");
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  // Handle save for sabermetrics mode
-  const handleSabermetricsSave = async () => {
-    await saveLineup(
-      sabermetricsLineupName,
-      generatedLineup,
-      setSabermetricsSaveStatus,
-      () => setSabermetricsLineupName("")
-    );
-  };
-
-  // Toggle player selection
-  const togglePlayerSelection = (player: Player) => {
-    const playerId = player.id;
-    setSelectedPlayerIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(playerId)) {
-        newSet.delete(playerId);
-        setSelectionWarning(null); // Clear warning when deselecting
-        setLineupCreated(false); // Reset lineup when changing selection
-      } else {
-        if (newSet.size >= 9) {
-          setSelectionWarning(
-            "A maximum of 9 players can be selected for a lineup!"
-          );
-          setTimeout(() => setSelectionWarning(null), 4000); // Auto-dismiss after 4 seconds
-          return prev;
-        }
-        newSet.add(playerId);
-        setLineupCreated(false); // Reset lineup when changing selection
-      }
-      return newSet;
-    });
-  };
-
-  // Fetch saved lineups
-  const fetchSavedLineups = async () => {
-    setLoadingLineups(true);
-    try {
-      const data = await lineupService.fetchSavedLineups();
-      setSavedLineups(data);
-    } catch (err: any) {
-      console.error("Failed to fetch lineups:", err);
-    } finally {
-      setLoadingLineups(false);
-    }
-  };
+  }, [players, setLineupPlayers]);
 
   // Fetch saved lineups when switching to analysis tab
   useEffect(() => {
     if (activeTab === "analysis") {
       fetchSavedLineups();
     }
-  }, [activeTab]);
+  }, [activeTab, fetchSavedLineups]);
 
-  useEffect(() => {
-    let cancelled = false;
-    async function loadPlayers() {
-      setLoading(true);
-      setError(null);
-      try {
-        const raw = await lineupService.fetchPlayers(teamId);
-        if (!cancelled) {
-          setPlayers(raw);
-          // initialize lineupPlayers to the roster mapping shape the list expects
-          setLineupPlayers(raw);
-          // detect team id if available
-          if (raw.length > 0) {
-            const first = raw[0];
-            if (first.team && typeof first.team === "string") {
-              const parsedTeamId = parseInt(first.team, 10);
-              if (!isNaN(parsedTeamId)) setTeamId(parsedTeamId);
-            }
-          }
-        }
-      } catch (err: any) {
-        if (!cancelled) setError(err?.message ?? String(err));
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
+  // Handle player selection with lineup reset
+  const handleTogglePlayerSelection = (player: any) => {
+    togglePlayerSelection(player, () => setLineupCreated(false));
+  };
+
+  // Handle create lineup button
+  const handleCreateLineup = () => {
+    const selectedPlayers = players.filter((p) => selectedPlayerIds.has(p.id));
+    const lineup = createLineup(selectedPlayers);
+    setBattingOrderLineup(lineup);
+    setActiveTab("optimizer");
+  };
+
+  // Wrapper handlers for save operations with error handling
+  const handleManualSave = async () => {
+    try {
+      await saveManualLineup();
+    } catch (err: any) {
+      setError(err?.message || "Failed to save lineup");
     }
-    loadPlayers();
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  };
+
+  const handleSabermetricsGenerate = async () => {
+    try {
+      setError(null);
+      await generateSabermetricsLineup();
+    } catch (err: any) {
+      setError(err?.message || "Failed to generate lineup");
+    }
+  };
+
+  const handleSabermetricsSave = async () => {
+    try {
+      await saveSabermetricsLineup();
+    } catch (err: any) {
+      setError(err?.message || "Failed to save lineup");
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -286,7 +173,10 @@ export function LineupOptimizer() {
               {/* Selection Warning Banner */}
               {selectionWarning && (
                 <div className="mb-4">
-                  <Alert variant="warning" onClose={() => setSelectionWarning(null)}>
+                  <Alert
+                    variant="warning"
+                    onClose={() => setSelectionWarning(null)}
+                  >
                     <AlertDescription>{selectionWarning}</AlertDescription>
                   </Alert>
                 </div>
@@ -323,7 +213,7 @@ export function LineupOptimizer() {
                               players.find((x) => x.id === p.id) ?? null
                             )
                           }
-                          onSelectionToggle={togglePlayerSelection}
+                          onSelectionToggle={handleTogglePlayerSelection}
                           showCheckboxes={true}
                         />
                       </div>
@@ -346,20 +236,7 @@ export function LineupOptimizer() {
                     <Button
                       className="w-full disabled:bg-gray-200 disabled:cursor-not-allowed"
                       disabled={selectedPlayerIds.size !== 9}
-                      onClick={() => {
-                        // Get selected players from the players array
-                        const selectedPlayers = players
-                          .filter((p) => selectedPlayerIds.has(p.id))
-                          .map((p, index) => ({
-                            ...p,
-                            batting_order: index + 1, // Assign batting order 1-9
-                          }));
-
-                        setLineupPlayers(selectedPlayers);
-                        setBattingOrderLineup(selectedPlayers); // Initialize batting order
-                        setLineupCreated(true); // Mark lineup as created
-                        setActiveTab("optimizer"); // Switch to Generate Lineup tab
-                      }}
+                      onClick={handleCreateLineup}
                     >
                       Create Lineup
                     </Button>
@@ -396,9 +273,7 @@ export function LineupOptimizer() {
                             </div>
                           </div>
                           <div>
-                            <div className="text-xs text-gray-500">
-                              Walks
-                            </div>
+                            <div className="text-xs text-gray-500">Walks</div>
                             <div className="font-medium">
                               {selected.walk ?? "—"}
                             </div>
@@ -521,54 +396,3 @@ export function LineupOptimizer() {
 
 // also export as default for existing default imports
 export default LineupOptimizer;
-
-// Minimal lineup generation tester
-export function LineupGeneratorTester() {
-  const [generating, setGenerating] = useState(false);
-  const [result, setResult] = useState<any | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  async function generate() {
-    setGenerating(true);
-    setError(null);
-    setResult(null);
-    try {
-      // Use lineup service to generate
-      const data = await lineupService.generateLineup(1);
-      setResult(data);
-    } catch (err: any) {
-      setError(err?.message ?? String(err));
-    } finally {
-      setGenerating(false);
-    }
-  }
-
-  return (
-    <div className="p-4 border-t mt-4">
-      <h3 className="text-lg font-medium mb-2">Lineup generation tester</h3>
-      <p className="text-sm text-gray-600 mb-2">
-        Click to request the backend to generate a lineup and return the
-        players.
-      </p>
-      <div className="flex items-center gap-2">
-        <button
-          className="px-3 py-1 bg-primary text-white rounded disabled:opacity-50"
-          onClick={generate}
-          disabled={generating}
-        >
-          {generating ? "Generating…" : "Generate Lineup (POST)"}
-        </button>
-        {error && <div className="text-red-600">Error: {error}</div>}
-      </div>
-
-      {result && (
-        <div className="mt-3">
-          <div className="mb-1">Response preview:</div>
-          <pre className="text-xs max-h-64 overflow-auto border p-2 bg-gray-50">
-            {JSON.stringify(result, null, 2)}
-          </pre>
-        </div>
-      )}
-    </div>
-  );
-}
