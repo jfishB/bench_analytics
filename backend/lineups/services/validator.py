@@ -67,7 +67,7 @@ def validate_data(payload, require_creator: bool = True):
     if not team_obj:
         raise TeamNotFound()
 
-    # Extract player ids from input (ignore any requested positions — field removed)
+    # Extract player ids from input (position field has been removed from the model)
     ids = []
     for p in _get(payload, "players", []):
         # support either raw int ids or LineupPlayerInput/dataclass/dict
