@@ -6,7 +6,7 @@ logic for creating batting lineups.
 ###########################################
 
 from itertools import permutations
-from typing import Dict
+from typing import Dict, Tuple
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -73,7 +73,7 @@ def calculate_player_adjustments(p: Player, position: int, adjustments: Dict[str
 
 
 # -------- BaseRun formula to calculate lineups expected runs for a game -------- #
-def calculate_player_baserun_values(lineup: tuple[Player]) -> float:
+def calculate_player_baserun_values(lineup: Tuple[Player, ...]) -> float:
     """Calculate given players scaled stats and from there A,B,C,D values to use in BaseRun formula.
         BaseRun Formula and method source: https://library.fangraphs.com/features/baseruns/
 
@@ -146,7 +146,7 @@ def calculate_player_baserun_values(lineup: tuple[Player]) -> float:
     return 0
 
 
-def algorithm_create_lineup(payload) -> tuple[Player]:
+def algorithm_create_lineup(payload) -> Tuple[Player, ...]:
     """Create a batting lineup based on the provided payload.
 
     This function contains the core logic for creating a batting lineup.
