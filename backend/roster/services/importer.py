@@ -70,6 +70,7 @@ def import_from_csv(path: str, team_id: Optional[int] = None, dry_run: bool = Fa
 
         # Raw counting stats (for simulation)
         hit = r.get("hit")
+        single = r.get("single")
         double = r.get("double")
         triple = r.get("triple")
         home_run = r.get("home_run")
@@ -90,12 +91,7 @@ def import_from_csv(path: str, team_id: Optional[int] = None, dry_run: bool = Fa
         b_hit_by_pitch = _to_int(r.get("b_hit_by_pitch"))
         b_intent_walk = _to_int(r.get("b_intent_walk"))
         b_sac_fly = _to_int(r.get("b_sac_fly"))
-        b_total_sacrifices = _to_int(r.get("b_total_sacrifices"))
-        woba = _to_float(r.get("woba"))
-        xwoba = _to_float(r.get("xwoba"))
-        barrel_batted_rate = _to_float(r.get("barrel_batted_rate"))
-        hard_hit_percent = _to_float(r.get("hard_hit_percent"))
-        sprint_speed = _to_float(r.get("sprint_speed"))
+        b_sac_bunt = _to_int(r.get("b_sac_bunt"))
 
         team_id_csv = None
         if "team_id" in r:
@@ -122,6 +118,7 @@ def import_from_csv(path: str, team_id: Optional[int] = None, dry_run: bool = Fa
             "pa": int(pa) if pa and str(pa).isdigit() else None,
             # Raw counting stats
             "hit": int(hit) if hit and str(hit).isdigit() else None,
+            "single": int(single) if single and str(single).isdigit() else None,
             "double": int(double) if double and str(double).isdigit() else None,
             "triple": int(triple) if triple and str(triple).isdigit() else None,
             "home_run": int(home_run) if home_run and str(home_run).isdigit() else None,
@@ -141,12 +138,7 @@ def import_from_csv(path: str, team_id: Optional[int] = None, dry_run: bool = Fa
             "b_hit_by_pitch": b_hit_by_pitch,
             "b_intent_walk": b_intent_walk,
             "b_sac_fly": b_sac_fly,
-            "b_total_sacrifices": b_total_sacrifices,
-            "woba": woba,
-            "xwoba": xwoba,
-            "barrel_batted_rate": barrel_batted_rate,
-            "hard_hit_percent": hard_hit_percent,
-            "sprint_speed": sprint_speed,
+            "b_sac_bunt": b_sac_bunt,
         }
 
         if dry_run:

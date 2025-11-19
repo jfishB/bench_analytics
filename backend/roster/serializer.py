@@ -30,7 +30,6 @@ class PlayerSerializer(PlayerNameValidationMixin, serializers.ModelSerializer):
             "id",
             "name",
             "team",
-            "position",
             "year",
             "ab",
             "pa",
@@ -63,7 +62,7 @@ class PlayerListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Player
-        fields = ["id", "name", "team", "position"]
+        fields = ["id", "name", "team"]
 
 
 class PlayerRankedSerializer(PlayerSerializer):
@@ -76,7 +75,6 @@ class PlayerRankedSerializer(PlayerSerializer):
             "id",
             "name",
             "team",
-            "position",
             "xwoba",
             "bb_percent",
             "k_percent",
@@ -94,7 +92,6 @@ class PlayerCreateSerializer(PlayerNameValidationMixin, serializers.ModelSeriali
             "name",
             "savant_player_id",
             "team",
-            "position",
             "year",
             "ab",
             "pa",
@@ -131,7 +128,6 @@ class PlayerPartialUpdateSerializer(serializers.ModelSerializer):
             "name",
             "savant_player_id",
             "team",
-            "position",
             "year",
             "ab",
             "pa",
@@ -160,7 +156,6 @@ class PlayerPartialUpdateSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "name": {"required": False},
             "team": {"required": False},
-            "position": {"required": False},
         }
 
     def validate_name(self, value: str) -> str:

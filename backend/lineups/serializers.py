@@ -16,9 +16,9 @@ class LineupPlayerIn(serializers.Serializer):
     """This is one batting slot in the lineup."""
 
     player_id = serializers.IntegerField()
-    position = serializers.CharField(max_length=3)
     # bating order is optional because the algorithm may assign it
     batting_order = serializers.IntegerField(min_value=1, max_value=9, required=False, allow_null=True)
+
 
 
 class LineupCreate(serializers.Serializer):
@@ -29,42 +29,16 @@ class LineupCreate(serializers.Serializer):
     name = serializers.CharField(max_length=120, required=False, allow_blank=False)
 
 
-class LineupCreateByTeam(serializers.Serializer):
-    """Create lineup request containing only a team identifier.
-
-    The frontend may supply only a team_id (and optional metadata). The
-    server will load players for that team and run the algorithm.
-    This is used for algorithm-only mode and does not save to database.
-    """
-
-    team_id = serializers.IntegerField()
-
-
 # ---- Response schema (server -> client) ----
 class LineupPlayerOut(serializers.Serializer):
     """This is a saved batting slot returned to the client."""
 
     player_id = serializers.IntegerField()
-    # Use a SerializerMethodField so the serializer works whether the
-    # input is a dict (views build a dict with 'player_name') or a
-    # LineupPlayer model instance. This avoids KeyError during
-    # representation when the nested instance doesn't have a
-    # `player_name` attribute/key.
     player_name = serializers.SerializerMethodField()
-    position = serializers.CharField(max_length=3)
     batting_order = serializers.IntegerField()
 
     def get_player_name(self, obj):
-        # If the serializer was given a dict (as in our view builders),
-        # return the explicit 'player_name' key if present.
-        if isinstance(obj, dict):
-            # obj may be like {"player_id": 1, "player_name": "Foo", ...}
-            # prefer explicit 'player_name' key that views set, fall back to 'name'
-            return obj.get("player_name") or obj.get("name")
-
-        # Otherwise assume obj is a LineupPlayer model instance and
-        # try to read the related player's name. Be defensive in case
-        # the relation is missing.
+        """Return the player's name."""
         try:
             return obj.player.name
         except Exception:
@@ -102,7 +76,6 @@ class LineupModelSerializer(serializers.ModelSerializer):
             {
                 "player_id": lp.player_id,
                 "player_name": lp.player.name if lp.player else None,
-                "position": lp.position,
                 "batting_order": lp.batting_order,
             }
             for lp in lineup_players

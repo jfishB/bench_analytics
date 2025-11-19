@@ -24,7 +24,6 @@ class Lineup(models.Model):  # each instance is a saved batting lineup for a tea
 class LineupPlayer(models.Model):
     lineup = models.ForeignKey(Lineup, on_delete=models.CASCADE, related_name="players")
     player = models.ForeignKey(Player, on_delete=models.PROTECT)
-    position = models.CharField(max_length=3)
     batting_order = models.PositiveSmallIntegerField(
         null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(9)]
     )
@@ -41,4 +40,4 @@ class LineupPlayer(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.batting_order}. {self.player.name} ({self.position})"
+        return f"{self.batting_order}. {self.player.name}"
