@@ -104,6 +104,28 @@ export async function fetchPlayers(teamId?: number): Promise<Player[]> {
 }
 
 /**
+ * Sort a list of player IDs by wOBA (descending) to create a baseline lineup.
+ * Fetches full player data and returns IDs sorted by xwoba.
+ */
+export async function sortPlayersByWOBA(
+  playerIds: number[]
+): Promise<number[]> {
+  const allPlayers = await fetchPlayers();
+
+  // Filter to only the players in the lineup
+  const lineupPlayers = allPlayers.filter((p) => playerIds.includes(p.id));
+
+  // Sort by xwoba descending (highest wOBA bats first)
+  lineupPlayers.sort((a, b) => {
+    const wobaA = a.xwoba ?? 0;
+    const wobaB = b.xwoba ?? 0;
+    return wobaB - wobaA;
+  });
+
+  return lineupPlayers.map((p) => p.id);
+}
+
+/**
  * Fetch all saved lineups from the database.
  */
 export async function fetchSavedLineups(): Promise<SavedLineup[]> {

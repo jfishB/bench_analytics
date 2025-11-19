@@ -27,7 +27,7 @@ export function LineupSimulatorTab({
   const [numGames, setNumGames] = useState<number>(10000);
   const [statusMessage, setStatusMessage] = useState("");
   const {
-    simulationResult,
+    comparisonResult,
     simulating,
     simulationError,
     runSimulation,
@@ -42,16 +42,19 @@ export function LineupSimulatorTab({
     }
 
     const messages = [
-      "Simulating at-bats...",
+      "Simulating your lineup...",
       "Calculating runs...",
       "Tracking base runners...",
       "Recording outcomes...",
+      "Sorting players by wOBA...",
+      "Simulating baseline lineup...",
       "Running Monte Carlo iterations...",
       "Processing game states...",
       "Evaluating batting sequences...",
       "Analyzing scoring patterns...",
       "Computing probabilities...",
-      "Aggregating results...",
+      "Comparing results...",
+      "Aggregating statistics...",
     ];
 
     let currentIndex = 0;
@@ -241,57 +244,122 @@ export function LineupSimulatorTab({
         </Card>
       )}
 
-      {/* Simulation Results */}
-      {simulationResult && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Simulation Results</CardTitle>
-            <CardDescription>
-              Results from {simulationResult.num_games.toLocaleString()}{" "}
-              simulated games
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-1">Avg Score</div>
-                  <div className="text-2xl font-bold text-primary">
-                    {simulationResult.avg_score.toFixed(2)}
-                  </div>
-                </div>
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-1">Median</div>
-                  <div className="text-2xl font-bold">
-                    {simulationResult.median_score.toFixed(1)}
-                  </div>
-                </div>
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-1">Std Dev</div>
-                  <div className="text-2xl font-bold">
-                    {simulationResult.std_dev.toFixed(2)}
-                  </div>
-                </div>
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-1">Min</div>
-                  <div className="text-2xl font-bold text-red-600">
-                    {simulationResult.min_score}
-                  </div>
-                </div>
-                <div className="p-4 bg-gray-50 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-1">Max</div>
-                  <div className="text-2xl font-bold text-green-600">
-                    {simulationResult.max_score}
-                  </div>
-                </div>
+      {/* Simulation Results - Comparison */}
+      {comparisonResult && (
+        <div className="space-y-4">
+          {/* Winner Banner */}
+          <Card
+            className={`${
+              comparisonResult.winner === "user"
+                ? "border-green-500 bg-green-50"
+                : comparisonResult.winner === "baseline"
+                ? "border-orange-500 bg-orange-50"
+                : "border-gray-500 bg-gray-50"
+            } border-2`}
+          >
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <h3 className="text-2xl font-bold mb-2">
+                  {comparisonResult.winner === "user" && "🏆 Your Lineup Wins!"}
+                  {comparisonResult.winner === "baseline" &&
+                    "📊 wOBA Baseline Wins"}
+                  {comparisonResult.winner === "tie" && "🤝 It's a Tie!"}
+                </h3>
+                <p className="text-lg text-gray-700">
+                  {comparisonResult.winner === "user" &&
+                    `Your lineup scores ${Math.abs(
+                      comparisonResult.difference
+                    ).toFixed(2)} more runs per game`}
+                  {comparisonResult.winner === "baseline" &&
+                    `Baseline scores ${Math.abs(
+                      comparisonResult.difference
+                    ).toFixed(2)} more runs per game`}
+                  {comparisonResult.winner === "tie" &&
+                    "Both lineups perform equally"}
+                </p>
               </div>
+            </CardContent>
+          </Card>
 
-              <Button onClick={clearResults} variant="outline">
-                Clear Results
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Comparison Stats */}
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* User Lineup */}
+            <Card
+              className={
+                comparisonResult.winner === "user"
+                  ? "ring-2 ring-green-500"
+                  : ""
+              }
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  Your Lineup
+                  {comparisonResult.winner === "user" && <span>🏆</span>}
+                </CardTitle>
+                <CardDescription>
+                  {selectedLineup?.name || "Selected Lineup"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
+                    <div className="text-sm text-gray-600 mb-1">
+                      Average Runs per Game
+                    </div>
+                    <div className="text-4xl font-bold text-blue-700">
+                      {comparisonResult.userLineup.avg_score.toFixed(2)}
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Based on{" "}
+                    {comparisonResult.userLineup.num_games.toLocaleString()}{" "}
+                    simulated games
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Baseline Lineup */}
+            <Card
+              className={
+                comparisonResult.winner === "baseline"
+                  ? "ring-2 ring-orange-500"
+                  : ""
+              }
+            >
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  wOBA Baseline
+                  {comparisonResult.winner === "baseline" && <span>🏆</span>}
+                </CardTitle>
+                <CardDescription>Same players, sorted by wOBA</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg">
+                    <div className="text-sm text-gray-600 mb-1">
+                      Average Runs per Game
+                    </div>
+                    <div className="text-4xl font-bold text-gray-700">
+                      {comparisonResult.baselineLineup.avg_score.toFixed(2)}
+                    </div>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Based on{" "}
+                    {comparisonResult.baselineLineup.num_games.toLocaleString()}{" "}
+                    simulated games
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="flex justify-center">
+            <Button onClick={clearResults} variant="outline">
+              Clear Results
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   );
