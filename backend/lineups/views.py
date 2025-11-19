@@ -4,15 +4,14 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Lineup, LineupPlayer
-from .serializers import LineupCreateByTeam, LineupModelSerializer, LineupOut, LineupPlayerOut
+from .serializers import LineupModelSerializer, LineupOut, LineupPlayerOut
 from .services.auth_user import authorize_lineup_deletion
 from .services.lineup_creation_handler import (
     determine_request_mode,
     generate_suggested_lineup,
-    handle_manual_lineup_save,
+    handle_lineup_save,
+
 )
-
-
 #############################################################################
 # lineups endpoint
 #############################################################################
@@ -36,19 +35,18 @@ class LineupCreateView(APIView):
 
         if mode == "manual_save":
             # Manual or sabermetrics save - process and save to database
-            lineup, lineup_players = handle_manual_lineup_save(data, request.user)
+            lineup, lineup_players = handle_lineup_save(data, request.user) #extract lineup save 
 
             # Build response
             out = LineupOut(
                 {
                     "id": lineup.id,
-                    "team_id": lineup.team_id,
+                    "team_id": lineup.team.id,
                     "name": lineup.name,
                     "players": [
                         {
-                            "player_id": lp.player_id,
+                            "player_id": lp.player.id,
                             "player_name": lp.player.name,
-                            "position": lp.position,
                             "batting_order": lp.batting_order,
                         }
                         for lp in lineup_players
@@ -58,25 +56,34 @@ class LineupCreateView(APIView):
                 }
             )
             return Response(out.data, status=status.HTTP_201_CREATED)
+        else:
 
-        # Algorithm mode - generate suggested lineup without saving
-        req = LineupCreateByTeam(data=request.data)
-        req.is_valid(raise_exception=True)
-        team_id = req.validated_data["team_id"]
+            # Extract and validate required team_id for generation
+            team_id = request.data.get("team_id")
+            if team_id is None:
+                return Response({"detail": "team_id is required to generate a suggested lineup"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Generate suggested lineup (does not save to database)
-        suggested_players = generate_suggested_lineup(team_id)
+            # Extract optional selected player ids if provided
+            players_payload = request.data.get("players")
+            selected_ids = None
+            if isinstance(players_payload, list):
+                selected_ids = [p.get("player_id") for p in players_payload if isinstance(p, dict) and p.get("player_id")]
 
-        # Return suggested lineup for frontend to display
-        # Use HTTP 201 Created for consistency with save endpoint
-        out = {
-            "team_id": team_id,
-            "players": suggested_players,
-        }
-        return Response(out, status=status.HTTP_201_CREATED)
+            # Generate suggested lineup (does not save to database)
+            # Note: generate_suggested_lineup expects (team_id, player_ids=None)
+            suggested_players = generate_suggested_lineup(team_id, selected_ids)
+
+            # Return suggested lineup for frontend to display
+            # Use HTTP 201 Created for consistency with save endpoint
+            out = {
+                "team_id": team_id,
+                "players": suggested_players,
+            }
+            return Response(out, status=status.HTTP_201_CREATED)
 
 
 # TODO: decide if we need this
+# completely outdated 
 class LineupDetailView(APIView):
     """Retrieve or delete a saved lineup by id.
 
@@ -99,7 +106,6 @@ class LineupDetailView(APIView):
                     {
                         "player_id": lp.player_id,
                         "player_name": (lp.player.name if getattr(lp, "player", None) is not None else None),
-                        "position": lp.position,
                         "batting_order": lp.batting_order,
                     }
                     for lp in lineup.players.order_by("batting_order")

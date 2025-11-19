@@ -19,7 +19,6 @@ class Player(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="players", null=True, blank=True)
-    position = models.CharField(max_length=3, default="DH")  # e.g., SS/CF/DH
 
     # Baseball Savant (2025) batter stats snapshot
     # Note: These are per-season aggregates; if you later want multi-year history,
@@ -77,4 +76,4 @@ class Player(models.Model):
         ordering = ["name"]  # alphabetical order
 
     def __str__(self):
-        return f"{self.name} ({self.position})"
+        return f"{self.name}"

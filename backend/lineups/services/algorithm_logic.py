@@ -6,7 +6,7 @@ logic for creating batting lineups.
 ###########################################
 
 from itertools import permutations
-from typing import Dict
+from typing import Dict, Tuple
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -65,14 +65,15 @@ def calculate_player_adjustments(p: Player, position: int, adjustments: Dict[str
     adjustments["cs_adjust"] += (p.r_total_caught_stealing or 0) * pa_scale
     adjustments["gidp_adjust"] += (p.b_gnd_into_dp or 0) * pa_scale
     adjustments["sf_adjust"] += (p.b_sac_fly or 0) * pa_scale
-    adjustments["sh_adjust"] += (p.b_total_sacrifices or 0) * pa_scale
+    # Use the model's sacrifice bunt field (SH)
+    adjustments["sh_adjust"] += (p.b_sac_bunt or 0) * pa_scale
     adjustments["tb_adjust"] += (p.b_total_bases or 0) * pa_scale
 
     return adjustments
 
 
 # -------- BaseRun formula to calculate lineups expected runs for a game -------- #
-def calculate_player_baserun_values(lineup: tuple[Player]) -> float:
+def calculate_player_baserun_values(lineup: Tuple[Player, ...]) -> float:
     """Calculate given players scaled stats and from there A,B,C,D values to use in BaseRun formula.
         BaseRun Formula and method source: https://library.fangraphs.com/features/baseruns/
 
@@ -145,7 +146,7 @@ def calculate_player_baserun_values(lineup: tuple[Player]) -> float:
     return 0
 
 
-def algorithm_create_lineup(payload):
+def algorithm_create_lineup(payload) -> Tuple[Player, ...]:
     """Create a batting lineup based on the provided payload.
 
     This function contains the core logic for creating a batting lineup.
@@ -158,15 +159,9 @@ def algorithm_create_lineup(payload):
     Returns:
         Lineup: The created Lineup model instance with assigned batting orders.
     """
-    # Validate and get processed data
-    validated = validate_data(payload)
-    team_obj = validated["team"]
+    # Validate and get processed data (algorithm generation doesn't require a creator)
+    validated = validate_data(payload, require_creator=False)
     players_list = validated["players"]
-    created_by_id = validated["created_by_id"]
-
-    # Build position mapping from payload
-    position_map = {p.id: p.position for p in players_list}
-
     best_runs = -float("inf")
     best_lineup = None
 
@@ -178,27 +173,9 @@ def algorithm_create_lineup(payload):
         if runs > best_runs:
             best_runs = runs
             best_lineup = lineup
-    # Create the Lineup and LineupPlayer objects in a transaction
-    # TODO: seperate for clean architecture
-    with transaction.atomic():
-        User = get_user_model()
-        created_by = User.objects.get(pk=created_by_id)
+    # Return the best lineup found (tuple of Player instances)
+    # If no lineup was computed, return an empty tuple to indicate no result
+    if best_lineup is None:
+        return tuple()
 
-        lineup = Lineup.objects.create(
-            team=team_obj,
-            created_by=created_by,
-        )
-
-        # Create LineupPlayer entries
-        lineup_players = []
-        for i, player in enumerate(best_lineup):
-            position = position_map.get(player.id, player.position)
-
-            lineup_player = LineupPlayer.objects.create(
-                lineup=lineup,
-                player=player,
-                position=position,
-                batting_order=i + 1,
-            )
-            lineup_players.append(lineup_player)
-    return lineup, lineup_players
+    return best_lineup

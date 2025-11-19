@@ -18,7 +18,6 @@ export interface SavedLineup {
   players: Array<{
     player_id: number;
     player_name: string;
-    position: string;
     batting_order: number;
   }>;
   created_by: number;
@@ -30,7 +29,6 @@ export interface GeneratedLineup {
   players: Array<{
     player_id: number;
     player_name: string;
-    position: string;
     batting_order: number;
   }>;
 }
@@ -40,7 +38,7 @@ export interface SaveLineupPayload {
   name: string;
   players: Array<{
     player_id: number;
-    position: string;
+    // position removed from backend
     batting_order: number;
   }>;
 }
@@ -57,7 +55,6 @@ export async function fetchPlayers(teamId?: number): Promise<Player[]> {
   return playersArray.map((p: any) => ({
     id: p.id,
     name: p.name,
-    position: p.position,
     team: String(p.team ?? teamId ?? ""),
     avg: p.avg,
     obp: p.obp,
@@ -109,15 +106,20 @@ export async function saveLineup(
  * Does not save to database - returns suggested lineup only.
  */
 export async function generateLineup(
-  teamId: number
+  teamId: number,
+  playerIds?: number[]
 ): Promise<GeneratedLineup> {
-  const payload = { team_id: teamId };
+  const payload: any = { team_id: teamId };
+  if (playerIds && playerIds.length > 0) {
+    payload.players = playerIds.map((id) => ({ player_id: id }));
+  }
+
   const res = await fetch(`${LINEUPS_BASE}/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  
+
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return await res.json();
 }

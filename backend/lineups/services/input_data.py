@@ -12,7 +12,6 @@ from typing import List, Optional
 @dataclass
 class LineupPlayerInput:
     player_id: int
-    position: str
     batting_order: Optional[int] = None
 
 
