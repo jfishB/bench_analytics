@@ -2,7 +2,6 @@ from django.db import transaction
 from django.utils import timezone
 
 from lineups.models import Lineup, LineupPlayer
-from roster.models import Player, Team
 
 
 def saving_lineup_to_db(team_obj, players_payload, lineup_name, created_by_id):
