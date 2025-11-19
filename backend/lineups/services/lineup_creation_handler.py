@@ -114,8 +114,8 @@ def generate_suggested_lineup(team_id: int, player_ids: list | None = None) -> l
         List of player dictionaries with suggested batting orders
     """
 
-    # Build CreateLineupInput for the algorithm. Limit to 9 players to avoid
-    # factorial explosion; if more than 9 are provided, we take the first 9.
+    # Build CreateLineupInput for the algorithm. Limit to 9 players because
+    # a lineup only has 9 batting positions; if more than 9 are provided, we take the first 9.
     if player_ids:
         players_inputs = [LineupPlayerInput(player_id=pid) for pid in player_ids][:9]
     else:
