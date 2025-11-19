@@ -12,27 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name="player",
-            name="double",
-            field=models.PositiveIntegerField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name="player",
-            name="hit",
-            field=models.PositiveIntegerField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name="player",
             name="strikeout",
-            field=models.PositiveIntegerField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name="player",
-            name="triple",
-            field=models.PositiveIntegerField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name="player",
-            name="walk",
             field=models.PositiveIntegerField(blank=True, null=True),
         ),
         migrations.AlterField(
