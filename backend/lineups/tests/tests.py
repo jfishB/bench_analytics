@@ -34,7 +34,6 @@ class LineupViewsTests(TestCase):
             "players": [
                 {
                     "player_id": self.players[i].id,
-                    "position": "1B",
                     "batting_order": i + 1,
                 }
                 for i in range(9)
@@ -63,7 +62,7 @@ class LineupViewsTests(TestCase):
             team=self.team,
             created_by=self.creator,
         )
-        LineupPlayer.objects.create(lineup=lineup, player=self.players[0], position="P", batting_order="1")
+        LineupPlayer.objects.create(lineup=lineup, player=self.players[0], batting_order=1)
 
         url = f"{self.base_url}{lineup.id}/"
         resp = self.client.get(url)

@@ -146,8 +146,8 @@ class PlayerServiceTestCase(TestCase):
 
     def setUp(self):
         """Create test database records."""
-        # Create a team
-        self.team = Team.objects.create(id=1, name="Test Team", abbreviation="TST")
+        # Create a team (Team model no longer stores name/abbreviation)
+        self.team = Team.objects.create(id=1)
 
         # Create test players
         self.players = []
@@ -226,9 +226,8 @@ class SimulatorAPITestCase(APITestCase):
         """Set up test client and authentication."""
         # Create test user
         self.user = User.objects.create_user(username="testuser", password="testpass123")
-
-        # Create team and players
-        self.team = Team.objects.create(id=1, name="Test Team", abbreviation="TST")
+        # Create team and players (Team has no name/abbreviation)
+        self.team = Team.objects.create(id=1)
 
         self.players = []
         for i in range(9):
