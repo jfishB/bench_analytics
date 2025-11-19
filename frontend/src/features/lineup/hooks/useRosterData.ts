@@ -44,7 +44,8 @@ export function useRosterData() {
     return () => {
       cancelled = true;
     };
-  }, []); // Empty dependency array - teamId is auto-detected from fetched data
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - teamId is auto-detected from fetched data, not a trigger for refetch
 
   return {
     loading,
@@ -54,4 +55,3 @@ export function useRosterData() {
     teamId,
   };
 }
-
