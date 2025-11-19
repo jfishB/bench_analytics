@@ -15,6 +15,7 @@ import {
 	TabsList,
 	TabsTrigger,
 } from "../../ui/components/tabs";
+import { SimulationVisualizer } from "../../features/simulator";
 
 const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000/api/v1";
 const ROSTER_BASE = `${API_BASE}/roster`;
@@ -77,9 +78,10 @@ export function LineupOptimizer() {
 			</div>
 
 			<Tabs defaultValue="current" className="w-full">
-				<TabsList className="grid w-full grid-cols-3">
+				<TabsList className="grid w-full grid-cols-4">
 					<TabsTrigger value="current">Current Roster</TabsTrigger>
 					<TabsTrigger value="optimizer">Generate Lineup</TabsTrigger>
+					<TabsTrigger value="simulator">Simulator</TabsTrigger>
 					<TabsTrigger value="analysis">Analysis</TabsTrigger>
 				</TabsList>
 
@@ -213,6 +215,31 @@ export function LineupOptimizer() {
 							</CardContent>
 						</Card>
 					</div>
+				</TabsContent>
+
+				{/* SIMULATOR */}
+				<TabsContent value="simulator" className="space-y-4">
+					<Card>
+						<CardHeader>
+							<CardTitle>Monte Carlo Simulator</CardTitle>
+							<CardDescription>Run simulations to predict run production for your lineup</CardDescription>
+						</CardHeader>
+						<CardContent>
+							{generatedLineup.length === 9 ? (
+								<SimulationVisualizer 
+									players={generatedLineup.map((p) => ({
+										id: p.id,
+										name: p.name,
+										batting_order: p.batting_order,
+									}))}
+								/>
+							) : (
+								<div className="text-center text-muted-foreground py-8">
+									Generate a 9-player lineup first to run simulations
+								</div>
+							)}
+						</CardContent>
+					</Card>
 				</TabsContent>
 
 				{/* ANALYSIS */}

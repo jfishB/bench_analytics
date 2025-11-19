@@ -15,6 +15,7 @@ export default function Login() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setMessage(""); // Clear previous messages
 
     try {
       const response = await fetch(`${AUTH_BASE}/login/`, {
@@ -24,7 +25,8 @@ export default function Login() {
       });
 
       if (!response.ok) {
-        setMessage("Login failed!");
+        const errorData = await response.json().catch(() => ({}));
+        setMessage(errorData.error || "Login failed! Invalid credentials.");
         return;
       }
 
@@ -39,8 +41,8 @@ export default function Login() {
       navigate("/"); // redirect to homepage or lineup
 
     } catch (err) {
-      console.error(err);
-      setMessage("Something went wrong.");
+      console.error("Login error:", err);
+      setMessage("❌ Network error. Backend server is not running. Please start the backend.");
     }
   };
 

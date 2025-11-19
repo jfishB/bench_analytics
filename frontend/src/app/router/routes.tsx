@@ -45,14 +45,13 @@ const AppRoutes: React.FC = () => {
       />
 
       {/* Protected routes */}
+      {/* TODO: TEMPORARILY DISABLED AUTH FOR TESTING - RE-ENABLE BEFORE PRODUCTION */}
       <Route
         path="/lineup"
         element={
-          <ProtectedRoute>
-            <Suspense fallback={<div>Loading Lineup...</div>}>
-              <Lineup />
-            </Suspense>
-          </ProtectedRoute>
+          <Suspense fallback={<div>Loading Lineup...</div>}>
+            <Lineup />
+          </Suspense>
         }
       />
 
