@@ -23,10 +23,8 @@ def get_all_players_with_stats() -> List[Dict[str, Any]]:
             "name",
             "team_id",
             "position",
-            "xwoba",
             "bb_percent",
             "k_percent",
-            "barrel_batted_rate",
             "pa",
             "year",
         )
@@ -69,10 +67,8 @@ def get_all_players_with_stats() -> List[Dict[str, Any]]:
             "name",
             "team_id",
             "position",
-            "xwoba",
             "bb_percent",
             "k_percent",
-            "barrel_batted_rate",
             "pa",
             "year",
         )

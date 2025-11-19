@@ -28,16 +28,13 @@ class Player(models.Model):
     year = models.PositiveIntegerField(null=True, blank=True)  # Season year (e.g., 2025)
     ab = models.PositiveIntegerField(null=True, blank=True)  # At bat count
     pa = models.PositiveIntegerField(null=True, blank=True)  # Plate appearances
-
-    # Raw counting stats (for simulation)
     hit = models.PositiveIntegerField(null=True, blank=True)  # Total hits
+    single = models.PositiveIntegerField(null=True, blank=True)  # Singles
     double = models.PositiveIntegerField(null=True, blank=True)  # Doubles
     triple = models.PositiveIntegerField(null=True, blank=True)  # Triples
     home_run = models.PositiveIntegerField(null=True, blank=True)  # Home runs
     strikeout = models.PositiveIntegerField(null=True, blank=True)  # Strikeouts
-    walk = models.PositiveIntegerField(null=True, blank=True)  # Walks (BB)
-
-    # Derived percentages (legacy/for display)
+    walk = models.PositiveIntegerField(null=True, blank=True)  # Walks - BB
     k_percent = models.FloatField(null=True, blank=True)  # Frequency of strikeouts per plate appearance - K% = (SO / PA) * 100
     bb_percent = models.FloatField(null=True, blank=True)  # Frequency of walks per plate appearance - BB% = (BB / PA) * 100
     slg_percent = models.FloatField(
@@ -68,27 +65,12 @@ class Player(models.Model):
     b_intent_walk = models.FloatField(
         null=True, blank=True
     )  # IBB: Intentional Base on Balls / Intentional walk - A strategic play where the defending team deliberately allows a batter to reach first base without having to swing at a pitch.
+    b_sac_bunt = models.FloatField(
+        null=True, blank=True
+    )  # SH: Sacrfice bunt: Occurs when a batter deliberately bunts the ball to advance a baserunner, usually at the cost of being put out themselves
     b_sac_fly = models.FloatField(
         null=True, blank=True
     )  # SF: Sacrifice Fly - Occurs when a batter hits a deep fly ball that is caught by an outfielder (or an infielder playing in the outfield), but a baserunner on third base tags up and scores before the play is over.
-    b_total_sacrifices = models.FloatField(
-        null=True, blank=True
-    )  # SH: Sacrfice hit: Occurs when a player is successful in his attempt to advance a runner (or multiple runners) at least one base with a bunt.
-    woba = models.FloatField(
-        null=True, blank=True
-    )  # Weighted On-Base Average: Weights each event by its average run value (Weights vary slightly each season) - wOBA = ((0.69*uBB) + (0.72*HBP) + (0.89*1B) + (1.27*2B) + (1.62*3B) + (2.10*HR)) / (AB + BB - IBB + SF + HBP)
-    xwoba = models.FloatField(
-        null=True, blank=True
-    )  # Expected wOBA: Derived from Statcast models; estimates what wOBA should be based on contact quality - xwOBA = Expected value based on exit velocity, launch angle, and sprint speed
-    barrel_batted_rate = models.FloatField(
-        null=True, blank=True
-    )  # A "barrel" is a batted ball with optimal exit velocity and launch angle (typically >= 98 mph exit velocity and ~26–30° launch angle) - Barrel% = (Barreled Balls / Batted Balls) * 100
-    hard_hit_percent = models.FloatField(
-        null=True, blank=True
-    )  # Shows how often a player hits the ball hard - HardHit% = (Batted Balls ≥ 95 mph) / (Total Batted Balls) * 100
-    sprint_speed = models.FloatField(
-        null=True, blank=True
-    )  # Average feet per second during top 1-second window of a player's max-effort runs - MLB average ≈ 27 ft/sec; elite ≈ 30+ ft/sec
 
     class Meta:
         db_table = "players"
