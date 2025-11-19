@@ -9,6 +9,36 @@ const API_BASE =
   process.env.REACT_APP_API_BASE || "http://localhost:8000/api/v1";
 const ROSTER_BASE = `${API_BASE}/roster`;
 const LINEUPS_BASE = `${API_BASE}/lineups`;
+const AUTH_BASE = `${API_BASE}/auth`;
+
+/**
+ * Helper function to refresh the access token using the refresh token.
+ */
+async function refreshAccessToken(): Promise<boolean> {
+  const refreshToken = localStorage.getItem("refresh");
+  if (!refreshToken) {
+    return false;
+  }
+
+  try {
+    const res = await fetch(`${AUTH_BASE}/token/refresh/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh: refreshToken }),
+    });
+
+    if (!res.ok) {
+      return false;
+    }
+
+    const data = await res.json();
+    localStorage.setItem("access", data.access);
+    return true;
+  } catch (err) {
+    console.error("Token refresh failed:", err);
+    return false;
+  }
+}
 
 // Type definitions for API responses
 export interface SavedLineup {
@@ -146,6 +176,7 @@ export interface SimulationResult {
 /**
  * Run Monte Carlo simulation on a lineup.
  * Takes 9 player IDs in batting order and simulates N games.
+ * Automatically refreshes JWT token and retries if authentication fails.
  */
 export async function runSimulation(
   playerIds: number[],
@@ -158,7 +189,8 @@ export async function runSimulation(
     num_games: numGames,
   };
 
-  const res = await fetch(`${SIMULATOR_BASE}/simulate-by-ids/`, {
+  // First attempt
+  let res = await fetch(`${SIMULATOR_BASE}/simulate-by-ids/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -166,6 +198,22 @@ export async function runSimulation(
     },
     body: JSON.stringify(payload),
   });
+
+  // If 401, try to refresh token and retry
+  if (res.status === 401) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      // Retry with new token
+      res = await fetch(`${SIMULATOR_BASE}/simulate-by-ids/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access")}`,
+        },
+        body: JSON.stringify(payload),
+      });
+    }
+  }
 
   if (!res.ok) {
     const errorText = await res.text();
