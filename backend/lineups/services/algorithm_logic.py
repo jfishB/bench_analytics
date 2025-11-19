@@ -179,6 +179,3 @@ def algorithm_create_lineup(payload) -> tuple[Player]:
         return tuple()
 
     return best_lineup
-
-    
-    
