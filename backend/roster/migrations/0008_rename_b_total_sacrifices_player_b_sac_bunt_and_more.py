@@ -35,9 +35,4 @@ class Migration(migrations.Migration):
             model_name='player',
             name='xwoba',
         ),
-        migrations.AddField(
-            model_name='player',
-            name='strikeout',
-            field=models.PositiveIntegerField(blank=True, null=True),
-        ),
     ]
