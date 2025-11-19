@@ -46,9 +46,8 @@ const Home: React.FC = () => {
         <div className="max-w-3xl mx-auto space-y-6">
           <h1 className="text-4xl md:text-6xl text-primary">
             Your lineup. Our analytics.
-          </h1>
-          <h1 className="text-4xl md:text-6xl text-primary text-red-600">
-            Their problem.
+            <br />
+            <span className="text-red-600">Their problem.</span>
           </h1>
           <p className="text-xl text-muted-foreground">
             Advanced analytics and data-powered insights to help coaches build

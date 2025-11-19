@@ -49,9 +49,7 @@ export default function Login() {
         onSubmit={handleLogin}
         className="bg-white p-8 rounded-2xl shadow-md w-96"
       >
-        <h2 className="flex flex-col sm:flex-row gap-4 justify-center">
-          Login
-        </h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
         <input
           type="text"
           placeholder="Username"
@@ -72,7 +70,7 @@ export default function Login() {
 
         <button
           type="submit"
-          className="!bg-blue-700 text-white w-full py-2 rounded !hover:bg-blue-800"
+          className="bg-blue-700 text-white w-full py-2 rounded hover:bg-blue-800"
         >
           Log In
         </button>
