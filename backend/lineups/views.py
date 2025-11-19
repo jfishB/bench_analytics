@@ -35,7 +35,7 @@ class LineupCreateView(APIView):
 
         if mode == "manual_save":
             # Manual or sabermetrics save - process and save to database
-            lineup, lineup_players = handle_lineup_save(data, request.user) #extract linup save 
+            lineup, lineup_players = handle_lineup_save(data, request.user) #extract lineup save 
 
             # Build response
             out = LineupOut(
