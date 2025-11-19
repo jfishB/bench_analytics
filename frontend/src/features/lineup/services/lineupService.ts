@@ -50,8 +50,10 @@ export async function fetchPlayers(teamId?: number): Promise<Player[]> {
   const res = await fetch(`${ROSTER_BASE}/players/`);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
-  const playersArray = Array.isArray(data) ? data : data.players || data.results || [];
-  
+  const playersArray = Array.isArray(data)
+    ? data
+    : data.players || data.results || [];
+
   return playersArray.map((p: any) => ({
     id: p.id,
     name: p.name,
@@ -92,12 +94,12 @@ export async function saveLineup(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  
+
   if (!res.ok) {
     const errorText = await res.text();
     throw new Error(`HTTP ${res.status}: ${errorText}`);
   }
-  
+
   return await res.json();
 }
 
@@ -121,5 +123,54 @@ export async function generateLineup(
   });
 
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return await res.json();
+}
+
+// Type definitions for Monte Carlo simulation
+export interface SimulationRequest {
+  player_ids: number[];
+  num_games?: number;
+}
+
+export interface SimulationResult {
+  lineup: string[];
+  num_games: number;
+  avg_score: number;
+  median_score: number;
+  std_dev: number;
+  min_score: number;
+  max_score: number;
+  score_distribution: { [key: string]: number };
+}
+
+/**
+ * Run Monte Carlo simulation on a lineup.
+ * Takes 9 player IDs in batting order and simulates N games.
+ */
+export async function runSimulation(
+  playerIds: number[],
+  numGames: number = 10000
+): Promise<SimulationResult> {
+  const SIMULATOR_BASE = `${API_BASE}/simulator`;
+
+  const payload: SimulationRequest = {
+    player_ids: playerIds,
+    num_games: numGames,
+  };
+
+  const res = await fetch(`${SIMULATOR_BASE}/simulate-by-ids/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("access")}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`Simulation failed (HTTP ${res.status}): ${errorText}`);
+  }
+
   return await res.json();
 }
