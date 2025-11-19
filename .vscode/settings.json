@@ -2,6 +2,5 @@
     "python.analysis.extraPaths": [
         "./backend"
     ],
-    "makefile.configureOnOpen": false,
-    "vscode-pets.theme": "autumn"
+    "makefile.configureOnOpen": false
 }
