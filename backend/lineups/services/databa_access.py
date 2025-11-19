@@ -10,7 +10,7 @@ def saving_lineup_to_db(team_obj, players_payload, lineup_name, created_by_id):
 
     Expected arguments:
       - team_obj: Team model instance
-      - players_payload: list of dicts with keys 'player' (Roster Player model) and 'batting_order' (int)
+      - players_payload: list of dicts with keys 'player' (Player model) and 'batting_order' (int)
       - lineup_name: desired name for the created lineup
       - created_by_id: user id who created the lineup
     """
