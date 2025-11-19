@@ -2,7 +2,7 @@
  * LineupSimulatorTab - Component for displaying all saved lineups and running Monte Carlo simulations
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -25,6 +25,7 @@ export function LineupSimulatorTab({
 }: LineupSimulatorTabProps) {
   const [selectedLineupId, setSelectedLineupId] = useState<number | null>(null);
   const [numGames, setNumGames] = useState<number>(10000);
+  const [statusMessage, setStatusMessage] = useState("");
   const {
     simulationResult,
     simulating,
@@ -32,6 +33,35 @@ export function LineupSimulatorTab({
     runSimulation,
     clearResults,
   } = useMonteCarloSimulation();
+
+  // Cycle through status messages while simulating
+  useEffect(() => {
+    if (!simulating) {
+      setStatusMessage("");
+      return;
+    }
+
+    const messages = [
+      "Simulating at-bats...",
+      "Calculating runs...",
+      "Tracking base runners...",
+      "Recording outcomes...",
+      "Running Monte Carlo iterations...",
+      "Processing game states...",
+      "Evaluating batting sequences...",
+      "Analyzing scoring patterns...",
+      "Computing probabilities...",
+      "Aggregating results...",
+    ];
+
+    let currentIndex = 0;
+    const interval = setInterval(() => {
+      setStatusMessage(messages[currentIndex]);
+      currentIndex = (currentIndex + 1) % messages.length;
+    }, 800); // Change message every 800ms
+
+    return () => clearInterval(interval);
+  }, [simulating]);
 
   const selectedLineup = savedLineups.find((l) => l.id === selectedLineupId);
 
@@ -190,8 +220,11 @@ export function LineupSimulatorTab({
                   <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                     <div className="bg-primary h-2.5 rounded-full animate-pulse w-full"></div>
                   </div>
-                  <p className="text-sm text-gray-600">
-                    Running {numGames.toLocaleString()} simulated games...
+                  <p className="text-sm text-gray-600 animate-pulse">
+                    {statusMessage || "Initializing simulation..."}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {numGames.toLocaleString()} games
                   </p>
                 </div>
               )}
