@@ -50,7 +50,7 @@ def validate_batting_orders(players):
         raise BadBattingOrder("Batting orders must cover positions 1 through 9")
 
 
-def validate_data(payload):
+def validate_data(payload, require_creator: bool = True):
     """Validate the lineup data for creating a lineup."""
 
     # Helper to read either dataclass attributes or dict keys
@@ -67,19 +67,14 @@ def validate_data(payload):
     if not team_obj:
         raise TeamNotFound()
 
-    # Extract player ids and preserve requested positions from input
+    # Extract player ids from input (ignore any requested positions — field removed)
     ids = []
-    pos_map = {}
     for p in _get(payload, "players", []):
         # support either raw int ids or LineupPlayerInput/dataclass/dict
         pid = _get(p, "player_id") if not isinstance(p, (int,)) else p
         if pid is None:
             raise PlayersNotFound()
         ids.append(pid)
-        # capture requested position if present
-        pos = _get(p, "position")
-        if pos is not None:
-            pos_map[pid] = pos
 
     players_qs = list(Player.objects.filter(id__in=ids).select_related("team"))
     if len(players_qs) != len(ids):
@@ -94,7 +89,6 @@ def validate_data(payload):
             raise PlayersNotFound()
         # attach helper attributes expected by the algorithm
         setattr(player_obj, "player_id", player_obj.id)
-        setattr(player_obj, "position", pos_map.get(pid, (player_obj.position or "--")))
         ordered_players.append(player_obj)
 
     players_qs = ordered_players
@@ -111,9 +105,14 @@ def validate_data(payload):
     created_by_id = _get(payload, "requested_user_id")
     User = get_user_model()
     if not created_by_id:
-        created_by_id = User.objects.filter(is_superuser=True).values_list("id", flat=True).first()
-        if created_by_id is None:
-            raise NoCreator()
+        # When callers need a creator for persistence, enforce existence
+        if require_creator:
+            created_by_id = User.objects.filter(is_superuser=True).values_list("id", flat=True).first()
+            if created_by_id is None:
+                raise NoCreator()
+        else:
+            # Algorithm/generate-only mode doesn't require a creator — return None
+            created_by_id = None
 
     return {
         "team": team_obj,
