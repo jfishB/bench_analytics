@@ -11,7 +11,7 @@ export function useRosterData() {
   const [loading, setLoading] = useState(true);
   const [players, setPlayers] = useState<Player[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [teamId, setTeamId] = useState<number | undefined>(1);
+  const [teamId, setTeamId] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     let cancelled = false;
@@ -44,7 +44,7 @@ export function useRosterData() {
     return () => {
       cancelled = true;
     };
-  }, [teamId]);
+  }, []); // Empty dependency array - teamId is auto-detected from fetched data
 
   return {
     loading,
