@@ -9,6 +9,36 @@ const API_BASE =
   process.env.REACT_APP_API_BASE || "http://localhost:8000/api/v1";
 const ROSTER_BASE = `${API_BASE}/roster`;
 const LINEUPS_BASE = `${API_BASE}/lineups`;
+const AUTH_BASE = `${API_BASE}/auth`;
+
+/**
+ * Helper function to refresh the access token using the refresh token.
+ */
+async function refreshAccessToken(): Promise<boolean> {
+  const refreshToken = localStorage.getItem("refresh");
+  if (!refreshToken) {
+    return false;
+  }
+
+  try {
+    const res = await fetch(`${AUTH_BASE}/token/refresh/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh: refreshToken }),
+    });
+
+    if (!res.ok) {
+      return false;
+    }
+
+    const data = await res.json();
+    localStorage.setItem("access", data.access);
+    return true;
+  } catch (err) {
+    console.error("Token refresh failed:", err);
+    return false;
+  }
+}
 
 // Type definitions for API responses
 export interface SavedLineup {
@@ -50,8 +80,10 @@ export async function fetchPlayers(teamId?: number): Promise<Player[]> {
   const res = await fetch(`${ROSTER_BASE}/players/`);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
-  const playersArray = Array.isArray(data) ? data : data.players || data.results || [];
-  
+  const playersArray = Array.isArray(data)
+    ? data
+    : data.players || data.results || [];
+
   return playersArray.map((p: any) => ({
     id: p.id,
     name: p.name,
@@ -69,6 +101,28 @@ export async function fetchPlayers(teamId?: number): Promise<Player[]> {
     k_percent: p.k_percent,
     barrel_batted_rate: p.barrel_batted_rate,
   }));
+}
+
+/**
+ * Sort a list of player IDs by wOBA (descending) to create a baseline lineup.
+ * Fetches full player data and returns IDs sorted by xwoba.
+ */
+export async function sortPlayersByWOBA(
+  playerIds: number[]
+): Promise<number[]> {
+  const allPlayers = await fetchPlayers();
+
+  // Filter to only the players in the lineup
+  const lineupPlayers = allPlayers.filter((p) => playerIds.includes(p.id));
+
+  // Sort by xwoba descending (highest wOBA bats first)
+  lineupPlayers.sort((a, b) => {
+    const wobaA = a.xwoba ?? 0;
+    const wobaB = b.xwoba ?? 0;
+    return wobaB - wobaA;
+  });
+
+  return lineupPlayers.map((p) => p.id);
 }
 
 /**
@@ -92,12 +146,12 @@ export async function saveLineup(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  
+
   if (!res.ok) {
     const errorText = await res.text();
     throw new Error(`HTTP ${res.status}: ${errorText}`);
   }
-  
+
   return await res.json();
 }
 
@@ -121,5 +175,72 @@ export async function generateLineup(
   });
 
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return await res.json();
+}
+
+// Type definitions for Monte Carlo simulation
+export interface SimulationRequest {
+  player_ids: number[];
+  num_games?: number;
+}
+
+export interface SimulationResult {
+  lineup: string[];
+  num_games: number;
+  avg_score: number;
+  median_score: number;
+  std_dev: number;
+  min_score: number;
+  max_score: number;
+  score_distribution: { [key: string]: number };
+}
+
+/**
+ * Run Monte Carlo simulation on a lineup.
+ * Takes 9 player IDs in batting order and simulates N games.
+ * Automatically refreshes JWT token and retries if authentication fails.
+ */
+export async function runSimulation(
+  playerIds: number[],
+  numGames: number = 20000
+): Promise<SimulationResult> {
+  const SIMULATOR_BASE = `${API_BASE}/simulator`;
+
+  const payload: SimulationRequest = {
+    player_ids: playerIds,
+    num_games: numGames,
+  };
+
+  // First attempt
+  let res = await fetch(`${SIMULATOR_BASE}/simulate-by-ids/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("access")}`,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  // If 401, try to refresh token and retry
+  if (res.status === 401) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      // Retry with new token
+      res = await fetch(`${SIMULATOR_BASE}/simulate-by-ids/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access")}`,
+        },
+        body: JSON.stringify(payload),
+      });
+    }
+  }
+
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`Simulation failed (HTTP ${res.status}): ${errorText}`);
+  }
+
   return await res.json();
 }

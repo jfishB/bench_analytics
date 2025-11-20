@@ -3,14 +3,14 @@
  * Handles loading all saved lineups from the database.
  */
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import * as lineupService from "../services/lineupService";
 
 export function useSavedLineups() {
   const [savedLineups, setSavedLineups] = useState<lineupService.SavedLineup[]>([]);
   const [loadingLineups, setLoadingLineups] = useState(false);
 
-  const fetchSavedLineups = async () => {
+  const fetchSavedLineups = useCallback(async () => {
     setLoadingLineups(true);
     try {
       const data = await lineupService.fetchSavedLineups();
@@ -20,7 +20,7 @@ export function useSavedLineups() {
     } finally {
       setLoadingLineups(false);
     }
-  };
+  }, []);
 
   return {
     savedLineups,
