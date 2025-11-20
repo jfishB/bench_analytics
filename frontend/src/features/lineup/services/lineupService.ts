@@ -202,7 +202,7 @@ export interface SimulationResult {
  */
 export async function runSimulation(
   playerIds: number[],
-  numGames: number = 10000
+  numGames: number = 20000
 ): Promise<SimulationResult> {
   const SIMULATOR_BASE = `${API_BASE}/simulator`;
 

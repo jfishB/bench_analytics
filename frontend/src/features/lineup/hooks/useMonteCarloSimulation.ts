@@ -73,6 +73,7 @@ export function useMonteCarloSimulation() {
     comparisonResult,
     simulating,
     simulationError,
+    setSimulationError,
     runSimulation,
     clearResults,
   };

@@ -34,13 +34,14 @@ export function LineupSimulatorTab({
   loading,
 }: LineupSimulatorTabProps) {
   const [selectedLineupId, setSelectedLineupId] = useState<number | null>(null);
-  const [numGames, setNumGames] = useState<number>(10000);
+  const [numGames, setNumGames] = useState<number>(20000);
   const [statusMessage, setStatusMessage] = useState("");
   const [showDetailedAnalysis, setShowDetailedAnalysis] = useState(false);
   const {
     comparisonResult,
     simulating,
     simulationError,
+    setSimulationError,
     runSimulation,
     clearResults,
   } = useMonteCarloSimulation();
@@ -97,7 +98,9 @@ export function LineupSimulatorTab({
       .map((p) => p.player_id);
 
     if (playerIds.length !== 9) {
-      alert("Lineup must have exactly 9 players to run simulation");
+      setSimulationError(
+        "Lineup must have exactly 9 players to run simulation"
+      );
       return;
     }
 
@@ -217,13 +220,13 @@ export function LineupSimulatorTab({
                   step="100"
                   value={numGames}
                   onChange={(e) =>
-                    setNumGames(parseInt(e.target.value) || 10000)
+                    setNumGames(parseInt(e.target.value) || 20000)
                   }
                   className="px-3 py-2 border border-gray-300 rounded-md w-32"
                   disabled={simulating}
                 />
                 <span className="text-sm text-gray-600">
-                  (recommended: 10,000)
+                  (recommended: 20,000)
                 </span>
               </div>
 
