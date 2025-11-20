@@ -37,7 +37,6 @@ export default function Login() {
 
       login(username); // sets the user in context
       navigate("/"); // redirect to homepage or lineup
-
     } catch (err) {
       console.error(err);
       setMessage("Something went wrong.");
@@ -71,7 +70,7 @@ export default function Login() {
 
         <button
           type="submit"
-          className="bg-blue-600 text-white w-full py-2 rounded hover:bg-blue-700"
+          className="bg-blue-700 text-white w-full py-2 rounded hover:bg-blue-800"
         >
           Log In
         </button>
@@ -85,7 +84,7 @@ export default function Login() {
           <button
             type="button"
             onClick={() => navigate("/register")}
-            className="text-blue-600 hover:underline"
+            className="text-blue-700 hover:underline"
           >
             Register
           </button>
