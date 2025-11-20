@@ -141,18 +141,72 @@ export async function fetchSavedLineups(): Promise<SavedLineup[]> {
 export async function saveLineup(
   payload: SaveLineupPayload
 ): Promise<SavedLineup> {
-  const res = await fetch(`${LINEUPS_BASE}/`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  
+  const makeRequest = async () =>
+    fetch(`${LINEUPS_BASE}/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("access")}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+  let res = await makeRequest();
+
+  // try refresh if unauthorized
+  if (res.status === 401) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      res = await makeRequest();
+    }
+  }
 
   if (!res.ok) {
     const errorText = await res.text();
+    console.error("Save lineup failed:", res.status, errorText);
     throw new Error(`HTTP ${res.status}: ${errorText}`);
   }
 
   return await res.json();
+}
+
+/**
+ * Delete a lineup from the database (manual or sabermetrics mode).
+ */
+export async function deleteLineup(
+  lineupId: number
+): Promise<void> {
+  const url = `${LINEUPS_BASE}/${lineupId}/`;
+
+  let res = await fetch(url, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("access")}`,
+    },
+  });
+
+  if (res.status === 401) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      res = await fetch(url, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access")}`,
+        },
+      });
+    }
+  }
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("Delete failed:", res.status, text);
+    throw new Error(`HTTP ${res.status}: ${text}`);
+  }
+
+  return;
 }
 
 /**
