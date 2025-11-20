@@ -13,6 +13,16 @@ import {
 import { Button } from "../../../ui/components/button";
 import { SavedLineup } from "../services/lineupService";
 import { useMonteCarloSimulation } from "../hooks/useMonteCarloSimulation";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 interface LineupSimulatorTabProps {
   savedLineups: SavedLineup[];
@@ -26,6 +36,7 @@ export function LineupSimulatorTab({
   const [selectedLineupId, setSelectedLineupId] = useState<number | null>(null);
   const [numGames, setNumGames] = useState<number>(10000);
   const [statusMessage, setStatusMessage] = useState("");
+  const [showDetailedAnalysis, setShowDetailedAnalysis] = useState(false);
   const {
     comparisonResult,
     simulating,
@@ -70,7 +81,12 @@ export function LineupSimulatorTab({
 
   const handleSelectLineup = (lineupId: number) => {
     setSelectedLineupId(lineupId);
+    handleClearResults();
+  };
+
+  const handleClearResults = () => {
     clearResults();
+    setShowDetailedAnalysis(false);
   };
 
   const handleRunSimulation = async () => {
@@ -354,8 +370,251 @@ export function LineupSimulatorTab({
             </Card>
           </div>
 
+          {/* Toggle Detailed Analysis Button */}
           <div className="flex justify-center">
-            <Button onClick={clearResults} variant="outline">
+            <Button
+              onClick={() => setShowDetailedAnalysis(!showDetailedAnalysis)}
+              variant="outline"
+              className="gap-2"
+            >
+              {showDetailedAnalysis ? "Hide" : "Show"} Detailed Analysis
+              <span className="text-lg">
+                {showDetailedAnalysis ? "▲" : "▼"}
+              </span>
+            </Button>
+          </div>
+
+          {/* Detailed Analysis Section */}
+          {showDetailedAnalysis && (
+            <div className="space-y-4 animate-in fade-in duration-300">
+              {/* Score Distribution Histogram */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Score Distribution Comparison</CardTitle>
+                  <CardDescription>
+                    Overlayed histogram showing frequency of runs scored
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={400}>
+                    <BarChart
+                      data={(() => {
+                        // Combine both distributions into one dataset
+                        const userDist =
+                          comparisonResult.userLineup.score_distribution;
+                        const baselineDist =
+                          comparisonResult.baselineLineup.score_distribution;
+                        const allScores = new Set([
+                          ...Object.keys(userDist),
+                          ...Object.keys(baselineDist),
+                        ]);
+
+                        return Array.from(allScores)
+                          .map((score) => ({
+                            score: parseInt(score),
+                            yourLineup: userDist[score] || 0,
+                            baseline: baselineDist[score] || 0,
+                          }))
+                          .sort((a, b) => a.score - b.score);
+                      })()}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="score"
+                        label={{
+                          value: "Runs Scored",
+                          position: "insideBottom",
+                          offset: -10,
+                        }}
+                      />
+                      <YAxis
+                        label={{
+                          value: "Number of Games",
+                          angle: -90,
+                          position: "insideLeft",
+                        }}
+                      />
+                      <Tooltip
+                        content={({ active, payload }: any) => {
+                          if (active && payload && payload.length) {
+                            const data = payload[0].payload;
+                            return (
+                              <div className="bg-white p-3 border border-gray-300 rounded shadow-lg">
+                                <p className="font-semibold mb-1">
+                                  {data.score} Runs
+                                </p>
+                                <p className="text-sm text-blue-600">
+                                  Your Lineup: {data.yourLineup} games
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  Baseline: {data.baseline} games
+                                </p>
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                      <Legend />
+                      <Bar
+                        dataKey="yourLineup"
+                        fill="#3b82f6"
+                        name="Your Lineup"
+                        opacity={0.8}
+                      />
+                      <Bar
+                        dataKey="baseline"
+                        fill="#9ca3af"
+                        name="wOBA Baseline"
+                        opacity={0.6}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Additional Statistics */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Additional Statistics</CardTitle>
+                  <CardDescription>
+                    Detailed performance metrics
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {/* User Lineup Stats */}
+                    <div>
+                      <h4 className="font-semibold mb-3 text-blue-700">
+                        Your Lineup
+                      </h4>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="p-3 bg-blue-50 rounded">
+                          <div className="text-xs text-gray-600">Median</div>
+                          <div className="text-xl font-bold">
+                            {comparisonResult.userLineup.median_score.toFixed(
+                              1
+                            )}
+                          </div>
+                        </div>
+                        <div className="p-3 bg-blue-50 rounded">
+                          <div className="text-xs text-gray-600">Std Dev</div>
+                          <div className="text-xl font-bold">
+                            {comparisonResult.userLineup.std_dev.toFixed(2)}
+                          </div>
+                        </div>
+                        <div className="p-3 bg-blue-50 rounded">
+                          <div className="text-xs text-gray-600">Min</div>
+                          <div className="text-xl font-bold text-red-600">
+                            {comparisonResult.userLineup.min_score}
+                          </div>
+                        </div>
+                        <div className="p-3 bg-blue-50 rounded">
+                          <div className="text-xs text-gray-600">Max</div>
+                          <div className="text-xl font-bold text-green-600">
+                            {comparisonResult.userLineup.max_score}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Baseline Stats */}
+                    <div>
+                      <h4 className="font-semibold mb-3 text-gray-700">
+                        wOBA Baseline
+                      </h4>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="p-3 bg-gray-50 rounded">
+                          <div className="text-xs text-gray-600">Median</div>
+                          <div className="text-xl font-bold">
+                            {comparisonResult.baselineLineup.median_score.toFixed(
+                              1
+                            )}
+                          </div>
+                        </div>
+                        <div className="p-3 bg-gray-50 rounded">
+                          <div className="text-xs text-gray-600">Std Dev</div>
+                          <div className="text-xl font-bold">
+                            {comparisonResult.baselineLineup.std_dev.toFixed(2)}
+                          </div>
+                        </div>
+                        <div className="p-3 bg-gray-50 rounded">
+                          <div className="text-xs text-gray-600">Min</div>
+                          <div className="text-xl font-bold text-red-600">
+                            {comparisonResult.baselineLineup.min_score}
+                          </div>
+                        </div>
+                        <div className="p-3 bg-gray-50 rounded">
+                          <div className="text-xs text-gray-600">Max</div>
+                          <div className="text-xl font-bold text-green-600">
+                            {comparisonResult.baselineLineup.max_score}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Batting Order Comparison */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Batting Order Comparison</CardTitle>
+                  <CardDescription>
+                    How the lineups differ in batting order
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="font-semibold mb-3 text-blue-700">
+                        Your Lineup
+                      </h4>
+                      <div className="space-y-2">
+                        {comparisonResult.userLineup.lineup.map(
+                          (player, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center gap-2 p-2 bg-blue-50 rounded"
+                            >
+                              <span className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold">
+                                {idx + 1}
+                              </span>
+                              <span className="text-sm">{player}</span>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-3 text-gray-700">
+                        wOBA Baseline
+                      </h4>
+                      <div className="space-y-2">
+                        {comparisonResult.baselineLineup.lineup.map(
+                          (player, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center gap-2 p-2 bg-gray-50 rounded"
+                            >
+                              <span className="w-6 h-6 rounded-full bg-gray-600 text-white flex items-center justify-center text-sm font-bold">
+                                {idx + 1}
+                              </span>
+                              <span className="text-sm">{player}</span>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          <div className="flex justify-center mt-4">
+            <Button onClick={handleClearResults} variant="outline">
               Clear Results
             </Button>
           </div>
