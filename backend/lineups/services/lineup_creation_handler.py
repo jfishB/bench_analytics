@@ -18,8 +18,7 @@ from roster.models import Player as RosterPlayer
 from .input_data import CreateLineupInput, LineupPlayerInput
 from .validator import validate_batting_orders, validate_data, validate_lineup_model
 from .algorithm_logic import algorithm_create_lineup
-
-
+from rest_framework.exceptions import ValidationError
 
 def determine_request_mode(request_data: dict) -> Tuple[str, Optional[dict]]:
     """Determine if request is for manual save or algorithm generation.
@@ -98,7 +97,14 @@ def handle_lineup_save(data: dict, user) -> Tuple[Lineup, list]:
     lineup, lineup_players = saving_lineup_to_db(team_obj, players_payload, lineup_name, created_by_id)
 
     # Validate created lineup model
-    validate_lineup_model(lineup)
+    try:
+        result = validate_lineup_model(lineup)
+    except Exception as exc:
+        # convert/service-level errors into a DRF ValidationError so views return 400
+        raise ValidationError({"detail": str(exc)})
+    # validate_lineup_model may either raise on failure or return a boolean-like value.
+    if result is False:
+        raise ValidationError({"detail": "Lineup validation failed."})
 
     return lineup, lineup_players
 
