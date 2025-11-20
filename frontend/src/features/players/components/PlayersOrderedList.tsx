@@ -11,6 +11,7 @@ interface PlayersOrderedListProps {
   badgeClassName?: string;
   onSelectionToggle?: (player: Player) => void;
   showCheckboxes?: boolean;
+  showInitials?: boolean;
 }
 
 /**
@@ -29,6 +30,7 @@ export function PlayersOrderedList({
   badgeClassName = "bg-primary text-white dark:bg-primary",
   onSelectionToggle,
   showCheckboxes = false,
+  showInitials = true,
 }: PlayersOrderedListProps) {
   // Copy and sort: players with undefined/null batting_order go to the end.
   const sorted = [...players].sort((a, b) => {
@@ -87,6 +89,7 @@ export function PlayersOrderedList({
       }
       showCheckboxes={showCheckboxes}
       badgeClassName={badgeClassName}
+      showInitials={showInitials}
     />
   );
 }

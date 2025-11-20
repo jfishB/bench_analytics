@@ -129,6 +129,7 @@ export function ManualModePanel({
             players={lineupPlayers}
             onItemClick={onPlayerClick}
             badgeClassName="bg-gray-400 text-white"
+            showInitials={true}
           />
         </CardContent>
       </Card>

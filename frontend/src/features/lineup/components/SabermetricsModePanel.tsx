@@ -56,6 +56,7 @@ export function SabermetricsModePanel({
               players={lineupPlayers}
               onItemClick={onPlayerClick}
               badgeClassName="bg-gray-400 text-white"
+              showInitials={true}
             />
             <div className="pt-4">
               <Button className="w-full" onClick={onGenerate}>
@@ -80,6 +81,7 @@ export function SabermetricsModePanel({
                 players={generatedLineup}
                 onItemClick={onPlayerClick}
                 badgeClassName="bg-primary text-white dark:bg-primary"
+                showInitials={false}
               />
               <div className="mt-6 space-y-3">
                 <div>
