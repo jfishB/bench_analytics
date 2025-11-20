@@ -217,7 +217,7 @@ export function LineupSimulatorTab({
                   step="100"
                   value={numGames}
                   onChange={(e) =>
-                    setNumGames(parseInt(e.target.value) || 1000)
+                    setNumGames(parseInt(e.target.value) || 10000)
                   }
                   className="px-3 py-2 border border-gray-300 rounded-md w-32"
                   disabled={simulating}
