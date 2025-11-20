@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("roster", "0009_merge_0008s"),
+        ("roster", "0008_rename_b_total_sacrifices_player_b_sac_bunt_and_more"),
     ]
 
     operations = [

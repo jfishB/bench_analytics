@@ -15,4 +15,14 @@ class Migration(migrations.Migration):
             name='b_game',
             field=models.FloatField(blank=True, null=True),
         ),
+        migrations.AddField(
+            model_name="player",
+            name="strikeout",
+            field=models.PositiveIntegerField(blank=True, null=True),
+        ),
+        migrations.AlterField(
+            model_name="player",
+            name="home_run",
+            field=models.PositiveIntegerField(blank=True, null=True),
+        ),
     ]
