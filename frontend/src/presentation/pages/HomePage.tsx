@@ -34,7 +34,7 @@ const Home: React.FC = () => {
     {
       title: "Player Analytics",
       description:
-        "Comprehensive player performance tracking and statistical analysis",
+        "Comprehensive player performance tracking",
     },
   ];
 
@@ -49,7 +49,7 @@ const Home: React.FC = () => {
           </h1>
           <p className="text-xl text-muted-foreground">
             Advanced analytics and data-powered insights to help coaches build
-            winning lineups based on player performance, matchups, and game
+            winning lineups based on player performance, and game
             situations.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
