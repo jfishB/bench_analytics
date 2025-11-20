@@ -263,55 +263,33 @@ export function LineupSimulatorTab({
       {/* Simulation Results - Comparison */}
       {comparisonResult && (
         <div className="space-y-4">
-          {/* Winner Banner */}
-          <Card
-            className={`${
-              comparisonResult.winner === "user"
-                ? "border-green-500 bg-green-50"
-                : comparisonResult.winner === "baseline"
-                ? "border-orange-500 bg-orange-50"
-                : "border-gray-500 bg-gray-50"
-            } border-2`}
-          >
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <h3 className="text-2xl font-bold mb-2">
-                  {comparisonResult.winner === "user" && "🏆 Your Lineup Wins!"}
-                  {comparisonResult.winner === "baseline" &&
-                    "📊 wOBA Baseline Wins"}
-                  {comparisonResult.winner === "tie" && "🤝 It's a Tie!"}
-                </h3>
-                <p className="text-lg text-gray-700">
-                  {comparisonResult.winner === "user" &&
-                    `Your lineup scores ${Math.abs(
-                      comparisonResult.difference
-                    ).toFixed(2)} more runs per game`}
-                  {comparisonResult.winner === "baseline" &&
-                    `Baseline scores ${Math.abs(
-                      comparisonResult.difference
-                    ).toFixed(2)} more runs per game`}
-                  {comparisonResult.winner === "tie" &&
-                    "Both lineups perform equally"}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Winner Display */}
+          <div className="text-center py-4">
+            <h3 className="text-2xl font-bold mb-2">
+              {comparisonResult.winner === "user" && "Your Lineup Wins!"}
+              {comparisonResult.winner === "baseline" && "wOBA Baseline Wins"}
+              {comparisonResult.winner === "tie" && "It's a Tie!"}
+            </h3>
+            <p className="text-lg text-gray-700">
+              {comparisonResult.winner === "user" &&
+                `Your lineup scores about ${Math.abs(
+                  comparisonResult.difference
+                ).toFixed(2)} more runs per game`}
+              {comparisonResult.winner === "baseline" &&
+                `Baseline scores about ${Math.abs(
+                  comparisonResult.difference
+                ).toFixed(2)} more runs per game`}
+              {comparisonResult.winner === "tie" &&
+                "Both lineups perform equally"}
+            </p>
+          </div>
 
           {/* Comparison Stats */}
           <div className="grid md:grid-cols-2 gap-4">
             {/* User Lineup */}
-            <Card
-              className={
-                comparisonResult.winner === "user"
-                  ? "ring-2 ring-green-500"
-                  : ""
-              }
-            >
+            <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  Your Lineup
-                  {comparisonResult.winner === "user" && <span>🏆</span>}
-                </CardTitle>
+                <CardTitle>Your Lineup</CardTitle>
                 <CardDescription>
                   {selectedLineup?.name || "Selected Lineup"}
                 </CardDescription>
@@ -336,18 +314,9 @@ export function LineupSimulatorTab({
             </Card>
 
             {/* Baseline Lineup */}
-            <Card
-              className={
-                comparisonResult.winner === "baseline"
-                  ? "ring-2 ring-orange-500"
-                  : ""
-              }
-            >
+            <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  wOBA Baseline
-                  {comparisonResult.winner === "baseline" && <span>🏆</span>}
-                </CardTitle>
+                <CardTitle>wOBA Baseline</CardTitle>
                 <CardDescription>Same players, sorted by wOBA</CardDescription>
               </CardHeader>
               <CardContent>
@@ -425,7 +394,7 @@ export function LineupSimulatorTab({
                         label={{
                           value: "Runs Scored",
                           position: "insideBottom",
-                          offset: -10,
+                          offset: -5,
                         }}
                       />
                       <YAxis
@@ -456,7 +425,7 @@ export function LineupSimulatorTab({
                           return null;
                         }}
                       />
-                      <Legend />
+                      <Legend verticalAlign="top" />
                       <Bar
                         dataKey="yourLineup"
                         fill="#3b82f6"
@@ -477,7 +446,36 @@ export function LineupSimulatorTab({
               {/* Additional Statistics */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Additional Statistics</CardTitle>
+                  <CardTitle className="flex items-center gap-2">
+                    Additional Statistics
+                    <div className="group relative inline-block">
+                      <button
+                        className="w-5 h-5 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-xs font-semibold text-gray-600 cursor-help transition-colors"
+                        type="button"
+                      >
+                        ?
+                      </button>
+                      <div className="invisible group-hover:visible absolute left-0 top-6 z-10 w-80 p-4 bg-gray-900 text-white text-sm rounded-lg shadow-xl">
+                        <div className="space-y-2">
+                          <div>
+                            <strong className="text-blue-300">Median:</strong>{" "}
+                            The middle value when all game scores are sorted.
+                            Half of games scored above this, half below. Less
+                            affected by outliers than the average.
+                          </div>
+                          <div>
+                            <strong className="text-blue-300">
+                              Standard Deviation:
+                            </strong>{" "}
+                            Measures consistency. Lower std dev means more
+                            predictable scoring. Higher means more variability
+                            between games.
+                          </div>
+                        </div>
+                        <div className="absolute -top-1 left-4 w-2 h-2 bg-gray-900 rotate-45"></div>
+                      </div>
+                    </div>
+                  </CardTitle>
                   <CardDescription>
                     Detailed performance metrics
                   </CardDescription>
@@ -504,18 +502,6 @@ export function LineupSimulatorTab({
                             {comparisonResult.userLineup.std_dev.toFixed(2)}
                           </div>
                         </div>
-                        <div className="p-3 bg-blue-50 rounded">
-                          <div className="text-xs text-gray-600">Min</div>
-                          <div className="text-xl font-bold text-red-600">
-                            {comparisonResult.userLineup.min_score}
-                          </div>
-                        </div>
-                        <div className="p-3 bg-blue-50 rounded">
-                          <div className="text-xs text-gray-600">Max</div>
-                          <div className="text-xl font-bold text-green-600">
-                            {comparisonResult.userLineup.max_score}
-                          </div>
-                        </div>
                       </div>
                     </div>
 
@@ -537,18 +523,6 @@ export function LineupSimulatorTab({
                           <div className="text-xs text-gray-600">Std Dev</div>
                           <div className="text-xl font-bold">
                             {comparisonResult.baselineLineup.std_dev.toFixed(2)}
-                          </div>
-                        </div>
-                        <div className="p-3 bg-gray-50 rounded">
-                          <div className="text-xs text-gray-600">Min</div>
-                          <div className="text-xl font-bold text-red-600">
-                            {comparisonResult.baselineLineup.min_score}
-                          </div>
-                        </div>
-                        <div className="p-3 bg-gray-50 rounded">
-                          <div className="text-xs text-gray-600">Max</div>
-                          <div className="text-xl font-bold text-green-600">
-                            {comparisonResult.baselineLineup.max_score}
                           </div>
                         </div>
                       </div>
