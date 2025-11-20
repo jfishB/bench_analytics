@@ -11,6 +11,44 @@ export interface PlayerListItem {
   isSelected?: boolean;
 }
 
+/**
+ * Extract initials from a player name.
+ * Handles formats like "Last, First" or "Last, First Middle"
+ * Returns first letter of first name and first letter of last name.
+ */
+function getPlayerInitials(name: string): string {
+  if (!name) return "—";
+
+  // Handle format: "Last, First" or "Last, First Middle"
+  const parts = name.split(",").map((s) => s.trim());
+
+  if (parts.length < 2) {
+    // Fallback: just use first two letters of the name
+    return name.substring(0, 2).toUpperCase();
+  }
+
+  const lastName = parts[0];
+  const firstName = parts[1];
+
+  // Handle hyphenated last names (e.g., "Kiner-Falefa")
+  const lastNameParts = lastName.split(/[-\s]+/);
+  const firstNameParts = firstName.split(/\s+/);
+
+  // Get first initial of first name
+  const firstInitial = firstNameParts[0]?.[0] || "";
+
+  // Get first initial of last name (or initials if hyphenated)
+  let lastInitials = "";
+  if (lastNameParts.length > 1) {
+    // Hyphenated last name: use initials of each part
+    lastInitials = lastNameParts.map((part) => part[0]).join("");
+  } else {
+    lastInitials = lastName[0] || "";
+  }
+
+  return (firstInitial + lastInitials).toUpperCase();
+}
+
 export interface PlayerListProps {
   items: PlayerListItem[];
   className?: string;
@@ -18,6 +56,7 @@ export interface PlayerListProps {
   badgeClassName?: string;
   onSelectionToggle?: (item: PlayerListItem) => void;
   showCheckboxes?: boolean;
+  showInitials?: boolean;
 }
 
 /**
@@ -25,7 +64,7 @@ export interface PlayerListProps {
  *
  * Renders an ordered list of player tiles.
  * - Expects items already sorted by batting order; does not sort internally.
- * - Displays batting order, player name, and optional meta/actions area.
+ * - Displays player initials (default) or batting order numbers in badge, player name, and optional meta/actions area.
  * - Shows fallback text if the list is empty.
  */
 export function PlayerList({
@@ -35,6 +74,7 @@ export function PlayerList({
   badgeClassName = "bg-primary text-white dark:bg-primary",
   onSelectionToggle,
   showCheckboxes = false,
+  showInitials = true,
 }: PlayerListProps) {
   // Empty state: display friendly fallback
   if (!items || items.length === 0) {
@@ -73,10 +113,15 @@ export function PlayerList({
               <div
                 className={cn(
                   badgeClassName,
-                  "h-8 w-8 rounded-full flex items-center justify-center font-semibold"
+                  "h-8 w-8 rounded-full flex items-center justify-center font-semibold",
+                  showInitials && "text-xs"
                 )}
               >
-                {it.battingOrder != null ? it.battingOrder : "—"}
+                {showInitials
+                  ? getPlayerInitials(it.name)
+                  : it.battingOrder != null
+                  ? it.battingOrder
+                  : "—"}
               </div>
             </div>
 
