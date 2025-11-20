@@ -27,13 +27,16 @@ class LineupCreateView(APIView):
     Both modes return HTTP 201 Created for API consistency.
     """
 
-    permission_classes = [permissions.AllowAny]  # adjust as needed
+    permission_classes = [permissions.AllowAny]  # keep generation public if needed
 
     def post(self, request):
         # Determine request mode and get validated data if applicable
         mode, data = determine_request_mode(request.data)
 
         if mode == "manual_save":
+            if not getattr(request.user, "is_authenticated", False):
+                return Response({"detail": "Authentication required to save a lineup."}, status=status.HTTP_403_FORBIDDEN)
+
             # Manual or sabermetrics save - process and save to database
             lineup, lineup_players = handle_lineup_save(data, request.user) #extract lineup save 
 
