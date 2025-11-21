@@ -8,12 +8,22 @@ import {
   CardDescription,
 } from "../../ui/components/card";
 import { useNavigate } from "react-router-dom";
-import { BarChart3, TrendingUp, Target, Zap } from "lucide-react";
+import {
+  BarChart3,
+  TrendingUp,
+  Target,
+  Zap,
+  Award,
+  Clock,
+  Repeat,
+  SquarePen,
+  MoveRight,
+} from "lucide-react";
 
 /**
  * Represents a key product feature displayed on the home page.
  */
-interface Feature {
+interface DisplayItem {
   title: string;
   description: string;
   icon: React.ComponentType<any>;
@@ -27,7 +37,7 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
 
   // List of major platform features shown on the home screen
-  const features: Feature[] = [
+  const features: DisplayItem[] = [
     {
       title: "Smart Lineup Generation",
       description:
@@ -50,7 +60,31 @@ const Home: React.FC = () => {
       title: "Real-time Adjustments",
       description:
         "Make in-game lineup changes and substitutions based on live game situations and player performance.",
+      icon: SquarePen,
+    },
+  ];
+
+  const benefits: DisplayItem[] = [
+    {
+      icon: Award,
+      title: "Win More Games",
+      description: "Data-driven decisions lead to better outcomes.",
+    },
+    {
+      icon: Clock,
+      title: "Save Time",
+      description: "Generate lineups in seconds, not hours.",
+    },
+    {
       icon: TrendingUp,
+      title: "Player Development",
+      description: "Identify strengths and optimize roles.",
+    },
+    {
+      icon: Repeat,
+      title: "Reliable, Repeatable Process",
+      description:
+        "Eliminate guesswork with a consistent system for lineup creation.",
     },
   ];
 
@@ -59,7 +93,7 @@ const Home: React.FC = () => {
       {/* ---------- Hero Section ---------- */}
       {/* Introduces the platform and main call-to-action buttons */}
       <section className="relative overflow-hidden rounded-lg flex justify-center items-center min-h-[400px]">
-        <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[calc(100%-2rem)] max-w-6xl h-[400px] bg-gradient-to-r from-blue-900/10 to-red-600/10 rounded-2xl" />
+        <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[calc(100%-1rem)] max-w-6xl h-[400px] bg-gradient-to-r from-blue-900/10 to-red-600/10 rounded-2xl" />
         <div className="relative text-center space-y-6 p-8 md:p-12 max-w-4xl">
           <h1 className="text-4xl md:text-6xl text-primary">
             Your lineup. Our analytics.
@@ -117,16 +151,12 @@ const Home: React.FC = () => {
               <CardHeader>
                 <div
                   className={`w-12 h-12 rounded-lg flex items-center justify-center mb-3 ${
-                    index % 2 === 1
-                      ? "bg-[var(--accent-red)]/10"
-                      : "bg-primary/10"
+                    index % 2 === 1 ? "bg-red-600/10" : "bg-blue-900/10"
                   }`}
                 >
                   <Icon
                     className={`h-6 w-6 ${
-                      index % 2 === 1
-                        ? "text-[var(--accent-red)]"
-                        : "text-primary"
+                      index % 2 === 1 ? "text-red-600" : "text-blue-900"
                     }`}
                   />
                 </div>
@@ -147,6 +177,53 @@ const Home: React.FC = () => {
           );
         })}
       </div>
+
+      {/* ---------- Benefits Grid ---------- */}
+      {/* Displays our benefits in block */}
+
+      <section className="bg-gray-100/50 rounded-lg p-8 max-w-6xl mx-auto">
+        <h2 className="text-3xl mb-8 text-center text-primary">
+          Why Coaches Love Us
+        </h2>
+        <div className="grid md:grid-cols-4 gap-6">
+          {benefits.map((benefit, index) => {
+            const Icon = benefit.icon;
+            return (
+              <div key={index} className="text-center space-y-3">
+                <div className="w-16 h-16 rounded-full bg-blue-900/10 flex items-center justify-center mx-auto">
+                  <Icon className="h-8 w-8 text-blue-900" />
+                </div>
+                <h3 className="font-medium">{benefit.title}</h3>
+                <p className="text-sm text-muted-foreground">
+                  {benefit.description}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ---------- CTA Section ---------- */}
+      {/* Final call-to-action to encourage signup */}
+      <section className="relative rounded-2xl flex justify-center items-center min-h-[250px]">
+        <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[calc(100%-1rem)] max-w-6xl h-[250px] bg-gradient-to-r from-blue-900/10 to-red-600/10 rounded-2xl" />
+        <div className="relative text-center space-y-6 p-8 md:p-12 max-w-4xl">
+          <h2 className="text-2xl md:text-4xl text-primary">
+            Ready to Transform Your Team?
+          </h2>
+          <p className="text-lg md:text-xl text-muted-foreground">
+            Start today and unlock tools that make every decision smarter,
+            faster, and more confident.
+          </p>
+          <Button
+            size="lg"
+            onClick={() => navigate("/lineup")}
+            className="text-lg px-8 py-6 bg-red-600 hover:bg-red-700"
+          >
+            Start Building Lineups <MoveRight className="ml-2 h-5 w-5" />
+          </Button>
+        </div>
+      </section>
     </div>
   );
 };
