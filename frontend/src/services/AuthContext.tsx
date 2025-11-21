@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 interface AuthContextType {
   user: string | null;
+  loading: boolean;
   login: (username: string) => void;
   logout: () => void;
 }
@@ -11,6 +12,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
   const AUTH_BASE =
@@ -18,11 +20,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // --- Initialize auth state on mount ---
   useEffect(() => {
-    const storedAccess = localStorage.getItem("access");
-    const storedUsername = localStorage.getItem("username");
-    if (storedAccess && storedUsername) {
-      setUser(storedUsername);
-    }
+    const init = () => {
+      const storedAccess = localStorage.getItem("access");
+      const storedUsername = localStorage.getItem("username");
+      if (storedAccess && storedUsername) {
+        setUser(storedUsername);
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    };
+    init();
   }, []);
 
   // --- Login just stores username (after successful backend login) ---
@@ -61,7 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

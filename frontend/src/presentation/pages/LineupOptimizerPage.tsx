@@ -33,8 +33,23 @@ import { useSavedLineups } from "../../features/lineup/hooks/useSavedLineups";
  * Refactored to use custom hooks for clean architecture and better state management
  */
 export function LineupOptimizer() {
-  // UI state (presentation layer)
-  const [activeTab, setActiveTab] = useState<string>("current");
+  // UI state (presentation layer) — restore persisted tab on reload
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    try {
+      return localStorage.getItem("lineup.activeTab") || "current";
+    } catch {
+      return "current";
+    }
+  });
+
+  // Persist active tab so a page reload keeps the same tab
+  useEffect(() => {
+    try {
+      localStorage.setItem("lineup.activeTab", activeTab);
+    } catch {
+      /* Ignore storage errors (e.g. privacy mode) */
+    }
+  }, [activeTab]);
 
   // Custom hooks (domain/business logic layer)
   const { loading, players, error, setError, teamId } = useRosterData();

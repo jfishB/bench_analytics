@@ -14,7 +14,10 @@ interface PublicRouteProps {
 }
 
 const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  // wait until auth state is resolved before deciding
+  if (loading) return null; // or a spinner component
 
   if (user) {
     return <Navigate to="/" replace />;

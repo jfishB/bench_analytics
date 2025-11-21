@@ -179,24 +179,21 @@ export async function deleteLineup(
 ): Promise<void> {
   const url = `${LINEUPS_BASE}/${lineupId}/`;
 
-  let res = await fetch(url, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("access")}`,
-    },
-  });
+  const makeRequest = async () =>
+    fetch(url, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("access")}`,
+      },
+    });
+
+  let res = await makeRequest();
 
   if (res.status === 401) {
     const refreshed = await refreshAccessToken();
     if (refreshed) {
-      res = await fetch(url, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access")}`,
-        },
-      });
+      res = await makeRequest();
     }
   }
 
