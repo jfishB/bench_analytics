@@ -92,7 +92,7 @@ class LineupDeleteView(APIView):
       DELETE /api/v1/lineups/<pk>/ -> delete lineup (only creator or superuser)
     """
 
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def delete(self, request, pk: int):
         """Delete a lineup. Allowed only for the creator or a superuser.
