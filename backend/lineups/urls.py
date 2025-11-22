@@ -2,7 +2,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from . import views
-from .views import LineupCreateView, LineupDetailView
+from .views import LineupCreateView, LineupDeleteView
 
 app_name = "lineups"
 
@@ -23,7 +23,7 @@ urlpatterns = [
     # POST /api/v1/lineups/ -> create a lineup via algorithm
     path("", LineupCreateView.as_view(), name="lineup-create"),
     # GET/DELETE /api/v1/lineups/<id>/ -> view or delete a saved lineup
-    path("<int:pk>/", LineupDetailView.as_view(), name="lineup-detail"),
+    path("<int:pk>/", LineupDeleteView.as_view(), name="lineup-delete"),
     # Include router-managed viewset routes (saved lineups, lineup players)
     path("", include(router.urls)),
 ]

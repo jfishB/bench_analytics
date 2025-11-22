@@ -125,11 +125,33 @@ export async function sortPlayersByWOBA(
   return lineupPlayers.map((p) => p.id);
 }
 
+/** 
+ * Helper: add Authorization header and retry once after refresh 
+ */
+async function authenticatedFetch(input: RequestInfo, init?: RequestInit, allowRetry = true): Promise<Response> {
+  const headers = new Headers(init?.headers || {});
+  if (!headers.has("Content-Type"))
+    headers.set("Content-Type", "application/json");
+  const access = localStorage.getItem("access");
+  if (access)
+    headers.set("Authorization", `Bearer ${access}`);
+
+  let res = await fetch(input, { ...init, headers });
+  if (res.status === 401 && allowRetry) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      return authenticatedFetch(input, init, false);
+    }
+  }
+  return res;
+}
+
 /**
  * Fetch all saved lineups from the database.
  */
 export async function fetchSavedLineups(): Promise<SavedLineup[]> {
-  const res = await fetch(`${LINEUPS_BASE}/saved/`);
+  // Use the canonical list endpoint and authenticatedFetch
+  const res = await authenticatedFetch(`${LINEUPS_BASE}/saved/`);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   return Array.isArray(data) ? data : data.results || [];

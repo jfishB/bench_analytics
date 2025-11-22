@@ -85,45 +85,19 @@ class LineupCreateView(APIView):
             return Response(out, status=status.HTTP_201_CREATED)
 
 
-# TODO: decide if we need this
-# completely outdated 
-class LineupDetailView(APIView):
-    """Retrieve or delete a saved lineup by id.
+class LineupDeleteView(APIView):
+    """Delete a saved lineup by id.
 
     URL:
-      GET /api/v1/lineups/<pk>/   -> return lineup
       DELETE /api/v1/lineups/<pk>/ -> delete lineup (only creator or superuser)
     """
 
-    permission_classes = [permissions.AllowAny]
-
-    def get(self, request, pk: int):
-        lineup = get_object_or_404(Lineup, pk=pk)
-
-        out = LineupOut(
-            {
-                "id": lineup.id,
-                "team_id": lineup.team_id,
-                "name": lineup.name,
-                "players": [
-                    {
-                        "player_id": lp.player_id,
-                        "player_name": (lp.player.name if getattr(lp, "player", None) is not None else None),
-                        "batting_order": lp.batting_order,
-                    }
-                    for lp in lineup.players.order_by("batting_order")
-                ],
-                "created_by": lineup.created_by_id,
-                "created_at": lineup.created_at,
-            }
-        )
-
-        return Response(out.data, status=status.HTTP_200_OK)
+    permission_classes = [permissions.IsAuthenticated]
 
     def delete(self, request, pk: int):
         """Delete a lineup. Allowed only for the creator or a superuser.
 
-        Returns 204 No Content on success, 403 if not permitted, 404 if not found.
+        Returns 204 No Content on success, 401 if not permitted, 404 if not found.
         """
         lineup = get_object_or_404(Lineup, pk=pk)
 
@@ -145,8 +119,19 @@ class LineupViewSet(viewsets.ModelViewSet):
     Provides CRUD operations for lineups.
     """
 
-    queryset = Lineup.objects.all()
     serializer_class = LineupModelSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # debug: log auth header and request.user
+        user = getattr(self.request, "user", None)
+
+        if not user or not getattr(user, "is_authenticated", False):
+            return Lineup.objects.none()
+        # Super users can see everything ***CAN BE CHANGED***
+        if getattr(user, "is_superuser", False):
+            return Lineup.objects.all()
+        return Lineup.objects.filter(created_by_id=user.id)
 
 
 class LineupPlayerViewSet(viewsets.ModelViewSet):

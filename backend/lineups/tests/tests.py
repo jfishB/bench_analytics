@@ -57,18 +57,6 @@ class LineupViewsTests(TestCase):
         self.assertEqual(lineup.team_id, self.team.id)
         self.assertEqual(lineup.players.count(), 9)
 
-    def test_get_detail_returns_200(self):
-        lineup = Lineup.objects.create(
-            team=self.team,
-            created_by=self.creator,
-        )
-        LineupPlayer.objects.create(lineup=lineup, player=self.players[0], batting_order=1)
-
-        url = f"{self.base_url}{lineup.id}/"
-        resp = self.client.get(url)
-        self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp.data["id"], lineup.id)
-
     def test_delete_only_creator_or_superuser(self):
         lineup = Lineup.objects.create(
             team=self.team,
@@ -77,9 +65,9 @@ class LineupViewsTests(TestCase):
 
         url = f"{self.base_url}{lineup.id}/"
 
-        # unauthenticated -> 403
+        # unauthenticated -> 401
         resp = self.client.delete(url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 401)
 
         # other user -> 403
         self.client.force_authenticate(user=self.other)
