@@ -1,80 +1,88 @@
 /**
  * Custom hook for managing Monte Carlo simulation state.
  * Handles running simulations on saved lineups and managing results.
- * Compares user lineup against wOBA-sorted baseline.
+ * Supports multiple concurrent simulations.
  */
 
 import { useState } from "react";
 import * as lineupService from "../services/lineupService";
 
-export interface ComparisonResult {
-  userLineup: lineupService.SimulationResult;
-  baselineLineup: lineupService.SimulationResult;
-  winner: "user" | "baseline" | "tie";
-  difference: number;
+export interface SimulationConfig {
+  id: string | number; // Unique identifier for the lineup (e.g., lineup ID or "baseline")
+  name: string;
+  playerIds: number[];
+  isBaseline?: boolean; // If true, will sort players by wOBA before simulating
+}
+
+export interface SimulationResultWithMetadata extends lineupService.SimulationResult {
+  id: string | number;
+  name: string;
+  isBaseline: boolean;
 }
 
 export function useMonteCarloSimulation() {
-  const [comparisonResult, setComparisonResult] =
-    useState<ComparisonResult | null>(null);
+  const [results, setResults] = useState<SimulationResultWithMetadata[]>([]);
   const [simulating, setSimulating] = useState(false);
   const [simulationError, setSimulationError] = useState<string | null>(null);
 
-  const runSimulation = async (
-    playerIds: number[],
+  const runSimulations = async (
+    configs: SimulationConfig[],
     numGames: number = 10000
   ) => {
     setSimulating(true);
     setSimulationError(null);
+    setResults([]);
 
     try {
-      // Run simulation on user's selected lineup
-      const userResult = await lineupService.runSimulation(playerIds, numGames);
+      const promises = configs.map(async (config) => {
+        let playerIdsToSimulate = [...config.playerIds];
 
-      // Sort same players by wOBA and run baseline simulation
-      const wobaOrderedIds = await lineupService.sortPlayersByWOBA(playerIds);
-      const baselineResult = await lineupService.runSimulation(
-        wobaOrderedIds,
-        numGames
-      );
+        // If baseline, sort by wOBA first
+        if (config.isBaseline) {
+          playerIdsToSimulate = await lineupService.sortPlayersByWOBA(
+            playerIdsToSimulate
+          );
+        }
 
-      // Determine winner
-      const difference = userResult.avg_score - baselineResult.avg_score;
-      let winner: "user" | "baseline" | "tie";
-      if (Math.abs(difference) < 0.01) {
-        winner = "tie";
-      } else if (difference > 0) {
-        winner = "user";
-      } else {
-        winner = "baseline";
-      }
+        const result = await lineupService.runSimulation(
+          playerIdsToSimulate,
+          numGames
+        );
 
-      setComparisonResult({
-        userLineup: userResult,
-        baselineLineup: baselineResult,
-        winner,
-        difference,
+        return {
+          ...result,
+          id: config.id,
+          name: config.name,
+          isBaseline: !!config.isBaseline,
+        };
       });
+
+      const simulationResults = await Promise.all(promises);
+
+      // Sort results by average score descending (winner first)
+      simulationResults.sort((a, b) => b.avg_score - a.avg_score);
+
+      setResults(simulationResults);
     } catch (err: any) {
       console.error("Simulation failed:", err);
       setSimulationError(err.message || "Failed to run simulation");
-      setComparisonResult(null);
+      setResults([]);
     } finally {
       setSimulating(false);
     }
   };
 
   const clearResults = () => {
-    setComparisonResult(null);
+    setResults([]);
     setSimulationError(null);
   };
 
   return {
-    comparisonResult,
+    results,
     simulating,
     simulationError,
     setSimulationError,
-    runSimulation,
+    runSimulations,
     clearResults,
   };
 }
