@@ -65,9 +65,9 @@ class LineupViewsTests(TestCase):
 
         url = f"{self.base_url}{lineup.id}/"
 
-        # unauthenticated -> 403
+        # unauthenticated -> 401
         resp = self.client.delete(url)
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 401)
 
         # other user -> 403
         self.client.force_authenticate(user=self.other)
