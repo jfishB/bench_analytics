@@ -40,7 +40,6 @@ export function LineupSimulatorTab({
   const [includeWobaBaseline, setIncludeWobaBaseline] = useState(false);
   const [numGames, setNumGames] = useState<number>(20000);
   const [statusMessage, setStatusMessage] = useState("");
-  const [showDetailedAnalysis, setShowDetailedAnalysis] = useState(false);
   const {
     results,
     simulating,
@@ -93,7 +92,6 @@ export function LineupSimulatorTab({
 
   const handleClearResults = () => {
     clearResults();
-    setShowDetailedAnalysis(false);
   };
 
   const handleRunSimulation = async () => {
@@ -221,8 +219,8 @@ export function LineupSimulatorTab({
                   <Card
                     key={lineup.id}
                     className={`cursor-pointer transition-all ${isSelected
-                        ? "ring-2 ring-primary shadow-lg bg-blue-50/50"
-                        : "hover:shadow-lg"
+                      ? "ring-2 ring-primary shadow-lg bg-blue-50/50"
+                      : "hover:shadow-lg"
                       }`}
                     onClick={() => handleToggleLineup(lineup.id)}
                   >
