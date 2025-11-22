@@ -151,7 +151,7 @@ async function authenticatedFetch(input: RequestInfo, init?: RequestInit, allowR
  */
 export async function fetchSavedLineups(): Promise<SavedLineup[]> {
   // Use the canonical list endpoint and authenticatedFetch
-  const res = await authenticatedFetch(`${LINEUPS_BASE}/saved`);
+  const res = await authenticatedFetch(`${LINEUPS_BASE}/saved/`);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   return Array.isArray(data) ? data : data.results || [];
