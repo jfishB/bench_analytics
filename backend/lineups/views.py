@@ -128,7 +128,7 @@ class LineupViewSet(viewsets.ModelViewSet):
 
         if not user or not getattr(user, "is_authenticated", False):
             return Lineup.objects.none()
-        # Super user's can see everything ***CAN BE CHANGED***
+        # Super users can see everything ***CAN BE CHANGED***
         if getattr(user, "is_superuser", False):
             return Lineup.objects.all()
         return Lineup.objects.filter(created_by_id=user.id)
