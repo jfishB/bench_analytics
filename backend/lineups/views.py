@@ -85,40 +85,14 @@ class LineupCreateView(APIView):
             return Response(out, status=status.HTTP_201_CREATED)
 
 
-# TODO: decide if we need this
-# completely outdated 
-class LineupDetailView(APIView):
-    """Retrieve or delete a saved lineup by id.
+class LineupDeleteView(APIView):
+    """Delete a saved lineup by id.
 
     URL:
-      GET /api/v1/lineups/<pk>/   -> return lineup
       DELETE /api/v1/lineups/<pk>/ -> delete lineup (only creator or superuser)
     """
 
     permission_classes = [permissions.AllowAny]
-
-    def get(self, request, pk: int):
-        lineup = get_object_or_404(Lineup, pk=pk)
-
-        out = LineupOut(
-            {
-                "id": lineup.id,
-                "team_id": lineup.team_id,
-                "name": lineup.name,
-                "players": [
-                    {
-                        "player_id": lp.player_id,
-                        "player_name": (lp.player.name if getattr(lp, "player", None) is not None else None),
-                        "batting_order": lp.batting_order,
-                    }
-                    for lp in lineup.players.order_by("batting_order")
-                ],
-                "created_by": lineup.created_by_id,
-                "created_at": lineup.created_at,
-            }
-        )
-
-        return Response(out.data, status=status.HTTP_200_OK)
 
     def delete(self, request, pk: int):
         """Delete a lineup. Allowed only for the creator or a superuser.
