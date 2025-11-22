@@ -14,7 +14,10 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  // wait for auth to resolve to avoid redirecting to login on a page refresh
+  if (loading) return null; // or a spinner
 
   if (!user) {
     return <Navigate to="/login" replace />;

@@ -59,6 +59,7 @@ class LineupOut(serializers.Serializer):
 class LineupModelSerializer(serializers.ModelSerializer):
     """ModelSerializer for Lineup - used by ViewSet for list/retrieve operations."""
 
+    created_by = serializers.ReadOnlyField(source="created_by_id")
     players = serializers.SerializerMethodField()
 
     class Meta:

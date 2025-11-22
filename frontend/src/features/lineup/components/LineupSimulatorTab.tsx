@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from "../../../ui/components/card";
 import { Button } from "../../../ui/components/button";
-import { SavedLineup } from "../services/lineupService";
+import { SavedLineup, deleteLineup } from "../services/lineupService";
 import { useMonteCarloSimulation } from "../hooks/useMonteCarloSimulation";
 import {
   BarChart,
@@ -107,6 +107,22 @@ export function LineupSimulatorTab({
     await runSimulation(playerIds, numGames);
   };
 
+  const handleDeleteLineup = async (lineupId: number, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (!window.confirm("Are you sure you want to delete this lineup?")) return;
+
+    try {
+      await deleteLineup(lineupId);
+      // clear selection if deleted lineup was selected
+      setSelectedLineupId((cur) => (cur === lineupId ? null : cur));
+      // simple refresh: ask parent to re-fetch instead if available
+      window.location.reload();
+    } catch (err: any) {
+      // show error (uses existing simulation error setter)
+      setSimulationError?.(String(err) ?? "Failed to delete lineup");
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Lineup Selection Section */}
@@ -164,6 +180,13 @@ export function LineupSimulatorTab({
                     <CardDescription className="text-xs">
                       Created:{" "}
                       {new Date(lineup.created_at).toLocaleDateString()}
+                      <Button
+                        onClick={(ev) => handleDeleteLineup(lineup.id, ev)}
+                        variant="outline"
+                        className="ml-2 bg-red-600 text-white hover:bg-red-700"
+                      >
+                        Delete Lineup
+                      </Button>
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
