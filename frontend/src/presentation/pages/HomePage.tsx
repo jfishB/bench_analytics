@@ -189,7 +189,7 @@ const Home: React.FC = () => {
           {benefits.map((benefit, index) => {
             const Icon = benefit.icon;
             return (
-              <div key={index} className="text-center space-y-3">
+              <div key={benefit.title} className="text-center space-y-3">
                 <div className="w-16 h-16 rounded-full bg-blue-900/10 flex items-center justify-center mx-auto">
                   <Icon className="h-8 w-8 text-blue-900" />
                 </div>
