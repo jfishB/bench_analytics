@@ -170,6 +170,15 @@ export function LineupSimulatorTab({
     "#14b8a6", // teal
   ];
 
+  // Returns a distinct color for each index, using the palette for the first 8, then generating new HSL colors as needed
+  function getColor(index: number): string {
+    if (index < COLORS.length) {
+      return COLORS[index];
+    }
+    // Generate a new color using HSL for additional indices
+    const hue = (index * 47) % 360; // 47 is a prime to help spread hues
+    return `hsl(${hue}, 65%, 55%)`;
+  }
   return (
     <div className="space-y-6">
       {/* Lineup Selection Section */}
