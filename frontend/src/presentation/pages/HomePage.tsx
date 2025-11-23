@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 /**
- * Represents a key product feature displayed on the home page.
+ * Represents a displayable item (feature or benefit) on the home page.
  */
 interface DisplayItem {
   title: string;
