@@ -508,7 +508,7 @@ export function LineupSimulatorTab({
                     <Legend verticalAlign="top" />
                     {results.map((res, idx) => (
                       <Bar
-                        key={res.name}
+                        key={res.id}
                         dataKey={res.name}
                         fill={COLORS[idx % COLORS.length]}
                         opacity={0.7}
