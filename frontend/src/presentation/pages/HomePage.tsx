@@ -145,7 +145,7 @@ const Home: React.FC = () => {
           const Icon = feature.icon;
           return (
             <Card
-              key={index}
+              key={feature.title}
               className={index % 2 === 1 ? "border-[var(--accent-red)]/20" : ""}
             >
               <CardHeader>
