@@ -87,7 +87,6 @@ export function LineupSimulatorTab({
         return [...prev, lineupId];
       }
     });
-    handleClearResults();
   };
 
   const handleClearResults = () => {
