@@ -22,7 +22,7 @@ router.register(r"lineup-players", views.LineupPlayerViewSet, basename="lineuppl
 urlpatterns = [
     # POST /api/v1/lineups/ -> create a lineup via algorithm
     path("", LineupCreateView.as_view(), name="lineup-create"),
-    # GET/DELETE /api/v1/lineups/<id>/ -> view or delete a saved lineup
+    # DELETE /api/v1/lineups/<id>/ -> delete a saved lineup
     path("<int:pk>/", LineupDeleteView.as_view(), name="lineup-delete"),
     # Include router-managed viewset routes (saved lineups, lineup players)
     path("", include(router.urls)),
