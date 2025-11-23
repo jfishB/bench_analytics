@@ -123,7 +123,6 @@ class LineupViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        # debug: log auth header and request.user
         user = getattr(self.request, "user", None)
 
         if not user or not getattr(user, "is_authenticated", False):
