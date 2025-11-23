@@ -417,7 +417,7 @@ export function LineupSimulatorTab({
                   <tbody>
                     {results.map((res, idx) => (
                       <tr
-                        key={idx}
+                        key={res.id}
                         className={`border-b ${idx === 0 ? "bg-blue-50/50 font-medium" : "bg-white"
                           }`}
                       >
