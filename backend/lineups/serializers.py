@@ -65,7 +65,7 @@ class LineupModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lineup
         fields = ["id", "team_id", "name", "created_by", "created_at", "players"]
-        read_only_fields = ["id", "created_at"]
+        read_only_fields = ["id", "created_at", "created_by"]
 
     def get_players(self, obj):
         """Return the lineup players in batting order.
