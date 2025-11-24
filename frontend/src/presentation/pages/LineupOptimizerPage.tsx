@@ -174,6 +174,7 @@ export function LineupOptimizer() {
           <TabsTrigger
             value="current"
             className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md"
+            aria-label="Roster"
           >
             <Users className="h-4 w-4" />
             <span className="hidden sm:inline">Roster</span>
@@ -181,6 +182,7 @@ export function LineupOptimizer() {
           <TabsTrigger
             value="manual"
             className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md"
+            aria-label="Builder"
           >
             <Target className="h-4 w-4" />
             <span className="hidden sm:inline">Builder</span>
@@ -188,6 +190,7 @@ export function LineupOptimizer() {
           <TabsTrigger
             value="optimizer"
             className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md"
+            aria-label="Generate"
           >
             <Zap className="h-4 w-4" />
             <span className="hidden sm:inline">Generate</span>
@@ -195,6 +198,7 @@ export function LineupOptimizer() {
           <TabsTrigger
             value="simulation"
             className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md"
+            aria-label="Simulate"
           >
             <BarChart3 className="h-4 w-4" />
             <span className="hidden sm:inline">Simulate</span>
