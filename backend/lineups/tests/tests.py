@@ -89,6 +89,99 @@ class LineupViewsTests(TestCase):
         resp = self.client.delete(url)
         self.assertEqual(resp.status_code, 204)
 
+    def test_viewset_list_returns_only_user_lineups(self):
+        """Test that /api/v1/lineups/saved/ only returns lineups created by the authenticated user."""
+        # Create lineups for different users
+        lineup1 = Lineup.objects.create(
+            team=self.team,
+            name="Creator's Lineup 1",
+            created_by=self.creator,
+        )
+        lineup2 = Lineup.objects.create(
+            team=self.team,
+            name="Creator's Lineup 2",
+            created_by=self.creator,
+        )
+        lineup3 = Lineup.objects.create(
+            team=self.team,
+            name="Other's Lineup",
+            created_by=self.other,
+        )
+
+        # Authenticate as creator
+        self.client.force_authenticate(user=self.creator)
+        resp = self.client.get(f"{self.base_url}saved/")
+        self.assertEqual(resp.status_code, 200)
+        
+        data = resp.json()
+        lineup_ids = [item["id"] for item in data]
+        
+        # Should only see own lineups
+        self.assertIn(lineup1.id, lineup_ids)
+        self.assertIn(lineup2.id, lineup_ids)
+        self.assertNotIn(lineup3.id, lineup_ids)
+
+    def test_viewset_superuser_sees_all_lineups(self):
+        """Test that superusers can see all lineups via /api/v1/lineups/saved/."""
+        lineup1 = Lineup.objects.create(
+            team=self.team,
+            name="Creator's Lineup",
+            created_by=self.creator,
+        )
+        lineup2 = Lineup.objects.create(
+            team=self.team,
+            name="Other's Lineup",
+            created_by=self.other,
+        )
+
+        # Authenticate as superuser
+        self.client.force_authenticate(user=self.superuser)
+        resp = self.client.get(f"{self.base_url}saved/")
+        self.assertEqual(resp.status_code, 200)
+        
+        data = resp.json()
+        lineup_ids = [item["id"] for item in data]
+        
+        # Should see all lineups
+        self.assertIn(lineup1.id, lineup_ids)
+        self.assertIn(lineup2.id, lineup_ids)
+
+    def test_viewset_write_operations_disabled(self):
+        """Test that POST, PUT, PATCH, DELETE are disabled on /api/v1/lineups/saved/."""
+        self.client.force_authenticate(user=self.creator)
+        
+        # Create a lineup directly in DB to test update/delete
+        lineup = Lineup.objects.create(
+            team=self.team,
+            name="Test Lineup",
+            created_by=self.creator,
+        )
+
+        # Test POST (create) - should return 405 Method Not Allowed
+        payload = {
+            "team_id": self.team.id,
+            "name": "New Lineup",
+        }
+        resp = self.client.post(f"{self.base_url}saved/", payload, format="json")
+        self.assertEqual(resp.status_code, 405)
+
+        # Test PUT (update) - should return 405 Method Not Allowed
+        update_payload = {
+            "team_id": self.team.id,
+            "name": "Updated Lineup",
+        }
+        resp = self.client.put(f"{self.base_url}saved/{lineup.id}/", update_payload, format="json")
+        self.assertEqual(resp.status_code, 405)
+
+        # Test PATCH (partial update) - should return 405 Method Not Allowed
+        patch_payload = {"name": "Patched Lineup"}
+        resp = self.client.patch(f"{self.base_url}saved/{lineup.id}/", patch_payload, format="json")
+        self.assertEqual(resp.status_code, 405)
+
+        # Test DELETE - should return 405 Method Not Allowed
+        resp = self.client.delete(f"{self.base_url}saved/{lineup.id}/")
+        self.assertEqual(resp.status_code, 405)
+
 
 # Example usage or ad-hoc testing should be run in a script or Django shell,
 # not at module import time. Keep tests module import-safe so the test
