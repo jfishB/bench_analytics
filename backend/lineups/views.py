@@ -116,11 +116,13 @@ class LineupDeleteView(APIView):
 class LineupViewSet(viewsets.ModelViewSet):
     """
     ViewSet for Lineup model.
-    Provides CRUD operations for lineups.
+    Provides read-only access to saved lineups.
+    Create and delete operations are handled by dedicated views.
     """
 
     serializer_class = LineupModelSerializer
     permission_classes = [permissions.IsAuthenticated]
+    http_method_names = ['get', 'head', 'options']
 
     def get_queryset(self):
         user = getattr(self.request, "user", None)
