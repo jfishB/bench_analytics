@@ -219,3 +219,5 @@ export function ManualModePanel({
     </div>
   );
 }
+
+export default ManualModePanel;

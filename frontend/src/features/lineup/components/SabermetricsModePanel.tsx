@@ -138,3 +138,5 @@ export function SabermetricsModePanel({
     </div>
   );
 }
+
+export default SabermetricsModePanel;
