@@ -59,6 +59,11 @@ export function useMonteCarloSimulation() {
 
       const simulationResults = await Promise.all(promises);
 
+      // Add a minimum delay of 5 seconds for user experience
+      const minDelay = 5000; // 5 seconds
+      const delayPromise = new Promise(resolve => setTimeout(resolve, minDelay));
+      await delayPromise;
+
       // Sort results by average score descending (winner first)
       simulationResults.sort((a, b) => b.avg_score - a.avg_score);
 

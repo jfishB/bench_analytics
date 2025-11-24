@@ -40,6 +40,41 @@ async function refreshAccessToken(): Promise<boolean> {
   }
 }
 
+/**
+ * Helper to perform authenticated requests with automatic token refresh.
+ */
+async function authenticatedFetch(
+  url: string,
+  options: RequestInit = {}
+): Promise<Response> {
+  const getHeaders = () => {
+    const headers: any = {
+      "Content-Type": "application/json",
+      ...options.headers,
+    };
+    const token = localStorage.getItem("access");
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    return headers;
+  };
+
+  let res = await fetch(url, { ...options, headers: getHeaders() });
+
+  if (res.status === 401) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      res = await fetch(url, { ...options, headers: getHeaders() });
+    } else {
+      // Refresh failed - clear tokens so UI can redirect to login
+      localStorage.removeItem("access");
+      localStorage.removeItem("refresh");
+    }
+  }
+
+  return res;
+}
+
 // Type definitions for API responses
 export interface SavedLineup {
   id: number;
@@ -105,24 +140,28 @@ export async function fetchPlayers(teamId?: number): Promise<Player[]> {
 
 /**
  * Sort a list of player IDs by wOBA (descending) to create a baseline lineup.
- * Fetches full player data and returns IDs sorted by xwoba.
+ * Calls backend endpoint to sort players by xwoba.
  */
 export async function sortPlayersByWOBA(
   playerIds: number[]
 ): Promise<number[]> {
-  const allPlayers = await fetchPlayers();
+  const response = await authenticatedFetch(
+    `${ROSTER_BASE}/sort-by-woba/`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ player_ids: playerIds }),
+    }
+  );
 
-  // Filter to only the players in the lineup
-  const lineupPlayers = allPlayers.filter((p) => playerIds.includes(p.id));
+  if (!response.ok) {
+    throw new Error("Failed to sort players by wOBA");
+  }
 
-  // Sort by xwoba descending (highest wOBA bats first)
-  lineupPlayers.sort((a, b) => {
-    const wobaA = a.xwoba ?? 0;
-    const wobaB = b.xwoba ?? 0;
-    return wobaB - wobaA;
-  });
-
-  return lineupPlayers.map((p) => p.id);
+  const data = await response.json();
+  return data.player_ids;
 }
 
 /**
@@ -141,26 +180,10 @@ export async function fetchSavedLineups(): Promise<SavedLineup[]> {
 export async function saveLineup(
   payload: SaveLineupPayload
 ): Promise<SavedLineup> {
-  
-  const makeRequest = async () =>
-    fetch(`${LINEUPS_BASE}/`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("access")}`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-  let res = await makeRequest();
-
-  // try refresh if unauthorized
-  if (res.status === 401) {
-    const refreshed = await refreshAccessToken();
-    if (refreshed) {
-      res = await makeRequest();
-    }
-  }
+  const res = await authenticatedFetch(`${LINEUPS_BASE}/`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 
   if (!res.ok) {
     const errorText = await res.text();
@@ -179,23 +202,9 @@ export async function deleteLineup(
 ): Promise<void> {
   const url = `${LINEUPS_BASE}/${lineupId}/`;
 
-  const makeRequest = async () =>
-    fetch(url, {
-      method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("access")}`,
-      },
-    });
-
-  let res = await makeRequest();
-
-  if (res.status === 401) {
-    const refreshed = await refreshAccessToken();
-    if (refreshed) {
-      res = await makeRequest();
-    }
-  }
+  const res = await authenticatedFetch(url, {
+    method: "DELETE",
+  });
 
   if (!res.ok) {
     const text = await res.text();
@@ -262,31 +271,10 @@ export async function runSimulation(
     num_games: numGames,
   };
 
-  // First attempt
-  let res = await fetch(`${SIMULATOR_BASE}/simulate-by-ids/`, {
+  const res = await authenticatedFetch(`${SIMULATOR_BASE}/simulate-by-ids/`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("access")}`,
-    },
     body: JSON.stringify(payload),
   });
-
-  // If 401, try to refresh token and retry
-  if (res.status === 401) {
-    const refreshed = await refreshAccessToken();
-    if (refreshed) {
-      // Retry with new token
-      res = await fetch(`${SIMULATOR_BASE}/simulate-by-ids/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access")}`,
-        },
-        body: JSON.stringify(payload),
-      });
-    }
-  }
 
   if (!res.ok) {
     const errorText = await res.text();

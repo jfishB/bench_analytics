@@ -24,6 +24,7 @@ if lib_path not in sys.path:
 
 from baseball import Game  # type: ignore
 from batter import Batter  # type: ignore
+from vectorized_game import VectorizedGame  # type: ignore
 
 
 class SimulationService:
@@ -53,14 +54,10 @@ class SimulationService:
             batter = Batter(probabilities=probabilities, name=stats.name)
             lineup.append(batter)
 
-        # Run simulations - reuse Game object for efficiency
-        # Creating new Game objects each iteration wastes memory for large simulations
-        game = Game(lineup=lineup, printing=False)
-        scores = []
-        for _ in range(num_games):
-            game.reset_game_state()
-            game.play()
-            scores.append(game.get_score())
+        # Run simulations using vectorized engine for performance
+        game = VectorizedGame(lineup=lineup, num_games=num_games)
+        game.play()
+        scores = game.get_scores()
 
         # Calculate statistics
         avg_score = statistics.mean(scores)

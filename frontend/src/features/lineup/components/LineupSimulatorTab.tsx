@@ -26,6 +26,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { CHART_COLORS } from "../../../shared/designTokens";
 
 interface LineupSimulatorTabProps {
   savedLineups: SavedLineup[];
@@ -122,21 +123,30 @@ export function LineupSimulatorTab({
       return;
     }
 
-    // Add baseline if requested (using the first selected lineup's players)
+    // Add baseline if requested
     if (includeWobaBaseline && configs.length > 0) {
-      // We use the players from the first selected lineup to generate the baseline
-      // Ideally, if multiple lineups have different players, "baseline" is ambiguous.
-      // For now, we'll generate a baseline for EACH selected lineup if they differ,
-      // but to keep it simple, let's just generate ONE baseline based on the first lineup.
-      // Or better: Let's explicitly say "Baseline (Lineup Name)" if we support multiple.
-      // For simplicity in this iteration: Generate baseline for the FIRST selected lineup.
-      const baseConfig = configs[0];
-      configs.push({
-        id: `baseline-${baseConfig.id}`,
-        name: `wOBA Baseline (${baseConfig.name})`,
-        playerIds: baseConfig.playerIds,
-        isBaseline: true,
-      });
+      // Generate a baseline for each unique set of players found in the selected lineups
+      const processedPlayerSets = new Set<string>();
+      // Capture the current length so we don't iterate over newly added baselines
+      const currentConfigsCount = configs.length;
+
+      for (let i = 0; i < currentConfigsCount; i++) {
+        const config = configs[i];
+        // Create a unique key for the set of players (independent of batting order)
+        const playerSetKey = [...config.playerIds]
+          .sort((a, b) => a - b)
+          .join(",");
+
+        if (!processedPlayerSets.has(playerSetKey)) {
+          processedPlayerSets.add(playerSetKey);
+          configs.push({
+            id: `baseline-${config.id}`,
+            name: `wOBA Baseline (${config.name})`,
+            playerIds: config.playerIds,
+            isBaseline: true,
+          });
+        }
+      }
     }
 
     await runSimulations(configs, numGames);
@@ -159,16 +169,7 @@ export function LineupSimulatorTab({
   };
 
   // Color palette for charts
-  const COLORS = [
-    "#3b82f6", // blue
-    "#10b981", // green
-    "#f59e0b", // amber
-    "#ef4444", // red
-    "#8b5cf6", // violet
-    "#ec4899", // pink
-    "#6366f1", // indigo
-    "#14b8a6", // teal
-  ];
+  const COLORS = CHART_COLORS;
 
   // Returns a distinct color for each index, using the palette for the first 8, then generating new HSL colors as needed
   function getColor(index: number): string {
@@ -380,18 +381,16 @@ export function LineupSimulatorTab({
       {results.length > 0 && (
         <div className="space-y-6 animate-in fade-in duration-500">
           {/* Winner Banner */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg p-6 text-white shadow-lg text-center">
-            <h3 className="text-2xl font-bold mb-2">
+          <div className="text-center py-4">
+            <h3 className="text-3xl font-bold mb-3">
               Winner: {results[0].name}
             </h3>
-            <p className="text-blue-100 text-lg">
+            <p className="text-xl text-gray-700 mb-1">
               Averages {results[0].avg_score.toFixed(2)} runs per game
             </p>
             {results.length > 1 && (
-              <p className="text-sm text-blue-200 mt-2">
-                {`+${(
-                  results[0].avg_score - results[1].avg_score
-                ).toFixed(2)} runs better than ${results[1].name}`}
+              <p className="text-base text-gray-600 mt-3">
+                +{(results[0].avg_score - results[1].avg_score).toFixed(2)} runs better than {results[1].name}
               </p>
             )}
           </div>
