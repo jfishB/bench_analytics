@@ -59,7 +59,7 @@ const Home: React.FC = () => {
     {
       title: "Quick Adjustments",
       description:
-        "Update player statistics to have the algorithm lineups based on the latest performance data",
+        "Update player statistics to have the algorithm generate lineups based on the latest performance data",
       icon: SquarePen,
     },
   ];
