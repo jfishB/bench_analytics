@@ -97,7 +97,7 @@ class LineupDeleteView(APIView):
     def delete(self, request, pk: int):
         """Delete a lineup. Allowed only for the creator or a superuser.
 
-        Returns 204 No Content on success, 401 if not permitted, 404 if not found.
+        Returns 204 No Content on success, 401 if not authenticated, 403 if not permitted, 404 if not found.
         """
         lineup = get_object_or_404(Lineup, pk=pk)
 
