@@ -37,7 +37,13 @@ export function LineupOptimizer() {
   // UI state (presentation layer) — restore persisted tab on reload
   const [activeTab, setActiveTab] = useState<string>(() => {
     try {
-      return localStorage.getItem("lineup.activeTab") || "current";
+      let storedTab = localStorage.getItem("lineup.activeTab") || "current";
+      // Migration: "analysis" tab was renamed to "simulation"
+      if (storedTab === "analysis") {
+        storedTab = "simulation";
+        localStorage.setItem("lineup.activeTab", storedTab);
+      }
+      return storedTab;
     } catch {
       return "current";
     }
