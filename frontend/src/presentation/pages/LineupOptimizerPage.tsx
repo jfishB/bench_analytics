@@ -65,8 +65,6 @@ export function LineupOptimizer() {
   const {
     lineupCreated,
     setLineupCreated,
-    lineupMode,
-    setLineupMode,
     lineupPlayers,
     setLineupPlayers,
     selected,
