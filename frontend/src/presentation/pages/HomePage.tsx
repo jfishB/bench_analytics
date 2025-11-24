@@ -8,6 +8,17 @@ import {
   CardDescription,
 } from "../../ui/components/card";
 import { useNavigate } from "react-router-dom";
+import {
+  BarChart3,
+  Lightbulb,
+  Target,
+  Zap,
+  Award,
+  Clock,
+  Repeat,
+  SquarePen,
+  MoveRight,
+} from "lucide-react";
 
 /**
  * Represents a key product feature displayed on the home page.
@@ -34,7 +45,44 @@ const Home: React.FC = () => {
     {
       title: "Player Analytics",
       description:
-        "Comprehensive player performance tracking and statistical analysis",
+        "Preview hits, OBP, plate appearances, and more for every player on your roster.",
+      icon: BarChart3,
+    },
+    {
+      title: "Matchup Analysis",
+      description:
+        "Generate optimized lineups based on each batter’s statistical profile.",
+      icon: Target,
+    },
+    {
+      title: "Quick Adjustments",
+      description:
+        "Update player statistics to have the algorithm lineups based on the latest performance data",
+      icon: SquarePen,
+    },
+  ];
+
+  const benefits: DisplayItem[] = [
+    {
+      icon: Award,
+      title: "Win More Games",
+      description: "Data-driven decisions lead to better outcomes.",
+    },
+    {
+      icon: Clock,
+      title: "Save Time",
+      description: "Generate lineups in seconds, not hours.",
+    },
+    {
+      icon: Repeat,
+      title: "Reliable, Repeatable Process",
+      description:
+        "Eliminate guesswork with a consistent system for lineup creation.",
+    },
+    {
+      icon: Lightbulb,
+      title: "Easy to understand",
+      description: "Designed to be intuitive and simple for coaches to use.",
     },
   ];
 
