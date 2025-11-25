@@ -1,3 +1,9 @@
+"""
+- This file defines database access functions for persisting lineups.
+- Imported by:
+  - backend/lineups/services/lineup_creation_handler.py
+"""
+
 from django.db import transaction
 from django.utils import timezone
 

@@ -1,10 +1,9 @@
-##########################################
 """
--This file defines Service functions for
-authenticating and authorizing users
-- used in views
+- This file defines service functions for authenticating and authorizing users.
+- Imported by:
+  - backend/lineups/views.py
 """
-###########################################
+
 from rest_framework import status
 from rest_framework.response import Response
 

@@ -1,17 +1,14 @@
-##########################################
 """
-- This file contains the core algorithm
-logic for creating batting lineups.
+- This file contains the core algorithm logic for creating batting lineups.
+- Takes validated player statistics, applies a BaseRuns-based model
+to evaluate all possible batting orders, and returns the lineup
+with the highest expected runs.
+- Imported by backend/lineups/lineup_creation_handler.py.
 """
-###########################################
 
 from itertools import permutations
 from typing import Dict, Tuple
 
-from django.contrib.auth import get_user_model
-from django.db import transaction
-
-from lineups.models import Lineup, LineupPlayer
 from lineups.services.validator import validate_data
 from roster.models import Player
 

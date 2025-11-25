@@ -1,13 +1,10 @@
-##########################################
 """
--This file defines the API "contract"
-for saving a lineup
--used in lineup services and validation.
+- This file defines DRF serializers for lineup API request/response schemas.
+- Imported by:
+  - backend/lineups/views.py
 """
-###########################################
 
 from rest_framework import serializers
-
 from .models import Lineup
 
 
@@ -25,7 +22,7 @@ class LineupCreate(serializers.Serializer):
     """This is the entire request body to save a lineup."""
 
     team_id = serializers.IntegerField()
-    players = LineupPlayerIn(many=True, min_length=9, max_length=9)  # calls LineupPlayerIn from above
+    players = LineupPlayerIn(many=True, min_length=0, max_length=9, required=False)  # optional for team_id-only requests
     name = serializers.CharField(max_length=120, required=False, allow_blank=False)
 
 
