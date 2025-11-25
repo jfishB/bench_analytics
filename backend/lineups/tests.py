@@ -405,7 +405,7 @@ class LineupViewSetTests(TestCase):
     def test_viewset_queryset_filters_by_user(self):
         """Normal users should only see their own lineups."""
         lineup1 = Lineup.objects.create(team=self.team, created_by=self.creator, name="My Lineup")
-        lineup2 = Lineup.objects.create(team=self.team, created_by=self.other, name="Other Lineup")
+        Lineup.objects.create(team=self.team, created_by=self.other, name="Other Lineup")
 
         client = APIClient()
         client.force_authenticate(user=self.creator)
