@@ -4,7 +4,6 @@ from rest_framework.test import APIClient, APITestCase
 from rest_framework import status
 
 from lineups.models import Lineup, LineupPlayer
-from lineups.services.exceptions import BadBattingOrder
 from roster.models import Player, Team
 
 
