@@ -70,7 +70,7 @@ class LineupCreateView(APIView):
                 payload = CreateLineupInput(
                     team_id=team_id,
                     players=players_input,
-                    requested_user_id=(user.id if user.is_authenticated else None),
+                    requested_user_id=user.id,
                 )
 
                 # Domain validation in view layer (batting orders, team & players)
