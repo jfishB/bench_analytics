@@ -12,7 +12,7 @@ from .databa_access import saving_lineup_to_db
 from .validator import validate_lineup_model
 from .algorithm_logic import algorithm_create_lineup
 from .input_data import CreateLineupInput
-from rest_framework.exceptions import ValidationError
+from .exceptions import DomainError
 from django.utils import timezone
 
 
@@ -76,9 +76,9 @@ def handle_lineup_save(validated: dict, user) -> Tuple[Lineup, list]:
     try:
         result = validate_lineup_model(lineup)
     except Exception as exc:
-        raise ValidationError({"detail": str(exc)})
+        raise DomainError(str(exc))
     if result is False:
-        raise ValidationError({"detail": "Lineup validation failed."})
+        raise DomainError("Lineup validation failed.")
 
     return lineup, lineup_players
 

@@ -84,7 +84,10 @@ class LineupCreateView(APIView):
             validated["name"] = data.get("name")
 
             # Manual save - service only handles persistence
-            lineup, lineup_players = handle_lineup_save(validated, user)
+            try:
+                lineup, lineup_players = handle_lineup_save(validated, user)
+            except DomainError as e:
+                return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
             # Build response
             out = LineupOut(
