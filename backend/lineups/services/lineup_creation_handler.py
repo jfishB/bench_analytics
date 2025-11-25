@@ -36,7 +36,7 @@ def determine_request_mode(lineup_data: dict) -> Tuple[str, Optional[dict]]:
     return "algorithm_generate", None
 
 
-def handle_lineup_save(validated: dict, user) -> Tuple[Lineup, list]:
+def handle_lineup_save(validated: dict) -> Tuple[Lineup, list]:
     """Persist a lineup from already validated data.
 
     The view handles all domain validation (batting orders, team/players).
@@ -49,7 +49,6 @@ def handle_lineup_save(validated: dict, user) -> Tuple[Lineup, list]:
                    - created_by_id: user ID
                    - name: optional lineup name
                    - original_players: list of LineupPlayerInput for batting_order mapping
-        user: authenticated user
 
     Returns:
         (lineup, lineup_players)
@@ -58,16 +57,11 @@ def handle_lineup_save(validated: dict, user) -> Tuple[Lineup, list]:
     players_list = validated["players"]
     created_by_id = validated.get("created_by_id")
     lineup_name = validated.get("name") or timezone.now().isoformat()
-    original_players = validated.get("original_players", [])
 
-    # Build players payload with batting orders from original input
+    # Build players payload with batting orders (1-indexed position in validated list)
     players_payload = []
-    for player in players_list:
-        batting_order = next(
-            (p.batting_order for p in original_players if p.player_id == player.id),
-            None,
-        )
-        players_payload.append({"player": player, "batting_order": batting_order})
+    for idx, player in enumerate(players_list):
+        players_payload.append({"player": player, "batting_order": idx + 1})
 
     lineup, lineup_players = saving_lineup_to_db(team_obj, players_payload, lineup_name, created_by_id)
 
