@@ -118,6 +118,7 @@ def validate_data(payload, require_creator: bool = True):
         "team": team_obj,
         "players": players_qs,
         "created_by_id": created_by_id,
+        "name": _get(payload, "name"),
     }
 
 

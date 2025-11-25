@@ -21,3 +21,4 @@ class CreateLineupInput:
     team_id: int
     players: List[LineupPlayerInput]
     requested_user_id: Optional[int] = None
+    name: Optional[str] = None
