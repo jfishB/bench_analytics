@@ -1,10 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
-from rest_framework.test import APIClient, APITestCase
-from rest_framework import status
+from rest_framework.test import APIClient
 
 from lineups.models import Lineup, LineupPlayer
-from lineups.services.exceptions import BadBattingOrder
 from roster.models import Player, Team
 
 
@@ -76,7 +74,7 @@ class LineupAPITests(TestCase):
             self.assertEqual(lp.player.team_id, self.team.id)
 
     def test_rejects_missing_batting_orders(self):
-        """Payload ohne batting_order wird als team_id-only behandelt und generiert Vorschlag."""
+        """Payload without batting_order is treated as team_id-only and generates a suggestion."""
         payload = {
             "team_id": self.team.id,
             "players": [
@@ -94,7 +92,7 @@ class LineupAPITests(TestCase):
         self.assertEqual(Lineup.objects.count(), 0)
 
     def test_team_id_only_generates_suggested_lineup(self):
-        """POST mit nur team_id generiert vorgeschlagenes Lineup ohne Save."""
+        """POST with only team_id generates a suggested lineup without saving it."""
         payload = {"team_id": self.team.id}
 
         self.client.force_authenticate(user=self.creator)
@@ -393,8 +391,8 @@ class LineupViewSetTests(TestCase):
 
     def test_viewset_queryset_for_superuser(self):
         """Superuser should see all lineups."""
-        lineup1 = Lineup.objects.create(team=self.team, created_by=self.creator, name="Lineup 1")
-        lineup2 = Lineup.objects.create(team=self.team, created_by=self.other, name="Lineup 2")
+        Lineup.objects.create(team=self.team, created_by=self.creator, name="Lineup 1")
+        Lineup.objects.create(team=self.team, created_by=self.other, name="Lineup 2")
 
         client = APIClient()
         client.force_authenticate(user=self.superuser)
@@ -406,7 +404,7 @@ class LineupViewSetTests(TestCase):
     def test_viewset_queryset_filters_by_user(self):
         """Normal users should only see their own lineups."""
         lineup1 = Lineup.objects.create(team=self.team, created_by=self.creator, name="My Lineup")
-        lineup2 = Lineup.objects.create(team=self.team, created_by=self.other, name="Other Lineup")
+        Lineup.objects.create(team=self.team, created_by=self.other, name="Other Lineup")
 
         client = APIClient()
         client.force_authenticate(user=self.creator)
