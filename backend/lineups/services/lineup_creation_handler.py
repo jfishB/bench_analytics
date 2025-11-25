@@ -11,7 +11,6 @@ from .input_data import CreateLineupInput, LineupPlayerInput
 from .databa_access import saving_lineup_to_db
 from .validator import validate_lineup_model
 from .algorithm_logic import algorithm_create_lineup
-from .input_data import CreateLineupInput
 from rest_framework.exceptions import ValidationError
 from django.utils import timezone
 
