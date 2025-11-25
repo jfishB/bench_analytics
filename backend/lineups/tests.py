@@ -796,7 +796,7 @@ class LineupCreationHandlerTests(TestCase):
         """Test handle_lineup_save when validate_lineup_model raises exception (lines 78-79)."""
         from lineups.services.lineup_creation_handler import handle_lineup_save
         from lineups.services.input_data import LineupPlayerInput
-        from rest_framework.serializers import ValidationError
+        from lineups.services.exceptions import DomainError
         from unittest.mock import patch
         
         validated_data = {
@@ -814,8 +814,8 @@ class LineupCreationHandlerTests(TestCase):
         with patch('lineups.services.lineup_creation_handler.validate_lineup_model') as mock_validate:
             mock_validate.side_effect = Exception("Test validation error")
             
-            with self.assertRaises(ValidationError) as cm:
-                handle_lineup_save(validated_data, self.creator)
+            with self.assertRaises(DomainError) as cm:
+                handle_lineup_save(validated_data)
             
             self.assertIn("Test validation error", str(cm.exception))
 
@@ -823,7 +823,7 @@ class LineupCreationHandlerTests(TestCase):
         """Test handle_lineup_save when validate_lineup_model returns False (line 81)."""
         from lineups.services.lineup_creation_handler import handle_lineup_save
         from lineups.services.input_data import LineupPlayerInput
-        from rest_framework.serializers import ValidationError
+        from lineups.services.exceptions import DomainError
         from unittest.mock import patch
         
         validated_data = {
@@ -841,8 +841,8 @@ class LineupCreationHandlerTests(TestCase):
         with patch('lineups.services.lineup_creation_handler.validate_lineup_model') as mock_validate:
             mock_validate.return_value = False
             
-            with self.assertRaises(ValidationError) as cm:
-                handle_lineup_save(validated_data, self.creator)
+            with self.assertRaises(DomainError) as cm:
+                handle_lineup_save(validated_data)
             
             self.assertIn("Lineup validation failed", str(cm.exception))
 
