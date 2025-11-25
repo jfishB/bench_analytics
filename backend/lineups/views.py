@@ -8,7 +8,6 @@ from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.utils import timezone
 
 from .models import Lineup, LineupPlayer
 from .serializers import LineupModelSerializer, LineupOut, LineupPlayerOut, LineupCreate
