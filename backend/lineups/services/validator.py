@@ -42,8 +42,9 @@ def validate_batting_orders(players):
     if len(set(batting_orders)) != len(batting_orders):
         raise BadBattingOrder("Batting orders must be unique")
 
-    # Note: If we have 9 unique values between 1-9 (enforced by serializer),
-    # they must be exactly [1,2,3,4,5,6,7,8,9], so no additional range check needed.
+    # Explicitly check that batting orders are exactly 1-9 for defensive programming.
+    if sorted(batting_orders) != list(range(1, 10)):
+        raise BadBattingOrder("Batting orders must be the numbers 1 through 9, each used exactly once")
 
 
 def validate_data(payload, require_creator: bool = True):
