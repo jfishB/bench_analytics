@@ -26,7 +26,7 @@ def determine_request_mode(lineup_data: dict) -> Tuple[str, Optional[dict]]:
     players_data = lineup_data.get("players", [])
     
     # Empty players list or missing players means algorithm generation
-    if not players_data or len(players_data) == 0:
+    if not players_data:
         return "algorithm_generate", None
     
     # All players must have batting_order for manual save
