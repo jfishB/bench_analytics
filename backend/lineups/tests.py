@@ -391,7 +391,7 @@ class LineupViewSetTests(TestCase):
 
     def test_viewset_queryset_for_superuser(self):
         """Superuser should see all lineups."""
-        lineup1 = Lineup.objects.create(team=self.team, created_by=self.creator, name="Lineup 1")
+        Lineup.objects.create(team=self.team, created_by=self.creator, name="Lineup 1")
         lineup2 = Lineup.objects.create(team=self.team, created_by=self.other, name="Lineup 2")
 
         client = APIClient()
