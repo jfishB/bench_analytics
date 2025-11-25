@@ -74,7 +74,7 @@ class LineupAPITests(TestCase):
             self.assertEqual(lp.player.team_id, self.team.id)
 
     def test_rejects_missing_batting_orders(self):
-        """Payload ohne batting_order wird als team_id-only behandelt und generiert Vorschlag."""
+        """Payload without batting_order is treated as team_id-only and generates a suggestion."""
         payload = {
             "team_id": self.team.id,
             "players": [
