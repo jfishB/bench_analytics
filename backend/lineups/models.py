@@ -1,3 +1,13 @@
+"""
+- This file defines Django models for lineups and lineup players.
+- Imported by:
+  - backend/lineups/views.py
+  - backend/lineups/services/databa_access.py
+  - backend/lineups/services/validator.py
+  - backend/lineups/services/algorithm_logic.py
+  - backend/lineups/serializers.py
+"""
+
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
