@@ -1,98 +1,74 @@
-##########################################
 """
-- This file contains service functions for handling
-lineup creation requests from the view layer.
-- Separates business logic from HTTP handling.
+- This file handles lineup creation mode determination and orchestrates save/generate operations.
+- Imported by:
+  - backend/lineups/views.py
 """
-###########################################
 
-from typing import Dict, Optional, Tuple
-
-from django.contrib.auth import get_user_model
-from django.db import transaction
+from typing import Optional, Tuple
+from lineups.models import Lineup
+from roster.models import Player as RosterPlayer
+from .input_data import CreateLineupInput, LineupPlayerInput
+from .databa_access import saving_lineup_to_db
+from .validator import validate_lineup_model
+from .algorithm_logic import algorithm_create_lineup
+from .input_data import CreateLineupInput
+from rest_framework.exceptions import ValidationError
 from django.utils import timezone
 
-from lineups.models import Lineup, LineupPlayer
-from roster.models import Player as RosterPlayer
 
-from .input_data import CreateLineupInput, LineupPlayerInput
-from .validator import validate_batting_orders, validate_data, validate_lineup_model
-from .algorithm_logic import algorithm_create_lineup
-from rest_framework.exceptions import ValidationError
-
-def determine_request_mode(request_data: dict) -> Tuple[str, Optional[dict]]:
+def determine_request_mode(lineup_data: dict) -> Tuple[str, Optional[dict]]:
     """Determine if request is for manual save or algorithm generation.
 
-    Args:
-        request_data: The raw request data from the view
-
     Returns:
-        Tuple of (mode, validated_data) where mode is either 'manual_save' or 'algorithm_generate'
+        - ("manual_save", data) if players list exists with 9 items all having batting_order
+        - ("algorithm_generate", None) otherwise (for team_id-only or incomplete players)
     """
-    from lineups.serializers import LineupCreate
+    players_data = lineup_data.get("players", [])
+    
+    # Empty players list or missing players means algorithm generation
+    if not players_data or len(players_data) == 0:
+        return "algorithm_generate", None
+    
+    # All players must have batting_order for manual save
+    all_have_batting_order = all(p.get("batting_order") is not None for p in players_data)
 
-    req_full = LineupCreate(data=request_data)
-
-    if req_full.is_valid():
-        data = req_full.validated_data
-        players_data = data["players"]
-        all_have_batting_order = all(p.get("batting_order") is not None for p in players_data)
-
-        if all_have_batting_order:
-            return "manual_save", data
-
+    if all_have_batting_order and len(players_data) == 9:
+        return "manual_save", lineup_data
     return "algorithm_generate", None
 
 
-def handle_lineup_save(data: dict, user) -> Tuple[Lineup, list]:
-    """Handle manual or sabermetrics lineup save with provided batting orders.
+def handle_lineup_save(validated: dict, user) -> Tuple[Lineup, list]:
+    """Persist a lineup from already validated data.
+
+    The view handles all domain validation (batting orders, team/players).
+    This function only handles persistence and model validation.
 
     Args:
-        data: Validated lineup data with players and batting orders
-        user: The authenticated user making the request
+        validated: dict from validate_data() containing:
+                   - team: Team object
+                   - players: list of Player objects
+                   - created_by_id: user ID
+                   - name: optional lineup name
+                   - original_players: list of LineupPlayerInput for batting_order mapping
+        user: authenticated user
 
     Returns:
-        Tuple of (lineup, lineup_players)
+        (lineup, lineup_players)
     """
-    team_id = data["team_id"]
-    lineup_name = data.get("name") or f"Lineup - {timezone.now().strftime('%Y-%m-%d %H:%M')}"
-    players_data = data["players"]
-
-    # Build CreateLineupInput with provided batting orders
-    players_input = [
-        LineupPlayerInput(
-            player_id=p["player_id"],
-            batting_order=p.get("batting_order"),
-        )
-        for p in players_data
-    ]
-
-    payload = CreateLineupInput(
-        team_id=team_id,
-        players=players_input,
-        requested_user_id=(user.id if user.is_authenticated else None),
-    )
-
-    # Validate batting orders are unique and cover 1-9
-    validate_batting_orders(payload.players)
-    # Resolve to models (team, players) and created_by id
-    validated = validate_data(payload)
     team_obj = validated["team"]
     players_list = validated["players"]
     created_by_id = validated.get("created_by_id")
+    lineup_name = validated.get("name") or timezone.now().isoformat()
+    original_players = validated.get("original_players", [])
 
-    # Build payload for saving helper (include player model, position, batting order)
+    # Build players payload with batting orders from original input
     players_payload = []
     for player in players_list:
-        players_payload.append(
-            {
-                "player": player,
-                "batting_order": next((p.batting_order for p in payload.players if p.player_id == player.id), None),
-            }
+        batting_order = next(
+            (p.batting_order for p in original_players if p.player_id == player.id),
+            None,
         )
-
-    # Delegate persistence to helper which creates Lineup and LineupPlayer rows
-    from .databa_access import saving_lineup_to_db
+        players_payload.append({"player": player, "batting_order": batting_order})
 
     lineup, lineup_players = saving_lineup_to_db(team_obj, players_payload, lineup_name, created_by_id)
 
@@ -100,9 +76,7 @@ def handle_lineup_save(data: dict, user) -> Tuple[Lineup, list]:
     try:
         result = validate_lineup_model(lineup)
     except Exception as exc:
-        # convert/service-level errors into a DRF ValidationError so views return 400
         raise ValidationError({"detail": str(exc)})
-    # validate_lineup_model may either raise on failure or return a boolean-like value.
     if result is False:
         raise ValidationError({"detail": "Lineup validation failed."})
 
