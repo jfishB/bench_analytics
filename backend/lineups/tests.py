@@ -92,7 +92,7 @@ class LineupAPITests(TestCase):
         self.assertEqual(Lineup.objects.count(), 0)
 
     def test_team_id_only_generates_suggested_lineup(self):
-        """POST mit nur team_id generiert vorgeschlagenes Lineup ohne Save."""
+        """POST with only team_id generates a suggested lineup without saving it."""
         payload = {"team_id": self.team.id}
 
         self.client.force_authenticate(user=self.creator)
