@@ -29,6 +29,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Player } from "../../../shared/types";
+import { Zap } from "lucide-react";
 
 // Sortable player item component for drag and drop
 interface SortablePlayerItemProps {
@@ -58,30 +59,35 @@ function SortablePlayerItem({ player, index }: SortablePlayerItemProps) {
       style={style}
       {...attributes}
       {...listeners}
-      className="flex items-center bg-white border border-gray-200 rounded-lg p-3 shadow-sm cursor-move hover:bg-gray-50"
+      className="group relative overflow-hidden bg-white border rounded-xl p-3 shadow-sm cursor-move transition-all hover:shadow-md border-blue-100 hover:border-blue-300"
     >
-      <div className="w-10 flex-shrink-0">
-        <div className="h-8 w-8 rounded-full flex items-center justify-center font-semibold bg-primary text-white">
-          {player.batting_order || index + 1}
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-blue-500/20 to-blue-500/0 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+      <div className="relative flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-md bg-gradient-to-br from-blue-600 to-blue-800">
+            <span className="text-sm font-semibold">
+              {player.batting_order || index + 1}
+            </span>
+          </div>
+          <div>
+            <div className="font-medium">{player.name}</div>
+          </div>
         </div>
-      </div>
-      <div className="ml-3 flex-1">
-        <div className="text-sm font-medium text-gray-900">{player.name}</div>
-      </div>
-      <div className="ml-3">
-        <svg
-          className="h-5 w-5 text-gray-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M4 8h16M4 16h16"
-          />
-        </svg>
+        <div>
+          <svg
+            className="h-5 w-5 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 8h16M4 16h16"
+            />
+          </svg>
+        </div>
       </div>
     </div>
   );
@@ -119,10 +125,17 @@ export function ManualModePanel({
     <div className="grid md:grid-cols-2 gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>Selected Players</CardTitle>
-          <CardDescription>
-            Your 9 selected players - drag them to arrange batting order
-          </CardDescription>
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-blue-900/10 rounded-lg">
+              <Zap className="h-5 w-5 text-blue-900" />
+            </div>
+            <div>
+              <CardTitle>Selected Players</CardTitle>
+              <CardDescription>
+                Your 9 selected players - drag them to arrange batting order
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <PlayersOrderedList
@@ -136,10 +149,17 @@ export function ManualModePanel({
 
       <Card>
         <CardHeader>
-          <CardTitle>Batting Order</CardTitle>
-          <CardDescription>
-            Drag players to rearrange the batting order
-          </CardDescription>
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-blue-900/10 rounded-lg">
+              <Zap className="h-5 w-5 text-blue-900" />
+            </div>
+            <div>
+              <CardTitle>Batting Order</CardTitle>
+              <CardDescription>
+                Drag players to rearrange the batting order
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <DndContext
@@ -182,9 +202,7 @@ export function ManualModePanel({
             </div>
             <Button
               className={`w-full ${
-                saveStatus === "saved"
-                  ? "bg-green-600 hover:bg-green-600"
-                  : ""
+                saveStatus === "saved" ? "bg-green-600 hover:bg-green-600" : ""
               } disabled:bg-gray-200 disabled:cursor-not-allowed`}
               disabled={!lineupName.trim() || saveStatus === "saving"}
               onClick={onSave}
@@ -202,3 +220,4 @@ export function ManualModePanel({
   );
 }
 
+export default ManualModePanel;

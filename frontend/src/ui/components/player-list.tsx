@@ -105,52 +105,49 @@ export function PlayerList({
                 : undefined
             }
             className={cn(
-              "flex items-center bg-white border border-gray-100 rounded-lg p-3 shadow-sm",
-              onItemClick && "cursor-pointer"
+              "group relative overflow-hidden bg-white border rounded-xl p-3 transition-all shadow-sm",
+              onItemClick &&
+                "cursor-pointer hover:shadow-md border-blue-100 hover:border-blue-300"
             )}
           >
-            <div className="w-10 flex-shrink-0">
-              <div
-                className={cn(
-                  badgeClassName,
-                  "h-8 w-8 rounded-full flex items-center justify-center font-semibold",
-                  showInitials && "text-xs"
-                )}
-              >
-                {showInitials
-                  ? getPlayerInitials(it.name)
-                  : it.battingOrder != null
-                  ? it.battingOrder
-                  : "—"}
-              </div>
-            </div>
-
-            <div className="ml-3 flex-1">
-              <div className="text-sm font-medium text-gray-900 truncate">
-                {it.name}
-              </div>
-              {/* Placeholder for small meta info */}
-            </div>
-
-            {/* Optional area for extra actions or badges */}
-            {showCheckboxes && onSelectionToggle ? (
-              <div className="ml-3 flex items-center">
-                <input
-                  type="checkbox"
-                  checked={it.isSelected || false}
-                  onChange={(e) => {
-                    e.stopPropagation();
-                    onSelectionToggle(it);
-                  }}
-                  className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </div>
-            ) : (
-              <div className="ml-3 text-xs text-gray-500">
-                {/* ADDITIONAL FIELDS */}
-              </div>
+            {onItemClick && (
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-blue-500/20 to-blue-500/0 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             )}
+            <div className="relative flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className={cn(
+                  "w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-md bg-gradient-to-br from-blue-600 to-blue-800",
+                  badgeClassName
+                )}>
+                  <span className="text-sm font-semibold">
+                    {showInitials
+                      ? getPlayerInitials(it.name)
+                      : it.battingOrder != null
+                      ? it.battingOrder
+                      : "—"}
+                  </span>
+                </div>
+                <div>
+                  <div className="font-medium">{it.name}</div>
+                </div>
+              </div>
+
+              {/* Optional area for extra actions or badges */}
+              {showCheckboxes && onSelectionToggle && (
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={it.isSelected || false}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      onSelectionToggle(it);
+                    }}
+                    className="h-5 w-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </li>
       ))}

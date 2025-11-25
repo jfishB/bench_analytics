@@ -19,6 +19,7 @@ import { ManualModePanel } from "../../features/lineup/components/ManualModePane
 import { SabermetricsModePanel } from "../../features/lineup/components/SabermetricsModePanel";
 import { LineupSimulatorTab } from "../../features/lineup/components/LineupSimulatorTab";
 import { Alert, AlertDescription, AlertTitle } from "../../ui/components/alert";
+import { Users, Target, Zap, BarChart3 } from "lucide-react";
 
 // Custom hooks following clean architecture
 import { useRosterData } from "../../features/lineup/hooks/useRosterData";
@@ -36,7 +37,13 @@ export function LineupOptimizer() {
   // UI state (presentation layer) — restore persisted tab on reload
   const [activeTab, setActiveTab] = useState<string>(() => {
     try {
-      return localStorage.getItem("lineup.activeTab") || "current";
+      let storedTab = localStorage.getItem("lineup.activeTab") || "current";
+      // Migration: "analysis" tab was renamed to "simulation"
+      if (storedTab === "analysis") {
+        storedTab = "simulation";
+        localStorage.setItem("lineup.activeTab", storedTab);
+      }
+      return storedTab;
     } catch {
       return "current";
     }
@@ -64,8 +71,6 @@ export function LineupOptimizer() {
   const {
     lineupCreated,
     setLineupCreated,
-    lineupMode,
-    setLineupMode,
     lineupPlayers,
     setLineupPlayers,
     selected,
@@ -154,12 +159,11 @@ export function LineupOptimizer() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center">
         <h1 className="text-3xl mb-2 text-primary">Lineup Optimizer</h1>
         <p className="text-muted-foreground">
-          Generate optimal batting orders based on player statistics and game
-          situations
+          Generate optimal batting orders based on player statistics
         </p>
       </div>
 
@@ -172,20 +176,56 @@ export function LineupOptimizer() {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="current">Current Roster</TabsTrigger>
-          <TabsTrigger value="optimizer">Generate Lineup</TabsTrigger>
-          <TabsTrigger value="analysis">Lineup Simulator</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 h-auto p-1 bg-gradient-to-r from-blue-50 to-red-50">
+          <TabsTrigger
+            value="current"
+            className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md"
+            aria-label="Roster"
+          >
+            <Users className="h-4 w-4" />
+            <span className="hidden sm:inline">Roster</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="manual"
+            className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md"
+            aria-label="Builder"
+          >
+            <Target className="h-4 w-4" />
+            <span className="hidden sm:inline">Builder</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="optimizer"
+            className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md"
+            aria-label="Generate"
+          >
+            <Zap className="h-4 w-4" />
+            <span className="hidden sm:inline">Generate</span>
+          </TabsTrigger>
+          <TabsTrigger
+            value="simulation"
+            className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md"
+            aria-label="Simulate"
+          >
+            <BarChart3 className="h-4 w-4" />
+            <span className="hidden sm:inline">Simulate</span>
+          </TabsTrigger>
         </TabsList>
 
         {/* CURRENT ROSTER */}
         <TabsContent value="current" className="space-y-4">
-          <Card>
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-white to-blue-50/30">
             <CardHeader>
-              <CardTitle>Team Roster</CardTitle>
-              <CardDescription>
-                Current players and their key statistics
-              </CardDescription>
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-blue-900/10 rounded-lg">
+                  <Users className="h-5 w-5 text-blue-900" />
+                </div>
+                <div>
+                  <CardTitle>Available Players</CardTitle>
+                  <CardDescription>
+                    Click to add players to your lineup
+                  </CardDescription>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               {/* Selection Warning Banner */}
@@ -309,14 +349,14 @@ export function LineupOptimizer() {
           </Card>
         </TabsContent>
 
-        {/* LINEUP OPTIMIZER */}
+        {/* LINEUP OPTIMIZER - SABERMETRICS */}
         <TabsContent value="optimizer" className="space-y-4">
           {!lineupCreated ? (
             <Card>
               <CardHeader>
-                <CardTitle>Lineup Optimizer</CardTitle>
+                <CardTitle>Generate Lineup (Sabermetrics)</CardTitle>
                 <CardDescription>
-                  Select 9 players to create your lineup
+                  Select 9 players to create an optimized lineup
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -348,59 +388,78 @@ export function LineupOptimizer() {
               </CardContent>
             </Card>
           ) : (
-            <>
-              {/* Mode Toggle */}
-              <div className="mb-6">
-                <Tabs
-                  value={lineupMode}
-                  onValueChange={(value) =>
-                    setLineupMode(value as "manual" | "sabermetrics")
-                  }
-                  className="w-full"
-                >
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="manual">Manual</TabsTrigger>
-                    <TabsTrigger value="sabermetrics">Sabermetrics</TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
+            <SabermetricsModePanel
+              lineupPlayers={lineupPlayers}
+              generatedLineup={generatedLineup}
+              lineupName={sabermetricsLineupName}
+              saveStatus={sabermetricsSaveStatus}
+              generating={generating}
+              onPlayerClick={(p) =>
+                setSelected(players.find((x) => x.id === p.id) ?? null)
+              }
+              onLineupNameChange={setSabermetricsLineupName}
+              onGenerate={handleSabermetricsGenerate}
+              onSave={handleSabermetricsSave}
+            />
+          )}
+        </TabsContent>
 
-              {/* Manual Mode */}
-              {lineupMode === "manual" ? (
-                <ManualModePanel
-                  lineupPlayers={lineupPlayers}
-                  battingOrderLineup={battingOrderLineup}
-                  lineupName={manualLineupName}
-                  saveStatus={manualSaveStatus}
-                  onPlayerClick={(p) =>
-                    setSelected(players.find((x) => x.id === p.id) ?? null)
-                  }
-                  onLineupNameChange={setManualLineupName}
-                  onDragEnd={handleDragEnd}
-                  onSave={handleManualSave}
-                />
-              ) : (
-                /* Sabermetrics Mode */
-                <SabermetricsModePanel
-                  lineupPlayers={lineupPlayers}
-                  generatedLineup={generatedLineup}
-                  lineupName={sabermetricsLineupName}
-                  saveStatus={sabermetricsSaveStatus}
-                  generating={generating}
-                  onPlayerClick={(p) =>
-                    setSelected(players.find((x) => x.id === p.id) ?? null)
-                  }
-                  onLineupNameChange={setSabermetricsLineupName}
-                  onGenerate={handleSabermetricsGenerate}
-                  onSave={handleSabermetricsSave}
-                />
-              )}
-            </>
+        {/* LINEUP BUILDER - MANUAL */}
+        <TabsContent value="manual" className="space-y-4">
+          {!lineupCreated ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Build Lineup (Manual)</CardTitle>
+                <CardDescription>
+                  Select 9 players to create a custom lineup
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <svg
+                    className="h-16 w-16 text-gray-400 mb-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Select 9 Players From Your Roster First
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Go to the Current Roster tab, select 9 players using the
+                    checkboxes, then click "Create Lineup".
+                  </p>
+                  <p className="text-sm font-medium text-gray-700">
+                    Currently selected: {selectedPlayerIds.size}/9 players
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <ManualModePanel
+              lineupPlayers={lineupPlayers}
+              battingOrderLineup={battingOrderLineup}
+              lineupName={manualLineupName}
+              saveStatus={manualSaveStatus}
+              onPlayerClick={(p) =>
+                setSelected(players.find((x) => x.id === p.id) ?? null)
+              }
+              onLineupNameChange={setManualLineupName}
+              onDragEnd={handleDragEnd}
+              onSave={handleManualSave}
+            />
           )}
         </TabsContent>
 
         {/* LINEUP SIMULATOR */}
-        <TabsContent value="analysis" className="space-y-4">
+        <TabsContent value="simulation" className="space-y-4">
           <LineupSimulatorTab
             savedLineups={savedLineups}
             loading={loadingLineups}
