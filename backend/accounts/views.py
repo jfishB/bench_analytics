@@ -1,10 +1,13 @@
+"""
+- This file defines the HTTP API endpoints for the accounts module.
+"""
+
 import logging
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView
 
@@ -41,7 +44,7 @@ def register(request):
 
     except DomainError as e:
         return Response({"error": str(e)}, status=e.status_code)
-    except Exception as e:
+    except Exception:
         logger.exception("Unexpected error in register")
         return Response(
             {"error": "Unexpected server error."},
@@ -65,7 +68,7 @@ def login(request):
 
     except DomainError as e:
         return Response({"error": str(e)}, status=e.status_code)
-    except Exception as e:
+    except Exception:
         logger.exception("Unexpected error in login")
         return Response(
             {"error": "Unexpected server error."},

@@ -54,11 +54,9 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "lineups",
-    "accounts",  # was "auth"
+    "accounts", 
     "roster",
     "simulator",
-    # project_tests contains lightweight smoke tests that the default
-    # Django test runner can discover when `manage.py test` is invoked
     "project_tests",
 ]
 
@@ -72,7 +70,7 @@ REST_FRAMEWORK = {
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "corsheaders.middleware.CorsMiddleware",  # CORS before CommonMiddleware
+    "corsheaders.middleware.CorsMiddleware",  
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -111,7 +109,7 @@ DATABASES = {
         "PASSWORD": env("POSTGRES_PASSWORD", default="secret"),
         "HOST": env("DB_HOST", default="localhost"),
         "PORT": env("DB_PORT", default="5432"),
-        "OPTIONS": {"options": "-c search_path=public"},  # <- change
+        "OPTIONS": {"options": "-c search_path=public"},  
     }
 }
 
