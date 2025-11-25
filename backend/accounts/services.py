@@ -1,10 +1,18 @@
+"""
+- This file implements the domain/application services for user accounts
+- Imported by:
+    - backend/accounts/views.py
+usage:
+    - `register_user` is used by the register view to create a new user
+    - `login_user` is used by the login view to authenticate and issue tokens
+"""
+
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .exceptions import EmailAlreadyExistsError, InvalidCredentialsError, MissingFieldsError, UserAlreadyExistsError
-
 
 def register_user(username, email, password) -> User:
     """
