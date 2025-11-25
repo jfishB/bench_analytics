@@ -4,9 +4,10 @@
   - backend/lineups/views.py
   - backend/lineups/services/lineup_creation_handler.py
   - backend/lineups/services/algorithm_logic.py
+  - backend/lineups/interactor.py
 """
 from django.contrib.auth import get_user_model
-from roster.models import Player, Team
+from .databa_access import fetch_players_by_ids, fetch_team_by_id
 from .exceptions import BadBattingOrder, NoCreator, PlayersNotFound, PlayersWrongTeam, TeamNotFound
 
 
@@ -60,7 +61,7 @@ def validate_data(payload, require_creator: bool = True):
             return obj.get(name, default)
         return default
 
-    team_obj = Team.objects.filter(pk=_get(payload, "team_id")).first()
+    team_obj = fetch_team_by_id(_get(payload, "team_id"))
     if not team_obj:
         raise TeamNotFound()
 
@@ -77,21 +78,11 @@ def validate_data(payload, require_creator: bool = True):
     if len(ids) != 9:
         raise PlayersNotFound()
 
-    players_qs = list(Player.objects.filter(id__in=ids).select_related("team"))
-    if len(players_qs) != len(ids):
+    # Fetch players using database access layer
+    try:
+        players_qs = fetch_players_by_ids(ids)
+    except ValueError:
         raise PlayersNotFound()
-
-    # Re-order players to match the input order and attach requested positions
-    players_by_id = {p.id: p for p in players_qs}
-    ordered_players = []
-    for pid in ids:
-        # player_obj is guaranteed to exist due to length check above
-        player_obj = players_by_id[pid]
-        # attach helper attributes expected by the algorithm
-        setattr(player_obj, "player_id", player_obj.id)
-        ordered_players.append(player_obj)
-
-    players_qs = ordered_players
 
     # Ensure all players belong to the stated team
     if any(p.team_id != team_obj.id for p in players_qs):

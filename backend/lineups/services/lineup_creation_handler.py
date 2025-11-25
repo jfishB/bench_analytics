@@ -1,7 +1,7 @@
 """
 - This file handles lineup creation mode determination and orchestrates save/generate operations.
 - Imported by:
-  - backend/lineups/views.py
+    - backend/lineups/interactor.py
 """
 
 from typing import Optional, Tuple

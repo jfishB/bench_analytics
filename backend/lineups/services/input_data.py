@@ -2,7 +2,7 @@
 - This file defines input data structures (dataclasses) for lineup creation.
 - Imported by:
   - backend/lineups/services/lineup_creation_handler.py
-  - backend/lineups/views.py
+  - backend/lineups/interactor.py
 """
 
 from dataclasses import dataclass
