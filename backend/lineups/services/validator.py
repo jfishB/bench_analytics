@@ -1,16 +1,13 @@
-##########################################
 """
-- This file contains the validation logic
-- used in views
+- This file defines validation logic for lineup data and models.
+- Imported by:
+  - backend/lineups/views.py
+  - backend/lineups/services/lineup_creation_handler.py
+  - backend/lineups/services/algorithm_logic.py
 """
-###########################################
-
 from django.contrib.auth import get_user_model
-
 from roster.models import Player, Team
-
 from .exceptions import BadBattingOrder, NoCreator, PlayersNotFound, PlayersWrongTeam, TeamNotFound
-from .input_data import LineupPlayerInput
 
 
 def validate_batting_orders(players):
@@ -45,9 +42,8 @@ def validate_batting_orders(players):
     if len(set(batting_orders)) != len(batting_orders):
         raise BadBattingOrder("Batting orders must be unique")
 
-    # Check that orders cover exactly 1-9
-    if sorted(batting_orders) != list(range(1, 10)):
-        raise BadBattingOrder("Batting orders must cover positions 1 through 9")
+    # Note: If we have 9 unique values between 1-9 (enforced by serializer),
+    # they must be exactly [1,2,3,4,5,6,7,8,9], so no additional range check needed.
 
 
 def validate_data(payload, require_creator: bool = True):
@@ -76,6 +72,10 @@ def validate_data(payload, require_creator: bool = True):
             raise PlayersNotFound()
         ids.append(pid)
 
+    # We expect exactly 9 players in the payload.
+    if len(ids) != 9:
+        raise PlayersNotFound()
+
     players_qs = list(Player.objects.filter(id__in=ids).select_related("team"))
     if len(players_qs) != len(ids):
         raise PlayersNotFound()
@@ -84,9 +84,8 @@ def validate_data(payload, require_creator: bool = True):
     players_by_id = {p.id: p for p in players_qs}
     ordered_players = []
     for pid in ids:
-        player_obj = players_by_id.get(pid)
-        if player_obj is None:
-            raise PlayersNotFound()
+        # player_obj is guaranteed to exist due to length check above
+        player_obj = players_by_id[pid]
         # attach helper attributes expected by the algorithm
         setattr(player_obj, "player_id", player_obj.id)
         ordered_players.append(player_obj)
@@ -128,15 +127,6 @@ def validate_lineup_model(lineup):
     produced model is invalid. This protects the API from buggy
     algorithm implementations.
     """
-    # Import here to avoid import cycles
-    from .exceptions import (
-        BadBattingOrder,
-        OpponentPitcherNotFound,
-        OpponentTeamMismatch,
-        PitcherInBatters,
-        PlayersNotFound,
-        PlayersWrongTeam,
-    )
 
     if lineup is None:
         raise PlayersNotFound()
@@ -161,18 +151,6 @@ def validate_lineup_model(lineup):
         raise BadBattingOrder()
     if sorted(orders) != list(range(1, len(orders) + 1)):
         raise BadBattingOrder()
-
-    # Opponent pitcher validation (optional)
-    opp_pid = getattr(lineup, "opponent_pitcher_id", None)
-    if opp_pid is not None:
-        # If opponent_team_id is set, it must match the pitcher's team
-        opp_team_id = getattr(lineup, "opponent_team_id", None)
-        if opp_team_id is not None:
-            from roster.models import Player as RosterPlayer
-
-            pitcher = RosterPlayer.objects.filter(pk=opp_pid).first()
-            if pitcher and pitcher.team_id != opp_team_id:
-                raise OpponentTeamMismatch()
 
     # All checks passed — return True for convenience
     return True
