@@ -438,7 +438,7 @@ export function LineupSimulatorTab({
                             <div
                               className="w-3 h-3 rounded-full"
                               style={{
-                                backgroundColor: COLORS[idx % COLORS.length],
+                                backgroundColor: getColor(idx),
                               }}
                             ></div>
                             {res.name}
@@ -521,7 +521,7 @@ export function LineupSimulatorTab({
                       <Bar
                         key={res.id}
                         dataKey={res.name}
-                        fill={COLORS[idx % COLORS.length]}
+                        fill={getColor(idx)}
                         opacity={0.7}
                         maxBarSize={50}
                       />
