@@ -267,6 +267,121 @@ const HowToGuide: React.FC = () => {
           </CardContent>
         </Card>
       </section>
+
+      {/* Algorithm Explanation Section */}
+      <section className="space-y-6">
+        <h2 className="text-2xl text-primary">How the Algorithm Works</h2>
+
+        <Card className="rounded-2xl">
+          <CardContent className="px-6 py-5 space-y-6">
+            {/* Card header text */}
+            <div>
+              <p className="text-base font-semibold text-foreground">
+                Key Ideas
+              </p>
+              <p className="text-base text-muted-foreground">
+                The principles the algorithm is based on
+              </p>
+            </div>
+
+            {/* Ideas grid */}
+            <div className="grid md:grid-cols-3 gap-y-6 gap-x-10 text-base">
+              {/* Focus on Runs */}
+              <div className="space-y-1">
+                <p className="font-semibold text-foreground">Focus on Expected Runs</p>
+                <p className="text-muted-foreground">
+                  Runs and expected runs are at the core of Sabermetrics principles
+                </p>
+              </div>
+
+              {/* Advanced Metrics */}
+              <div className="space-y-1">
+                <p className="font-semibold text-foreground">Advanced Metrics</p>
+                <p className="text-muted-foreground">
+                  Sabermetrics utilizes wide range of player statistics to evaluate batter contribution
+                </p>
+              </div>
+
+              {/* BaseRuns */}
+              <div className="space-y-1">
+                <p className="font-semibold text-foreground">BaseRuns</p>
+                <p className="text-muted-foreground">
+                  A formula designed to estimate how many runs a team would be expected to score
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="rounded-2xl">
+          <CardContent className="px-6 py-5 space-y-6">
+            {/* Card header text */}
+            <div>
+              <p className="text-base font-semibold text-foreground">
+                Algorithm Steps
+              </p>
+              <p className="text-base text-muted-foreground">
+                Step by step breakdown of the lineup optimization process
+              </p>
+            </div>
+
+            {/* Algorithim steps grid */}
+            <div className="grid md:grid-cols-4 gap-y-6 gap-x-10 text-base">
+              {/* Step 1 */}
+              <div className="space-y-1">
+                <CardTitle className="flex items-center gap-3">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-900 text-white flex items-center justify-center font-bold">
+                    1
+                  </span>
+                  <span>Permute</span>
+                </CardTitle>
+                <p className="text-muted-foreground">
+                  Take given 9 players and run 9 permutations of batting orders
+                </p>
+              </div>
+
+              {/* Step 2 */}
+              <div className="space-y-1">
+                <CardTitle className="flex items-center gap-3">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--accent-red)] text-white flex items-center justify-center font-bold">
+                    2
+                  </span>
+                  <span>Adjust</span>
+                </CardTitle>
+                <p className="text-muted-foreground">
+                  For each lineup adjust player stats based on current position
+                </p>
+              </div>
+
+              {/* Step 3 */}
+              <div className="space-y-1">
+                <CardTitle className="flex items-center gap-3">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-900 text-white flex items-center justify-center font-bold">
+                    3
+                  </span>
+                  <span>Aggregate</span>
+                </CardTitle>
+                <p className="text-muted-foreground">
+                  Use adjusted player stats and BaseRuns to estimate lineup score
+                </p>
+              </div>
+
+              {/* Step 4 */}
+              <div className="space-y-1">
+                <CardTitle className="flex items-center gap-3">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--accent-red)] text-white flex items-center justify-center font-bold">
+                    4
+                  </span>
+                  <span>Output</span>
+                </CardTitle>
+                <p className="text-muted-foreground">
+                  Recommend lineup with highest expected runs based on data
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
       {/* FAQ Section */}
       <section className="space-y-4">
         <h2 className="text-2xl text-primary">Frequently Asked Questions</h2>
