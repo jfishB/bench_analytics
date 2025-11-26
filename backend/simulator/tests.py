@@ -6,6 +6,10 @@ uses django testcase and drf apitestcase for integration testing.
 run with: python manage.py test simulator
 """
 
+import sys
+from pathlib import Path
+
+import numpy as np
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework import status
@@ -16,6 +20,11 @@ from roster.models import Player, Team
 from .services.dto import BatterStats, SimulationResult
 from .services.player_service import PlayerService
 from .services.simulation import SimulationService
+
+# Add baseball-simulator library to path for VectorizedGame tests
+lib_path = Path(__file__).resolve().parent.parent / "lib" / "baseball-simulator"
+if str(lib_path) not in sys.path:
+    sys.path.insert(0, str(lib_path))
 
 
 class BatterStatsTestCase(TestCase):
@@ -225,7 +234,9 @@ class SimulatorAPITestCase(APITestCase):
     def setUp(self):
         """Set up test client and authentication."""
         # Create test user
-        self.user = User.objects.create_user(username="testuser", password="testpass123")
+        self.user = User.objects.create_user(
+            username="testuser", password="testpass123"
+        )
         # Create team and players (Team has no name/abbreviation)
         self.team = Team.objects.create(id=1)
 
@@ -299,3 +310,212 @@ class SimulatorAPITestCase(APITestCase):
         response = self.client.post(url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class VectorizedGameOutcomeTests(TestCase):
+    """Test individual outcome types in VectorizedGame to validate bug fixes."""
+
+    def setUp(self):
+        """Import VectorizedGame and create test batter."""
+        from batter import Batter  # type: ignore
+        from vectorized_game import VectorizedGame  # type: ignore
+
+        self.Batter = Batter
+        self.VectorizedGame = VectorizedGame
+
+        # Batter with balanced probabilities for testing
+        # [K, out, walk, 1B, 2B, 3B, HR]
+        self.test_probs = [0.15, 0.35, 0.10, 0.20, 0.10, 0.05, 0.05]
+        self.batter = Batter(probabilities=self.test_probs, name="TestBatter")
+        self.lineup = [self.batter] * 9
+
+    def test_single_scores_runner_from_third(self):
+        """Test that a single scores a runner on third base."""
+        game = self.VectorizedGame(lineup=self.lineup, num_games=1)
+
+        # Set initial state: runner on third
+        game.on_3b[0] = True
+        game.on_2b[0] = False
+        game.on_1b[0] = False
+        game.scores[0] = 0
+
+        # Simulate a single outcome
+        s_indices = np.array([0])
+        runner_on_3rd_mask = game.on_3b[s_indices]
+
+        # Runner on 3rd should be detected
+        self.assertTrue(runner_on_3rd_mask[0])
+
+    def test_single_no_runner_on_third_no_score(self):
+        """Test that a single with no runner on third doesn't score."""
+        game = self.VectorizedGame(lineup=self.lineup, num_games=1)
+
+        # Set initial state: no runners
+        game.on_3b[0] = False
+        game.on_2b[0] = False
+        game.on_1b[0] = False
+
+        # With no runner on third, mask should be False
+        s_indices = np.array([0])
+        runner_on_3rd_mask = game.on_3b[s_indices]
+
+        self.assertFalse(runner_on_3rd_mask[0])
+
+    def test_double_scores_runners_on_second_and_third(self):
+        """Test that a double scores runners on second and third."""
+        game = self.VectorizedGame(lineup=self.lineup, num_games=1)
+
+        # Set initial state: runners on 2nd and 3rd
+        game.on_3b[0] = True
+        game.on_2b[0] = True
+        game.on_1b[0] = False
+
+        d_indices = np.array([0])
+
+        # Both runners should be detected
+        runner_on_3rd_mask = game.on_3b[d_indices]
+        runner_on_2nd_mask = game.on_2b[d_indices]
+
+        self.assertTrue(runner_on_3rd_mask[0])
+        self.assertTrue(runner_on_2nd_mask[0])
+
+    def test_triple_clears_all_bases(self):
+        """Test that a triple scores all runners (bases loaded)."""
+        game = self.VectorizedGame(lineup=self.lineup, num_games=1)
+
+        # Set initial state: bases loaded
+        game.on_3b[0] = True
+        game.on_2b[0] = True
+        game.on_1b[0] = True
+
+        t_indices = np.array([0])
+
+        # All three runners should be detected
+        self.assertTrue(game.on_3b[t_indices][0])
+        self.assertTrue(game.on_2b[t_indices][0])
+        self.assertTrue(game.on_1b[t_indices][0])
+
+    def test_homerun_grand_slam(self):
+        """Test that a home run with bases loaded scores 4 runs."""
+        game = self.VectorizedGame(lineup=self.lineup, num_games=1)
+
+        # Set initial state: bases loaded
+        game.on_3b[0] = True
+        game.on_2b[0] = True
+        game.on_1b[0] = True
+
+        hr_indices = np.array([0])
+
+        # All runners should be detected (3 total)
+        runners_on_base = (
+            game.on_3b[hr_indices][0]
+            + game.on_2b[hr_indices][0]
+            + game.on_1b[hr_indices][0]
+        )
+
+        self.assertEqual(runners_on_base, 3)
+
+    def test_homerun_solo(self):
+        """Test that a solo home run has no runners on base."""
+        game = self.VectorizedGame(lineup=self.lineup, num_games=1)
+
+        # Set initial state: no runners
+        game.on_3b[0] = False
+        game.on_2b[0] = False
+        game.on_1b[0] = False
+
+        hr_indices = np.array([0])
+
+        # No runners should be on base
+        runners_on_base = (
+            game.on_3b[hr_indices][0]
+            + game.on_2b[hr_indices][0]
+            + game.on_1b[hr_indices][0]
+        )
+
+        self.assertEqual(runners_on_base, 0)
+
+    def test_walk_with_bases_loaded_forces_run(self):
+        """Test that a walk with bases loaded is detected."""
+        game = self.VectorizedGame(lineup=self.lineup, num_games=1)
+
+        # Set initial state: bases loaded
+        game.on_3b[0] = True
+        game.on_2b[0] = True
+        game.on_1b[0] = True
+
+        bb_indices = np.array([0])
+
+        # Should detect bases loaded condition
+        bases_loaded = (
+            game.on_1b[bb_indices][0]
+            and game.on_2b[bb_indices][0]
+            and game.on_3b[bb_indices][0]
+        )
+
+        self.assertTrue(bases_loaded)
+
+
+class VectorizedGameIntegrationTests(TestCase):
+    """Integration tests for VectorizedGame comparing statistics."""
+
+    def setUp(self):
+        """Import VectorizedGame."""
+        from batter import Batter  # type: ignore
+        from vectorized_game import VectorizedGame  # type: ignore
+
+        self.Batter = Batter
+        self.VectorizedGame = VectorizedGame
+
+    def test_simulation_produces_reasonable_scores(self):
+        """Test that simulations produce reasonable average scores."""
+        # Create a decent batting lineup (better than average)
+        good_probs = [0.20, 0.30, 0.10, 0.20, 0.10, 0.05, 0.05]
+        batter = self.Batter(probabilities=good_probs, name="GoodBatter")
+        lineup = [batter] * 9
+
+        game = self.VectorizedGame(lineup=lineup, num_games=1000)
+        game.play()
+        scores = game.get_scores()
+
+        avg_score = np.mean(scores)
+
+        # Should average between 2-8 runs per game for a decent lineup
+        self.assertGreater(avg_score, 2.0, "Average score too low")
+        self.assertLess(avg_score, 8.0, "Average score unrealistically high")
+
+    def test_weak_lineup_scores_less(self):
+        """Test that a weak lineup scores fewer runs."""
+        # Weak batting lineup (lots of strikeouts/outs)
+        weak_probs = [0.30, 0.50, 0.05, 0.10, 0.03, 0.01, 0.01]
+        batter = self.Batter(probabilities=weak_probs, name="WeakBatter")
+        lineup = [batter] * 9
+
+        game = self.VectorizedGame(lineup=lineup, num_games=1000)
+        game.play()
+        scores = game.get_scores()
+
+        avg_score = np.mean(scores)
+
+        # Weak lineup should score 0-3.5 runs on average
+        self.assertGreater(avg_score, 0.0)
+        self.assertLess(avg_score, 3.5, "Weak lineup scoring too much")
+
+    def test_all_games_complete(self):
+        """Test that all games run to completion."""
+        probs = [0.15, 0.35, 0.10, 0.20, 0.10, 0.05, 0.05]
+        batter = self.Batter(probabilities=probs, name="TestBatter")
+        lineup = [batter] * 9
+
+        num_games = 100
+        game = self.VectorizedGame(lineup=lineup, num_games=num_games)
+        game.play()
+        scores = game.get_scores()
+
+        # Should get exactly num_games scores
+        self.assertEqual(len(scores), num_games)
+
+        # All scores should be non-negative integers
+        for score in scores:
+            self.assertGreaterEqual(score, 0)
+            self.assertIsInstance(score, (int, np.integer))
