@@ -88,7 +88,7 @@ class LineupAPITests(TestCase):
         self.assertEqual(resp.status_code, 201)
         data = resp.json()
         self.assertIn("players", data)
-        # Es wird nur ein vorgeschlagenes Lineup generiert, nichts gespeichert
+        # Only a suggested lineup is generated, nothing is saved
         self.assertEqual(Lineup.objects.count(), 0)
 
     def test_team_id_only_generates_suggested_lineup(self):

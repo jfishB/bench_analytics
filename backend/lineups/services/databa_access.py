@@ -87,7 +87,7 @@ def fetch_team_by_id(team_id: int):
     Returns:
         Team object or None if not found
     """
-  
+
     return Team.objects.filter(pk=team_id).first()
 
 

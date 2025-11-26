@@ -1,14 +1,14 @@
-"""- This file defines the interactor for lineup creation use case
-- Imported by:
-  - backend/lineups/views.py
+"""
+-This file defines the interactor for lineup creation use case
+-Imported by:
+  -backend/lineups/views.py
 """
 from .services.input_data import CreateLineupInput, LineupPlayerInput
 from .services.validator import validate_batting_orders, validate_data
-from .services.databa_access import fetch_lineup_data, fetch_players_by_ids
+from .services.databa_access import fetch_lineup_data
 from .services.lineup_creation_handler import handle_lineup_save
 from .services.exceptions import DomainError
 from .services.algorithm_logic import algorithm_create_lineup
-from roster.models import Player
         
 
 class LineupCreationInteractor:
@@ -67,7 +67,7 @@ class LineupCreationInteractor:
         if selected_player_ids:
             players_inputs = [LineupPlayerInput(player_id=pid) for pid in selected_player_ids][:9]
         else:
-            raise DomainError("Exactly 9 player IDs are required to generate a suggested lineup")
+            raise DomainError("Player IDs are required to generate a suggested lineup")
         
         payload = CreateLineupInput(team_id=team_id, players=players_inputs, requested_user_id=None)
         
