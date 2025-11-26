@@ -27,6 +27,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { CHART_COLORS } from "../../../shared/designTokens";
+import { BarChart3 } from "lucide-react";
 
 interface LineupSimulatorTabProps {
   savedLineups: SavedLineup[];
@@ -189,6 +190,17 @@ export function LineupSimulatorTab({
           <CardDescription>
             Choose one or more lineups to simulate and compare performance
           </CardDescription>
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-blue-900/10 rounded-lg">
+              <BarChart3 className="h-5 w-5 text-blue-900" />
+            </div>
+            <div>
+              <CardTitle>Monte Carlo Simulation</CardTitle>
+              <CardDescription>
+                Choose a saved lineup to run Monte Carlo simulation.
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
