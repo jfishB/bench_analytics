@@ -37,15 +37,16 @@ export function LineupOptimizer() {
   // UI state (presentation layer) — restore persisted tab on reload
   const [activeTab, setActiveTab] = useState<string>(() => {
     try {
-      let storedTab = localStorage.getItem("lineup.activeTab") || "current";
+      let storedTab = localStorage.getItem("lineup.activeTab");
       // Migration: "analysis" tab was renamed to "simulation"
       if (storedTab === "analysis") {
         storedTab = "simulation";
         localStorage.setItem("lineup.activeTab", storedTab);
       }
-      return storedTab;
+      // Default to "simulation" if no tab is stored (show saved lineups first)
+      return storedTab || "simulation";
     } catch {
-      return "current";
+      return "simulation";
     }
   });
 
@@ -109,9 +110,9 @@ export function LineupOptimizer() {
     }
   }, [players, setLineupPlayers]);
 
-  // Fetch saved lineups when switching to analysis tab
+  // Fetch saved lineups when switching to simulation tab
   useEffect(() => {
-    if (activeTab === "analysis") {
+    if (activeTab === "simulation") {
       fetchSavedLineups();
     }
   }, [activeTab, fetchSavedLineups]);
