@@ -335,7 +335,7 @@ const HowToGuide: React.FC = () => {
                   <span>Permute</span>
                 </CardTitle>
                 <p className="text-muted-foreground">
-                  Take the given 9 players and run all possible permutations (9! = 362,880) of batting orders
+                  Take the given 9 players and run through all the possible permutations (9! = 362,880) of batting orders
                 </p>
               </div>
 
