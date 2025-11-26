@@ -99,14 +99,19 @@ class LineupCreateView(APIView):
         return Response(out, status=status.HTTP_201_CREATED)
     
     def _extract_player_ids(self, data):
-        """Extract optional player IDs from validated data."""
+        """Extract optional player IDs from validated data.
+        
+        Returns:
+            List of player IDs or None if no players provided
+        """
         players_payload = data.get("players")
         if isinstance(players_payload, list):
-            return [
+            player_ids = [
                 p.get("player_id") 
                 for p in players_payload 
                 if isinstance(p, dict) and p.get("player_id")
             ]
+            return player_ids if player_ids else None
         return None
 
 
