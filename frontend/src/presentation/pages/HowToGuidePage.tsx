@@ -298,7 +298,7 @@ const HowToGuide: React.FC = () => {
               <div className="space-y-1">
                 <p className="font-semibold text-foreground">Advanced Metrics</p>
                 <p className="text-muted-foreground">
-                  Sabermetrics utilizes wide range of player statistics to evaluate batter contribution
+                  Sabermetrics utilizes a wide range of player statistics to evaluate batter contribution
                 </p>
               </div>
 
