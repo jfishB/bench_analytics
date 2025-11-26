@@ -239,11 +239,14 @@ class VectorizedGame:
             s_mask = outcomes == 3
             s_indices = indices[s_mask]
 
-            # 3rd scores
-            self.scores[s_indices[self.on_3b[s_indices]]] += 1
-            self.on_3b[s_indices] = False
+            # 3rd scores - only clear if runner was there
+            runner_on_3rd_mask = self.on_3b[s_indices]
+            if np.any(runner_on_3rd_mask):
+                score_3rd_indices = s_indices[runner_on_3rd_mask]
+                self.scores[score_3rd_indices] += 1
+                self.on_3b[score_3rd_indices] = False
 
-            # 2nd scores (50%) or to 3rd
+            # 2nd scores (50%) or to 3rd - only for games with runner on 2nd
             mask_2nd = self.on_2b[s_indices]
             if np.any(mask_2nd):
                 # We need random decisions for the subset
@@ -258,7 +261,7 @@ class VectorizedGame:
                 self.on_3b[third_indices] = True
                 self.on_2b[subset_indices] = False  # Cleared from 2nd
 
-            # 1st to 2nd (80%) or 3rd (20%)
+            # 1st to 2nd (80%) or 3rd (20%) - only for games with runner on 1st
             mask_1st = self.on_1b[s_indices]
             if np.any(mask_1st):
                 subset_indices = s_indices[mask_1st]
@@ -279,15 +282,21 @@ class VectorizedGame:
             d_mask = outcomes == 4
             d_indices = indices[d_mask]
 
-            # 3rd scores
-            self.scores[d_indices[self.on_3b[d_indices]]] += 1
-            self.on_3b[d_indices] = False
+            # 3rd scores - only clear if runner was there
+            runner_on_3rd_mask = self.on_3b[d_indices]
+            if np.any(runner_on_3rd_mask):
+                score_3rd_indices = d_indices[runner_on_3rd_mask]
+                self.scores[score_3rd_indices] += 1
+                self.on_3b[score_3rd_indices] = False
 
-            # 2nd scores
-            self.scores[d_indices[self.on_2b[d_indices]]] += 1
-            self.on_2b[d_indices] = False
+            # 2nd scores - only clear if runner was there
+            runner_on_2nd_mask = self.on_2b[d_indices]
+            if np.any(runner_on_2nd_mask):
+                score_2nd_indices = d_indices[runner_on_2nd_mask]
+                self.scores[score_2nd_indices] += 1
+                self.on_2b[score_2nd_indices] = False
 
-            # 1st scores (30%) or to 3rd
+            # 1st scores (30%) or to 3rd - only for games with runner on 1st
             mask_1st = self.on_1b[d_indices]
             if np.any(mask_1st):
                 subset_indices = d_indices[mask_1st]
@@ -308,14 +317,27 @@ class VectorizedGame:
             t_mask = outcomes == 5
             t_indices = indices[t_mask]
 
-            # All runners score
-            runners_score = (
-                self.on_1b[t_indices].astype(int) + self.on_2b[t_indices].astype(int) + self.on_3b[t_indices].astype(int)
-            )
-            self.scores[t_indices] += runners_score
-            self.on_1b[t_indices] = False
-            self.on_2b[t_indices] = False
-            self.on_3b[t_indices] = False
+            # All runners score - clear each base only if occupied
+            # 3rd base runner scores
+            runner_on_3rd_mask = self.on_3b[t_indices]
+            if np.any(runner_on_3rd_mask):
+                score_3rd_indices = t_indices[runner_on_3rd_mask]
+                self.scores[score_3rd_indices] += 1
+                self.on_3b[score_3rd_indices] = False
+
+            # 2nd base runner scores
+            runner_on_2nd_mask = self.on_2b[t_indices]
+            if np.any(runner_on_2nd_mask):
+                score_2nd_indices = t_indices[runner_on_2nd_mask]
+                self.scores[score_2nd_indices] += 1
+                self.on_2b[score_2nd_indices] = False
+
+            # 1st base runner scores
+            runner_on_1st_mask = self.on_1b[t_indices]
+            if np.any(runner_on_1st_mask):
+                score_1st_indices = t_indices[runner_on_1st_mask]
+                self.scores[score_1st_indices] += 1
+                self.on_1b[score_1st_indices] = False
 
             # Batter to 3rd
             self.on_3b[t_indices] = True
@@ -324,13 +346,30 @@ class VectorizedGame:
             hr_mask = outcomes == 6
             hr_indices = indices[hr_mask]
 
-            runners_score = (
-                self.on_1b[hr_indices].astype(int) + self.on_2b[hr_indices].astype(int) + self.on_3b[hr_indices].astype(int)
-            )
-            self.scores[hr_indices] += runners_score + 1  # +1 for batter
-            self.on_1b[hr_indices] = False
-            self.on_2b[hr_indices] = False
-            self.on_3b[hr_indices] = False
+            # All runners score plus the batter - clear each base only if occupied
+            # 3rd base runner scores
+            runner_on_3rd_mask = self.on_3b[hr_indices]
+            if np.any(runner_on_3rd_mask):
+                score_3rd_indices = hr_indices[runner_on_3rd_mask]
+                self.scores[score_3rd_indices] += 1
+                self.on_3b[score_3rd_indices] = False
+
+            # 2nd base runner scores
+            runner_on_2nd_mask = self.on_2b[hr_indices]
+            if np.any(runner_on_2nd_mask):
+                score_2nd_indices = hr_indices[runner_on_2nd_mask]
+                self.scores[score_2nd_indices] += 1
+                self.on_2b[score_2nd_indices] = False
+
+            # 1st base runner scores
+            runner_on_1st_mask = self.on_1b[hr_indices]
+            if np.any(runner_on_1st_mask):
+                score_1st_indices = hr_indices[runner_on_1st_mask]
+                self.scores[score_1st_indices] += 1
+                self.on_1b[score_1st_indices] = False
+
+            # Batter scores (home run)
+            self.scores[hr_indices] += 1
 
             # Advance batter for all active games
             self.batter_up[batting_mask] = (self.batter_up[batting_mask] + 1) % 9
