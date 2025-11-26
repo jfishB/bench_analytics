@@ -11,8 +11,6 @@ from django.utils import timezone
 from lineups.models import Lineup, LineupPlayer
 from roster.models import Player
 from roster.models import Team
-    
-
 def saving_lineup_to_db(team_obj, players_payload, lineup_name, created_by_id):
     """Save the lineup and its players to the database.
 
