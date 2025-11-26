@@ -61,9 +61,9 @@ def _get(obj, name, default=None):
 
 def validate_data(payload, require_creator: bool = True):
     """Validate the lineup data structure and domain rules.
-    
-    Only validates - does not fetch or return data.
-    Raises domain exceptions if validation fails, returns nothing if valid.
+
+    Performs validation with necessary database lookups (e.g., team and player existence).
+    Raises domain exceptions if validation fails; returns nothing if valid.
     """
     team_obj = fetch_team_by_id(_get(payload, "team_id"))
     if not team_obj:
