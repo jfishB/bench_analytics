@@ -6,7 +6,6 @@
 
 from typing import Optional, Tuple
 from lineups.models import Lineup
-from roster.models import Player as RosterPlayer
 from .input_data import CreateLineupInput, LineupPlayerInput
 from .databa_access import saving_lineup_to_db
 from .validator import validate_lineup_model
