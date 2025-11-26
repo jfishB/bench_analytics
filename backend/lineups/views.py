@@ -61,7 +61,12 @@ class LineupCreateView(APIView):
             else:
                 # Extract optional player IDs for algorithm
                 selected_ids = self._extract_player_ids(data)
-                
+
+                if data.get("team_id") is None:
+                    return Response(
+                        {"detail": "team_id is required to generate a suggested lineup."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
                 suggested_players = self.interactor.generate_suggested_lineup(
                     team_id=data.get("team_id"),
                     selected_player_ids=selected_ids
