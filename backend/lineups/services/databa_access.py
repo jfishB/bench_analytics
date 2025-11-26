@@ -2,7 +2,7 @@
 - This file defines database access functions for persisting lineups.
 - Imported by:
   - backend/lineups/services/lineup_creation_handler.py
-  - backend/linupas/services/validator.py
+  - backend/lineups/services/validator.py
 """
 
 from django.db import transaction
