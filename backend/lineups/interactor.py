@@ -23,7 +23,7 @@ class LineupCreationInteractor:
                 batting_order=p.get("batting_order"),
             )
             for p in players_data
-                ]
+        ]
 
         payload = CreateLineupInput(
             team_id=team_id,
