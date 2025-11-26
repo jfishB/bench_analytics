@@ -79,7 +79,7 @@ def validate_data(payload, require_creator: bool = True):
 
     # We expect exactly 9 players
     if len(ids) != 9:
-        raise PlayersNotFound()
+        raise BadBattingOrder("Exactly 9 players are required")
 
     # Fetch players to validate they exist and belong to correct team
     try:
