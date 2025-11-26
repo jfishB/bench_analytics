@@ -284,31 +284,10 @@ export async function runSimulation(
     num_games: numGames,
   };
 
-  // First attempt
-  let res = await fetch(`${SIMULATOR_BASE}/simulate-by-ids/`, {
+  const res = await authenticatedFetch(`${SIMULATOR_BASE}/simulate-by-ids/`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("access")}`,
-    },
     body: JSON.stringify(payload),
   });
-
-  // If 401, try to refresh token and retry
-  if (res.status === 401) {
-    const refreshed = await refreshAccessToken();
-    if (refreshed) {
-      // Retry with new token
-      res = await fetch(`${SIMULATOR_BASE}/simulate-by-ids/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access")}`,
-        },
-        body: JSON.stringify(payload),
-      });
-    }
-  }
 
   if (!res.ok) {
     const errorText = await res.text();
