@@ -24,7 +24,7 @@ class LineupCreateView(APIView):
     """Create or generate a lineup.
     URL:
       POST /api/v1/lineups/ -> create or generate lineup
-    Deligates to interactor for use case handling.
+    Delegates to interactor for use case handling.
     """
     permission_classes = [permissions.AllowAny]  # TODO: decide 
 
