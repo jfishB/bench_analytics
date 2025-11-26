@@ -40,41 +40,6 @@ async function refreshAccessToken(): Promise<boolean> {
   }
 }
 
-/**
- * Helper to perform authenticated requests with automatic token refresh.
- */
-async function authenticatedFetch(
-  url: string,
-  options: RequestInit = {}
-): Promise<Response> {
-  const getHeaders = () => {
-    const headers: any = {
-      "Content-Type": "application/json",
-      ...options.headers,
-    };
-    const token = localStorage.getItem("access");
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-    return headers;
-  };
-
-  let res = await fetch(url, { ...options, headers: getHeaders() });
-
-  if (res.status === 401) {
-    const refreshed = await refreshAccessToken();
-    if (refreshed) {
-      res = await fetch(url, { ...options, headers: getHeaders() });
-    } else {
-      // Refresh failed - clear tokens so UI can redirect to login
-      localStorage.removeItem("access");
-      localStorage.removeItem("refresh");
-    }
-  }
-
-  return res;
-}
-
 // Type definitions for API responses
 export interface SavedLineup {
   id: number;
@@ -140,35 +105,56 @@ export async function fetchPlayers(teamId?: number): Promise<Player[]> {
 
 /**
  * Sort a list of player IDs by wOBA (descending) to create a baseline lineup.
- * Calls backend endpoint to sort players by xwoba.
+ * Fetches full player data and returns IDs sorted by xwoba.
  */
 export async function sortPlayersByWOBA(
   playerIds: number[]
 ): Promise<number[]> {
-  const response = await authenticatedFetch(
-    `${ROSTER_BASE}/sort-by-woba/`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ player_ids: playerIds }),
+  const allPlayers = await fetchPlayers();
+
+  // Filter to only the players in the lineup
+  const lineupPlayers = allPlayers.filter((p) => playerIds.includes(p.id));
+
+  // Sort by xwoba descending (highest wOBA bats first)
+  lineupPlayers.sort((a, b) => {
+    const wobaA = a.xwoba ?? 0;
+    const wobaB = b.xwoba ?? 0;
+    return wobaB - wobaA;
+  });
+
+  return lineupPlayers.map((p) => p.id);
+}
+
+/**
+ * Helper: add Authorization header and retry once after refresh
+ */
+async function authenticatedFetch(
+  input: RequestInfo,
+  init?: RequestInit,
+  allowRetry = true
+): Promise<Response> {
+  const headers = new Headers(init?.headers || {});
+  if (!headers.has("Content-Type"))
+    headers.set("Content-Type", "application/json");
+  const access = localStorage.getItem("access");
+  if (access) headers.set("Authorization", `Bearer ${access}`);
+
+  let res = await fetch(input, { ...init, headers });
+  if (res.status === 401 && allowRetry) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      return authenticatedFetch(input, init, false);
     }
-  );
-
-  if (!response.ok) {
-    throw new Error("Failed to sort players by wOBA");
   }
-
-  const data = await response.json();
-  return data.player_ids;
+  return res;
 }
 
 /**
  * Fetch all saved lineups from the database.
  */
 export async function fetchSavedLineups(): Promise<SavedLineup[]> {
-  const res = await fetch(`${LINEUPS_BASE}/saved/`);
+  // Use the canonical list endpoint and authenticatedFetch
+  const res = await authenticatedFetch(`${LINEUPS_BASE}/saved/`);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
   return Array.isArray(data) ? data : data.results || [];
@@ -180,10 +166,25 @@ export async function fetchSavedLineups(): Promise<SavedLineup[]> {
 export async function saveLineup(
   payload: SaveLineupPayload
 ): Promise<SavedLineup> {
-  const res = await authenticatedFetch(`${LINEUPS_BASE}/`, {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+  const makeRequest = async () =>
+    fetch(`${LINEUPS_BASE}/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("access")}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+  let res = await makeRequest();
+
+  // try refresh if unauthorized
+  if (res.status === 401) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      res = await makeRequest();
+    }
+  }
 
   if (!res.ok) {
     const errorText = await res.text();
@@ -197,14 +198,26 @@ export async function saveLineup(
 /**
  * Delete a lineup from the database (manual or sabermetrics mode).
  */
-export async function deleteLineup(
-  lineupId: number
-): Promise<void> {
+export async function deleteLineup(lineupId: number): Promise<void> {
   const url = `${LINEUPS_BASE}/${lineupId}/`;
 
-  const res = await authenticatedFetch(url, {
-    method: "DELETE",
-  });
+  const makeRequest = async () =>
+    fetch(url, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("access")}`,
+      },
+    });
+
+  let res = await makeRequest();
+
+  if (res.status === 401) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      res = await makeRequest();
+    }
+  }
 
   if (!res.ok) {
     const text = await res.text();
@@ -271,10 +284,31 @@ export async function runSimulation(
     num_games: numGames,
   };
 
-  const res = await authenticatedFetch(`${SIMULATOR_BASE}/simulate-by-ids/`, {
+  // First attempt
+  let res = await fetch(`${SIMULATOR_BASE}/simulate-by-ids/`, {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("access")}`,
+    },
     body: JSON.stringify(payload),
   });
+
+  // If 401, try to refresh token and retry
+  if (res.status === 401) {
+    const refreshed = await refreshAccessToken();
+    if (refreshed) {
+      // Retry with new token
+      res = await fetch(`${SIMULATOR_BASE}/simulate-by-ids/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access")}`,
+        },
+        body: JSON.stringify(payload),
+      });
+    }
+  }
 
   if (!res.ok) {
     const errorText = await res.text();
