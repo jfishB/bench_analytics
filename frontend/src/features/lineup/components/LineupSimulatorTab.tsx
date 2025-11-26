@@ -186,10 +186,6 @@ export function LineupSimulatorTab({
       {/* Lineup Selection Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Select Lineups to Compare</CardTitle>
-          <CardDescription>
-            Choose one or more lineups to simulate and compare performance
-          </CardDescription>
           <div className="flex items-center gap-2">
             <div className="p-2 bg-blue-900/10 rounded-lg">
               <BarChart3 className="h-5 w-5 text-blue-900" />
@@ -197,7 +193,7 @@ export function LineupSimulatorTab({
             <div>
               <CardTitle>Monte Carlo Simulation</CardTitle>
               <CardDescription>
-                Choose a saved lineup to run Monte Carlo simulation.
+                Choose one or more lineups to simulate and compare performance
               </CardDescription>
             </div>
           </div>
@@ -239,10 +235,11 @@ export function LineupSimulatorTab({
                 return (
                   <Card
                     key={lineup.id}
-                    className={`cursor-pointer transition-all ${isSelected
-                      ? "ring-2 ring-primary shadow-lg bg-blue-50/50"
-                      : "hover:shadow-lg"
-                      }`}
+                    className={`cursor-pointer transition-all ${
+                      isSelected
+                        ? "ring-2 ring-primary shadow-lg bg-blue-50/50"
+                        : "hover:shadow-lg"
+                    }`}
                     onClick={() => handleToggleLineup(lineup.id)}
                   >
                     <CardHeader className="pb-3">
@@ -335,9 +332,7 @@ export function LineupSimulatorTab({
                     className="px-3 py-2 border border-gray-300 rounded-md w-32"
                     disabled={simulating}
                   />
-                  <span className="text-xs text-gray-500">
-                    (rec: 20,000)
-                  </span>
+                  <span className="text-xs text-gray-500">(rec: 20,000)</span>
                 </div>
               </div>
 
@@ -402,7 +397,11 @@ export function LineupSimulatorTab({
             </p>
             {results.length > 1 && (
               <p className="text-base text-gray-600 mt-3">
-                +{(results[0].avg_score - results[1].avg_score).toFixed(2)} runs better than {results[1].name}
+                {Math.abs(results[0].avg_score - results[1].avg_score) < 0.01
+                  ? `Essentially tied with ${results[1].name}`
+                  : `+${(results[0].avg_score - results[1].avg_score).toFixed(
+                      2
+                    )} runs better than ${results[1].name}`}
               </p>
             )}
           </div>
@@ -429,8 +428,9 @@ export function LineupSimulatorTab({
                     {results.map((res, idx) => (
                       <tr
                         key={res.id}
-                        className={`border-b ${idx === 0 ? "bg-blue-50/50 font-medium" : "bg-white"
-                          }`}
+                        className={`border-b ${
+                          idx === 0 ? "bg-blue-50/50 font-medium" : "bg-white"
+                        }`}
                       >
                         <td className="px-6 py-4">#{idx + 1}</td>
                         <td className="px-6 py-4 font-medium text-gray-900">
@@ -450,9 +450,7 @@ export function LineupSimulatorTab({
                         <td className="px-6 py-4">
                           {res.median_score.toFixed(1)}
                         </td>
-                        <td className="px-6 py-4">
-                          {res.std_dev.toFixed(2)}
-                        </td>
+                        <td className="px-6 py-4">{res.std_dev.toFixed(2)}</td>
                         <td className="px-6 py-4 text-gray-500">
                           {res.min_score} - {res.max_score}
                         </td>

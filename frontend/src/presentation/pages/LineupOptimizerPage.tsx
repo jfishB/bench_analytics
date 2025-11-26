@@ -109,9 +109,9 @@ export function LineupOptimizer() {
     }
   }, [players, setLineupPlayers]);
 
-  // Fetch saved lineups when switching to analysis tab
+  // Fetch saved lineups when switching to simulation tab
   useEffect(() => {
-    if (activeTab === "analysis") {
+    if (activeTab === "simulation") {
       fetchSavedLineups();
     }
   }, [activeTab, fetchSavedLineups]);
