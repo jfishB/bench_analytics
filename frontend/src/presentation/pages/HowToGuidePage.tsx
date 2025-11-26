@@ -324,7 +324,7 @@ const HowToGuide: React.FC = () => {
               </p>
             </div>
 
-            {/* Algorithim steps grid */}
+            {/* Algorithm steps grid */}
             <div className="grid md:grid-cols-4 gap-y-6 gap-x-10 text-base">
               {/* Step 1 */}
               <div className="space-y-1">
