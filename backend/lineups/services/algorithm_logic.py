@@ -9,7 +9,7 @@ with the highest expected runs.
 from itertools import permutations
 from typing import Dict, Tuple
 
-from lineups.services.validator import validate_data
+
 from roster.models import Player
 
 # -------- Batting Spot PA% Multipliers -------- # Source https://www.bluebirdbanter.com/2012/10/12/3490578/lineup-optimization-part-1-of-2?utm_source and https://www.insidethebook.com/ {Page 128}
@@ -143,22 +143,18 @@ def calculate_player_baserun_values(lineup: Tuple[Player, ...]) -> float:
     return 0
 
 
-def algorithm_create_lineup(payload) -> Tuple[Player, ...]:
-    """Create a batting lineup based on the provided payload.
+def algorithm_create_lineup(players_list: list) -> Tuple[Player, ...]:
+    """Create a batting lineup based on the provided player list.
 
     This function contains the core logic for creating a batting lineup.
-    It validates the input data, applies the lineup algorithm, and returns
-    the created lineup.
+    It applies the lineup algorithm and returns the optimized lineup.
 
     Args:
-        payload (CreateLineupInput): The input data for creating the lineup.
+        players_list: List of Player objects to optimize into a lineup.
 
     Returns:
-        Lineup: The created Lineup model instance with assigned batting orders.
+        Tuple of Player objects in optimal batting order.
     """
-    # Validate and get processed data (algorithm generation doesn't require a creator)
-    validated = validate_data(payload, require_creator=False)
-    players_list = validated["players"]
     best_runs = -float("inf")
     best_lineup = None
 

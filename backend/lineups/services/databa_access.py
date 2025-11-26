@@ -11,6 +11,7 @@ from django.utils import timezone
 from lineups.models import Lineup, LineupPlayer
 from roster.models import Player
 from roster.models import Team
+
 def saving_lineup_to_db(team_obj, players_payload, lineup_name, created_by_id):
     """Save the lineup and its players to the database.
 
@@ -88,3 +89,50 @@ def fetch_team_by_id(team_id: int):
     """
   
     return Team.objects.filter(pk=team_id).first()
+
+
+def fetch_lineup_data(payload):
+    """Fetch all data needed for lineup creation from database.
+    
+    This is a helper function for interactors that need to fetch team,
+    players, and creator information after validation.
+    
+    Args:
+        payload: CreateLineupInput or dict with team_id, players, requested_user_id, name
+        
+    Returns:
+        dict with keys: team, players, created_by_id, name
+    """
+    from django.contrib.auth import get_user_model
+    
+    # Helper to read either dataclass attributes or dict keys
+    def _get(obj, name, default=None):
+        if obj is None:
+            return default
+        if hasattr(obj, name):
+            return getattr(obj, name)
+        if isinstance(obj, dict):
+            return obj.get(name, default)
+        return default
+    
+    # Fetch team
+    team_obj = fetch_team_by_id(_get(payload, "team_id"))
+    
+    # Extract and fetch players
+    ids = [_get(p, "player_id") if not isinstance(p, (int,)) else p 
+           for p in _get(payload, "players", [])]
+    players_qs = fetch_players_by_ids(ids)
+    
+    # Get or determine created_by_id
+    created_by_id = _get(payload, "requested_user_id")
+    if not created_by_id:
+        User = get_user_model()
+        # Try to find a superuser as fallback creator
+        created_by_id = User.objects.filter(is_superuser=True).values_list("id", flat=True).first()
+    
+    return {
+        "team": team_obj,
+        "players": players_qs,
+        "created_by_id": created_by_id,
+        "name": _get(payload, "name"),
+    }

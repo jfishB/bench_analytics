@@ -4,7 +4,12 @@
 """
 from .services.input_data import CreateLineupInput, LineupPlayerInput
 from .services.validator import validate_batting_orders, validate_data
-from .services.lineup_creation_handler import handle_lineup_save, generate_suggested_lineup
+from .services.databa_access import fetch_lineup_data, fetch_players_by_ids
+from .services.lineup_creation_handler import handle_lineup_save
+from .services.exceptions import DomainError
+from .services.algorithm_logic import algorithm_create_lineup
+from roster.models import Player
+        
 
 class LineupCreationInteractor:
     """Organizes the complete lineup creation use case"""
@@ -32,12 +37,16 @@ class LineupCreationInteractor:
             name=name,
         )
 
-        # Domain validation
+        # Domain validation (raises exceptions if invalid)
         validate_batting_orders(payload.players)
-        validated_data = validate_data(payload)
+        validate_data(payload, require_creator=True)
         
-        # Persist to database (created_by_id already in validated_data)
-        lineup, lineup_players = handle_lineup_save(validated_data)
+        # Fetch data from database
+        lineup_data = fetch_lineup_data(payload)
+        original_batting_orders = [p.batting_order for p in payload.players]
+        
+        # Persist to database
+        lineup, lineup_players = handle_lineup_save(lineup_data, original_batting_orders)
 
         return lineup, lineup_players
     
@@ -50,12 +59,36 @@ class LineupCreationInteractor:
         Input: Primitive types
         Output: List of suggested players with batting orders
         """
-        from .services.exceptions import DomainError
-        
+
         if team_id is None:
             raise DomainError("team_id is required to generate a suggested lineup")
         
-        # Call algorithm service
-        suggested_players = generate_suggested_lineup(team_id, selected_player_ids)
+        # Build payload - limit to 9 players
+        if selected_player_ids:
+            players_inputs = [LineupPlayerInput(player_id=pid) for pid in selected_player_ids][:9]
+        else:
+            raise DomainError("Exactly 9 player IDs are required to generate a suggested lineup")
+        
+        payload = CreateLineupInput(team_id=team_id, players=players_inputs, requested_user_id=None)
+        
+        # Validate and fetch data from database
+        validate_data(payload, require_creator=False)
+        validated_data = fetch_lineup_data(payload)
+        
+        # Call algorithm with fetched players
+        lineup_tuple = algorithm_create_lineup(validated_data["players"])
+        
+        if not lineup_tuple:
+            return [] 
+        
+        # Format result
+        suggested_players = [
+            {
+                "player_id": p.id,
+                "player_name": getattr(p, "name", ""),
+                "batting_order": idx + 1,
+            }
+            for idx, p in enumerate(lineup_tuple)
+        ]
         
         return suggested_players

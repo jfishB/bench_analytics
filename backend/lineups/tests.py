@@ -92,8 +92,14 @@ class LineupAPITests(TestCase):
         self.assertEqual(Lineup.objects.count(), 0)
 
     def test_team_id_only_generates_suggested_lineup(self):
-        """POST with only team_id generates a suggested lineup without saving it."""
-        payload = {"team_id": self.team.id}
+        """POST with only team_id and player_ids generates a suggested lineup without saving it."""
+        # Use the 9 players already created in setUp
+        player_ids = [p.id for p in self.players]
+        
+        payload = {
+            "team_id": self.team.id,
+            "players": [{"player_id": pid} for pid in player_ids]
+        }
 
         self.client.force_authenticate(user=self.creator)
         resp = self.client.post(self.base_url, payload, format="json")
@@ -102,7 +108,7 @@ class LineupAPITests(TestCase):
         data = resp.json()
         self.assertEqual(data["team_id"], self.team.id)
         self.assertIn("players", data)
-        self.assertLessEqual(len(data["players"]), 9)
+        self.assertEqual(len(data["players"]), 9)
         self.assertEqual(Lineup.objects.count(), 0)
 
     def test_detail_endpoint_returns_lineup(self):
@@ -481,6 +487,7 @@ class LineupServiceTests(TestCase):
     def test_validate_data_with_dict_payload(self):
         """Test validate_data with dict payload (alternative code path)."""
         from lineups.services.validator import validate_data
+        from lineups.services.databa_access import fetch_lineup_data
         
         # Use plain dict instead of dataclass
         payload_dict = {
@@ -492,7 +499,9 @@ class LineupServiceTests(TestCase):
             "requested_user_id": self.creator.id,
         }
         
-        result = validate_data(payload_dict)
+        # Validate then fetch
+        validate_data(payload_dict)
+        result = fetch_lineup_data(payload_dict)
         self.assertEqual(result["team"].id, self.team.id)
         self.assertEqual(len(result["players"]), 9)
 
@@ -543,8 +552,9 @@ class LineupServiceTests(TestCase):
             validate_data(payload_dict, require_creator=True)
 
     def test_validate_data_no_creator_optional(self):
-        """Test validate_data returns None for creator when require_creator=False."""
+        """Test validate_data doesn't raise when require_creator=False and no creator provided."""
         from lineups.services.validator import validate_data
+        from lineups.services.databa_access import fetch_lineup_data
         
         payload_dict = {
             "team_id": self.team.id,
@@ -553,7 +563,10 @@ class LineupServiceTests(TestCase):
         }
         
         # Should not raise when require_creator=False
-        result = validate_data(payload_dict, require_creator=False)
+        validate_data(payload_dict, require_creator=False)
+        
+        # Check that fetch returns None for created_by_id when no user provided
+        result = fetch_lineup_data(payload_dict)
         self.assertIsNone(result["created_by_id"])
 
     def test_validate_lineup_model_none_input(self):
@@ -613,6 +626,7 @@ class LineupServiceTests(TestCase):
     def test_validate_data_player_id_as_int(self):
         """Test validate_data handles player IDs provided as plain integers."""
         from lineups.services.validator import validate_data
+        from lineups.services.databa_access import fetch_lineup_data
         
         # Pass player IDs as integers instead of dicts
         payload_dict = {
@@ -621,7 +635,11 @@ class LineupServiceTests(TestCase):
             "requested_user_id": self.creator.id,
         }
         
-        result = validate_data(payload_dict)
+        # Test that validation passes
+        validate_data(payload_dict)
+        
+        # Test that fetch returns correct data
+        result = fetch_lineup_data(payload_dict)
         self.assertEqual(result["team"].id, self.team.id)
         self.assertEqual(len(result["players"]), 9)
 
@@ -652,12 +670,17 @@ class LineupAlgorithmTests(TestCase):
         self.creator = User.objects.create_user(username="creator", password="pw")
 
     def test_generate_suggested_lineup_empty_roster(self):
-        """Test generate_suggested_lineup returns empty list for team with no players."""
-        from lineups.services.lineup_creation_handler import generate_suggested_lineup
+        """Test generate_suggested_lineup raises DomainError when no player IDs provided."""
+        from lineups.interactor import LineupCreationInteractor
+        from lineups.services.exceptions import DomainError
         
-        # Team has no players
-        result = generate_suggested_lineup(self.team.id)
-        self.assertEqual(result, [])
+        # Team has no players, no player_ids provided (selected_player_ids=None)
+        interactor = LineupCreationInteractor()
+        try:
+            result = interactor.generate_suggested_lineup(self.team.id, selected_player_ids=None)
+            self.fail(f"Expected DomainError but got result: {result}")
+        except DomainError as e:
+            self.assertIn("player IDs are required", str(e))
 
     def test_calculate_player_adjustments_with_zero_b_game(self):
         """Test calculate_player_adjustments when player has b_game=0 (line 47)."""
@@ -814,8 +837,9 @@ class LineupCreationHandlerTests(TestCase):
         with patch('lineups.services.lineup_creation_handler.validate_lineup_model') as mock_validate:
             mock_validate.side_effect = Exception("Test validation error")
             
+            original_batting_orders = [idx + 1 for idx in range(9)]
             with self.assertRaises(DomainError) as cm:
-                handle_lineup_save(validated_data)
+                handle_lineup_save(validated_data, original_batting_orders)
             
             self.assertIn("Test validation error", str(cm.exception))
 
@@ -841,33 +865,36 @@ class LineupCreationHandlerTests(TestCase):
         with patch('lineups.services.lineup_creation_handler.validate_lineup_model') as mock_validate:
             mock_validate.return_value = False
             
+            original_batting_orders = [idx + 1 for idx in range(9)]
             with self.assertRaises(DomainError) as cm:
-                handle_lineup_save(validated_data)
+                handle_lineup_save(validated_data, original_batting_orders)
             
             self.assertIn("Lineup validation failed", str(cm.exception))
 
     def test_generate_suggested_lineup_empty_tuple(self):
         """Test generate_suggested_lineup returns empty list when algorithm returns empty tuple (line 117)."""
-        from lineups.services.lineup_creation_handler import generate_suggested_lineup
+        from lineups.interactor import LineupCreationInteractor
         from unittest.mock import patch
         
         # Mock algorithm_create_lineup to return empty tuple
-        with patch('lineups.services.lineup_creation_handler.algorithm_create_lineup') as mock_algo:
+        with patch('lineups.interactor.algorithm_create_lineup') as mock_algo:
             mock_algo.return_value = tuple()  # Empty tuple
             
-            result = generate_suggested_lineup(self.team.id, [p.id for p in self.players])
+            interactor = LineupCreationInteractor()
+            result = interactor.generate_suggested_lineup(self.team.id, [p.id for p in self.players])
             self.assertEqual(result, [])
 
     def test_generate_suggested_lineup_none_result(self):
         """Test generate_suggested_lineup handles None result from algorithm (line 117)."""
-        from lineups.services.lineup_creation_handler import generate_suggested_lineup
+        from lineups.interactor import LineupCreationInteractor
         from unittest.mock import patch
         
         # Mock algorithm_create_lineup to return None
-        with patch('lineups.services.lineup_creation_handler.algorithm_create_lineup') as mock_algo:
+        with patch('lineups.interactor.algorithm_create_lineup') as mock_algo:
             mock_algo.return_value = None
             
-            result = generate_suggested_lineup(self.team.id, [p.id for p in self.players])
+            interactor = LineupCreationInteractor()
+            result = interactor.generate_suggested_lineup(self.team.id, [p.id for p in self.players])
             self.assertEqual(result, [])
 
 

@@ -48,37 +48,40 @@ def validate_batting_orders(players):
         raise BadBattingOrder("Batting orders must be the numbers 1 through 9, each used exactly once")
 
 
-def validate_data(payload, require_creator: bool = True):
-    """Validate the lineup data for creating a lineup."""
-
-    # Helper to read either dataclass attributes or dict keys
-    def _get(obj, name, default=None):
-        if obj is None:
-            return default
-        if hasattr(obj, name):
-            return getattr(obj, name)
-        if isinstance(obj, dict):
-            return obj.get(name, default)
+def _get(obj, name, default=None):
+    """Helper to read either dataclass attributes or dict keys."""
+    if obj is None:
         return default
+    if hasattr(obj, name):
+        return getattr(obj, name)
+    if isinstance(obj, dict):
+        return obj.get(name, default)
+    return default
 
+
+def validate_data(payload, require_creator: bool = True):
+    """Validate the lineup data structure and domain rules.
+    
+    Only validates - does not fetch or return data.
+    Raises domain exceptions if validation fails, returns nothing if valid.
+    """
     team_obj = fetch_team_by_id(_get(payload, "team_id"))
     if not team_obj:
         raise TeamNotFound()
 
-    # Extract player ids from input (position field has been removed from the model)
+    # Extract player ids from input
     ids = []
     for p in _get(payload, "players", []):
-        # support either raw int ids or LineupPlayerInput/dataclass/dict
         pid = _get(p, "player_id") if not isinstance(p, (int,)) else p
         if pid is None:
             raise PlayersNotFound()
         ids.append(pid)
 
-    # We expect exactly 9 players in the payload.
+    # We expect exactly 9 players
     if len(ids) != 9:
         raise PlayersNotFound()
 
-    # Fetch players using database access layer
+    # Fetch players to validate they exist and belong to correct team
     try:
         players_qs = fetch_players_by_ids(ids)
     except ValueError:
@@ -88,29 +91,17 @@ def validate_data(payload, require_creator: bool = True):
     if any(p.team_id != team_obj.id for p in players_qs):
         raise PlayersWrongTeam()
 
-    # Note: Batting order validation for manual/sabermetrics saves is handled
-    # by validate_batting_orders() function before calling validate_data().
-    # Algorithm-only mode doesn't require batting orders on input.
-
-    # Determine created_by: prefer provided requested_user_id on payload
+    # Validate creator requirement
     created_by_id = _get(payload, "requested_user_id")
     User = get_user_model()
-    if not created_by_id:
-        # When callers need a creator for persistence, enforce existence
-        if require_creator:
-            created_by_id = User.objects.filter(is_superuser=True).values_list("id", flat=True).first()
-            if created_by_id is None:
-                raise NoCreator()
-        else:
-            # Algorithm/generate-only mode doesn't require a creator — return None
-            created_by_id = None
+    if not created_by_id and require_creator:
+        # Check that a superuser exists to be used as creator
+        created_by_id = User.objects.filter(is_superuser=True).values_list("id", flat=True).first()
+        if created_by_id is None:
+            raise NoCreator()
 
-    return {
-        "team": team_obj,
-        "players": players_qs,
-        "created_by_id": created_by_id,
-        "name": _get(payload, "name"),
-    }
+
+
 
 
 def validate_lineup_model(lineup):

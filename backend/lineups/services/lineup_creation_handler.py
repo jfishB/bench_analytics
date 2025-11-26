@@ -1,16 +1,13 @@
 """
-- This file handles lineup creation mode determination and orchestrates save/generate operations.
+- This file handles lineup persistence logic.
 - Imported by:
     - backend/lineups/interactor.py
 """
-
 from typing import Optional, Tuple
 from lineups.models import Lineup
-from .input_data import CreateLineupInput, LineupPlayerInput
 from .databa_access import saving_lineup_to_db
 from .validator import validate_lineup_model
-from .algorithm_logic import algorithm_create_lineup
-from rest_framework.exceptions import ValidationError
+from .exceptions import DomainError
 from django.utils import timezone
 
 
@@ -35,7 +32,7 @@ def determine_request_mode(lineup_data: dict) -> Tuple[str, Optional[dict]]:
     return "algorithm_generate", None
 
 
-def handle_lineup_save(validated: dict) -> Tuple[Lineup, list]:
+def handle_lineup_save(val_data: dict, original_batting_orders: list) -> Tuple[Lineup, list]:
     """Persist a lineup from already validated data.
 
     The view handles all domain validation (batting orders, team/players).
@@ -47,20 +44,24 @@ def handle_lineup_save(validated: dict) -> Tuple[Lineup, list]:
                    - players: list of Player objects
                    - created_by_id: user ID
                    - name: optional lineup name
-                   - original_players: list of LineupPlayerInput for batting_order mapping
 
     Returns:
         (lineup, lineup_players)
     """
-    team_obj = validated["team"]
-    players_list = validated["players"]
-    created_by_id = validated.get("created_by_id")
-    lineup_name = validated.get("name") or timezone.now().isoformat()
+    team_obj = val_data["team"]
+    players_list = val_data["players"]
+    created_by_id = val_data.get("created_by_id")
+    lineup_name = val_data.get("name") or timezone.now().isoformat()
 
     # Build players payload with batting orders (1-indexed position in validated list)
     players_payload = []
-    for idx, player in enumerate(players_list):
-        players_payload.append({"player": player, "batting_order": idx + 1})
+    for player in players_list:
+        players_payload.append(
+            {
+                "player": player,
+                "batting_order": original_batting_orders[players_list.index(player)],
+            }
+        )
 
     lineup, lineup_players = saving_lineup_to_db(team_obj, players_payload, lineup_name, created_by_id)
 
@@ -73,48 +74,3 @@ def handle_lineup_save(validated: dict) -> Tuple[Lineup, list]:
         raise DomainError("Lineup validation failed.")
 
     return lineup, lineup_players
-
-
-def generate_suggested_lineup(team_id: int, player_ids: list | None = None) -> list:
-    """Generate a suggested lineup using the algorithm WITHOUT saving to database.
-
-    Args:
-        team_id: The team ID to generate lineup for
-        player_ids: Optional list of player IDs to constrain the algorithm to
-
-    Returns:
-        List of player dictionaries with suggested batting orders
-    """
-
-    # Build CreateLineupInput for the algorithm. Limit to 9 players because
-    # a lineup only has 9 batting positions; if more than 9 are provided, we take the first 9.
-    if player_ids:
-        players_inputs = [LineupPlayerInput(player_id=pid) for pid in player_ids][:9]
-    else:
-        roster_players = list(RosterPlayer.objects.filter(team_id=team_id))
-        # If there are no roster players for the team, return empty list
-        if not roster_players:
-            return []
-
-        # Use up to 9 players from the roster (preserve ordering from DB)
-        players_inputs = [LineupPlayerInput(player_id=p.id) for p in roster_players][:9]
-
-    payload = CreateLineupInput(team_id=team_id, players=players_inputs, requested_user_id=None)
-
-    # Call the algorithm which returns a tuple of Player objects in batting order
-    lineup_tuple = algorithm_create_lineup(payload)
-
-    if not lineup_tuple:
-        # Fallback: return empty suggested list
-        return []
-
-    suggested_players = [
-        {
-            "player_id": p.id,
-            "player_name": getattr(p, "name", ""),
-            "batting_order": idx + 1,
-        }
-        for idx, p in enumerate(lineup_tuple)
-    ]
-
-    return suggested_players
