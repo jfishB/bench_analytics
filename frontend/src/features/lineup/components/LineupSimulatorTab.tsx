@@ -272,7 +272,6 @@ export function LineupSimulatorTab({
                         <div className="space-y-1">
                           {(lineup.players ?? [])
                             .sort((a, b) => a.batting_order - b.batting_order)
-                            .slice(0, 5) // Show first 5 only to save space
                             .map((player) => (
                               <div
                                 key={player.player_id}
@@ -286,11 +285,6 @@ export function LineupSimulatorTab({
                                 </span>
                               </div>
                             ))}
-                          {lineup.players.length > 5 && (
-                            <div className="text-xs text-gray-500 pl-7">
-                              + {lineup.players.length - 5} more...
-                            </div>
-                          )}
                         </div>
                       </div>
                     </CardContent>
@@ -304,7 +298,7 @@ export function LineupSimulatorTab({
 
       {/* Simulation Controls */}
       {selectedLineupIds.length > 0 && (
-        <Card className="sticky top-4 z-10 shadow-xl border-primary/20">
+        <Card className="shadow-md border-primary/20">
           <CardHeader className="pb-4">
             <CardTitle>Run Simulation</CardTitle>
             <CardDescription>
@@ -388,7 +382,7 @@ export function LineupSimulatorTab({
       {results.length > 0 && (
         <div className="space-y-6 animate-in fade-in duration-500">
           {/* Winner Banner */}
-          <div className="text-center py-4">
+          <div className="text-center py-6 px-4 border-2 border-primary rounded-lg shadow-lg bg-gradient-to-br from-blue-50 to-white">
             <h3 className="text-3xl font-bold mb-3">
               Winner: {results[0].name}
             </h3>
