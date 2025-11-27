@@ -239,7 +239,7 @@ export function LineupSimulatorTab({
                     key={lineup.id}
                     className={`border rounded-lg transition-all ${
                       isSelected
-                        ? "border-blue-500 bg-blue-50/30"
+                        ? "border-blue-900 bg-blue-50/30"
                         : "border-gray-200 bg-white hover:border-gray-300"
                     }`}
                   >
@@ -271,7 +271,7 @@ export function LineupSimulatorTab({
                               {lineup.name}
                             </h3>
                             {isSelected && (
-                              <span className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">
+                              <span className="bg-blue-900 text-white text-xs px-2 py-0.5 rounded-full">
                                 Selected
                               </span>
                             )}
@@ -302,7 +302,7 @@ export function LineupSimulatorTab({
                                 key={player.player_id}
                                 className="flex items-center text-sm py-1"
                               >
-                                <span className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-semibold mr-3">
+                                <span className="w-6 h-6 rounded-full bg-blue-900 text-white flex items-center justify-center text-xs font-semibold mr-3">
                                   {player.batting_order}
                                 </span>
                                 <span className="text-gray-700">
