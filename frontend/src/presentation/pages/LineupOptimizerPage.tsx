@@ -100,6 +100,7 @@ export function LineupOptimizer() {
     sabermetricsLineupName,
     setSabermetricsLineupName,
     sabermetricsSaveStatus,
+    clearGeneratedLineup,
     generateLineup: generateSabermetricsLineup,
     saveLineup: saveSabermetricsLineup,
   } = useSabermetricsLineup(teamId, players, fetchSavedLineups);
@@ -135,6 +136,10 @@ export function LineupOptimizer() {
     const lineup = createLineup(selectedPlayers);
     setBattingOrderLineup(lineup);
     setActiveTab("manual");
+    try {
+      clearGeneratedLineup?.();
+    }
+    catch { /* ignore */ }
   };
 
   // Wrapper handlers for save operations with error handling
