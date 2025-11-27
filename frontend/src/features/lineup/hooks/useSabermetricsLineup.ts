@@ -80,6 +80,12 @@ export function useSabermetricsLineup(
     }
   };
 
+  const clearGeneratedLineup = () => {
+      setGeneratedLineup([]);
+      setSabermetricsLineupName("");
+      // any other reset you need
+    };
+
   return {
     generatedLineup,
     generating,
@@ -88,6 +94,7 @@ export function useSabermetricsLineup(
     sabermetricsSaveStatus,
     generateLineup,
     saveLineup,
+    clearGeneratedLineup,
   };
 }
 
