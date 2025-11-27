@@ -42,7 +42,7 @@ const HowToGuide: React.FC = () => {
               <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-900 text-white flex items-center justify-center font-bold">
                 1
               </span>
-              <span>Load Your Roster</span>
+              <span className="font-semibold">Load Your Roster</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -65,7 +65,7 @@ const HowToGuide: React.FC = () => {
               <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--accent-red)] text-white flex items-center justify-center font-bold">
                 2
               </span>
-              <span>Generate a Lineup</span>
+              <span className="font-semibold">Generate a Lineup</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -87,7 +87,7 @@ const HowToGuide: React.FC = () => {
               <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-900 text-white flex items-center justify-center font-bold">
                 3
               </span>
-              <span>Review & Analyze</span>
+              <span className="font-semibold">Review & Analyze</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -110,7 +110,7 @@ const HowToGuide: React.FC = () => {
               <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--accent-red)] text-white flex items-center justify-center font-bold">
                 4
               </span>
-              <span>Maintain Accuracy</span>
+              <span className="font-semibold">Maintain Accuracy</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -295,7 +295,7 @@ const HowToGuide: React.FC = () => {
                   <span className="font-semibold">Focus on Expected Runs</span>
                 </CardTitle>
                 <p className="text-muted-foreground">
-                  Runs and expected runs are at the core of Sabermetrics principles
+                  Runs and expected runs are at the core of Sabermetrics principles.
                 </p>
               </div>
 
@@ -308,7 +308,7 @@ const HowToGuide: React.FC = () => {
                   <span className="font-semibold">Advanced Metrics</span>
                 </CardTitle>
                 <p className="text-muted-foreground">
-                  Sabermetrics utilizes a wide range of player statistics to evaluate batter contribution
+                  Sabermetrics utilizes a wide range of player statistics to evaluate batter contribution.
                 </p>
               </div>
 
@@ -321,7 +321,7 @@ const HowToGuide: React.FC = () => {
                   <span className="font-semibold">BaseRuns</span>
                 </CardTitle>
                 <p className="text-muted-foreground">
-                  A formula designed to estimate how many runs a team would be expected to score
+                  A formula designed to estimate how many runs a team would be expected to score.
                 </p>
               </div>
             </div>
@@ -335,7 +335,7 @@ const HowToGuide: React.FC = () => {
                 Algorithm Steps
               </p>
               <p className="text-base text-muted-foreground">
-                Step by step breakdown of the lineup optimization process
+                Step by step breakdown of the lineup optimization process.
               </p>
             </div>
 
@@ -350,7 +350,7 @@ const HowToGuide: React.FC = () => {
                   <span className="font-semibold">Permute</span>
                 </CardTitle>
                 <p className="text-muted-foreground">
-                  Take the given 9 players and run through all the possible permutations (9! = 362,880) of batting orders
+                  Take the given 9 players and run through all the possible permutations (9! = 362,880) of batting orders.
                 </p>
               </div>
 
@@ -363,7 +363,7 @@ const HowToGuide: React.FC = () => {
                   <span className="font-semibold">Adjust</span>
                 </CardTitle>
                 <p className="text-muted-foreground">
-                  For each lineup adjust player stats based on current position
+                  For each lineup adjust player stats based on current position.
                 </p>
               </div>
 
@@ -376,7 +376,7 @@ const HowToGuide: React.FC = () => {
                   <span className="font-semibold">Aggregate</span>
                 </CardTitle>
                 <p className="text-muted-foreground">
-                  Use adjusted player stats and BaseRuns to estimate lineup score
+                  Use adjusted player stats and BaseRuns to estimate lineup score.
                 </p>
               </div>
 
@@ -389,7 +389,7 @@ const HowToGuide: React.FC = () => {
                   <span className="font-semibold">Output</span>
                 </CardTitle>
                 <p className="text-muted-foreground">
-                  Recommend lineup with highest expected runs based on data
+                  Recommend lineup with highest expected runs based on data.
                 </p>
               </div>
             </div>
