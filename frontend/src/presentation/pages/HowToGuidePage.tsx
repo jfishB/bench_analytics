@@ -288,7 +288,12 @@ const HowToGuide: React.FC = () => {
             <div className="grid md:grid-cols-3 gap-y-6 gap-x-10 text-base">
               {/* Focus on Runs */}
               <div className="space-y-1">
-                <p className="font-semibold text-foreground">Focus on Expected Runs</p>
+                <CardTitle className="flex items-center gap-3">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-900 text-white flex items-center justify-center font-bold">
+                    1
+                  </span>
+                  <span className="font-semibold">Focus on Expected Runs</span>
+                </CardTitle>
                 <p className="text-muted-foreground">
                   Runs and expected runs are at the core of Sabermetrics principles
                 </p>
@@ -296,7 +301,12 @@ const HowToGuide: React.FC = () => {
 
               {/* Advanced Metrics */}
               <div className="space-y-1">
-                <p className="font-semibold text-foreground">Advanced Metrics</p>
+                <CardTitle className="flex items-center gap-3">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--accent-red)] text-white flex items-center justify-center font-bold">
+                    2
+                  </span>
+                  <span className="font-semibold">Advanced Metrics</span>
+                </CardTitle>
                 <p className="text-muted-foreground">
                   Sabermetrics utilizes a wide range of player statistics to evaluate batter contribution
                 </p>
@@ -304,7 +314,12 @@ const HowToGuide: React.FC = () => {
 
               {/* BaseRuns */}
               <div className="space-y-1">
-                <p className="font-semibold text-foreground">BaseRuns</p>
+                <CardTitle className="flex items-center gap-3">
+                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-900 text-white flex items-center justify-center font-bold">
+                    3
+                  </span>
+                  <span className="font-semibold">BaseRuns</span>
+                </CardTitle>
                 <p className="text-muted-foreground">
                   A formula designed to estimate how many runs a team would be expected to score
                 </p>
@@ -332,7 +347,7 @@ const HowToGuide: React.FC = () => {
                   <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-900 text-white flex items-center justify-center font-bold">
                     1
                   </span>
-                  <span>Permute</span>
+                  <span className="font-semibold">Permute</span>
                 </CardTitle>
                 <p className="text-muted-foreground">
                   Take the given 9 players and run through all the possible permutations (9! = 362,880) of batting orders
@@ -345,7 +360,7 @@ const HowToGuide: React.FC = () => {
                   <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--accent-red)] text-white flex items-center justify-center font-bold">
                     2
                   </span>
-                  <span>Adjust</span>
+                  <span className="font-semibold">Adjust</span>
                 </CardTitle>
                 <p className="text-muted-foreground">
                   For each lineup adjust player stats based on current position
@@ -358,7 +373,7 @@ const HowToGuide: React.FC = () => {
                   <span className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-900 text-white flex items-center justify-center font-bold">
                     3
                   </span>
-                  <span>Aggregate</span>
+                  <span className="font-semibold">Aggregate</span>
                 </CardTitle>
                 <p className="text-muted-foreground">
                   Use adjusted player stats and BaseRuns to estimate lineup score
@@ -371,7 +386,7 @@ const HowToGuide: React.FC = () => {
                   <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[var(--accent-red)] text-white flex items-center justify-center font-bold">
                     4
                   </span>
-                  <span>Output</span>
+                  <span className="font-semibold">Output</span>
                 </CardTitle>
                 <p className="text-muted-foreground">
                   Recommend lineup with highest expected runs based on data
