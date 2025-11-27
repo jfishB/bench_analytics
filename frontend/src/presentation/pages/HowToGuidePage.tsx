@@ -280,7 +280,7 @@ const HowToGuide: React.FC = () => {
                 Key Ideas
               </p>
               <p className="text-base text-muted-foreground">
-                The principles the algorithm is based on
+                The principles the algorithm is based on.
               </p>
             </div>
 
@@ -293,7 +293,7 @@ const HowToGuide: React.FC = () => {
                 </p>
                 <p className="text-muted-foreground">
                   Runs and expected runs are at the core of Sabermetrics
-                  principles
+                  principles.
                 </p>
               </div>
 
@@ -304,7 +304,7 @@ const HowToGuide: React.FC = () => {
                 </p>
                 <p className="text-muted-foreground">
                   Sabermetrics utilizes a wide range of player statistics to
-                  evaluate batter contribution
+                  evaluate batter contribution.
                 </p>
               </div>
 
@@ -313,7 +313,7 @@ const HowToGuide: React.FC = () => {
                 <p className="font-semibold text-foreground">BaseRuns</p>
                 <p className="text-muted-foreground">
                   A formula designed to estimate how many runs a team would be
-                  expected to score
+                  expected to score.
                 </p>
               </div>
             </div>
