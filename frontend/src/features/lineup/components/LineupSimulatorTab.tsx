@@ -303,7 +303,7 @@ export function LineupSimulatorTab({
                             .map((player) => (
                               <div
                                 key={player.player_id}
-                                className="flex items-center text-base py-0.5 gap-2"
+                                className="flex items-center py-0.5 gap-2"
                               >
                                 <span className="w-7 h-7 rounded-full bg-blue-900 text-white flex items-center justify-center text-sm font-semibold">
                                   {player.batting_order}
