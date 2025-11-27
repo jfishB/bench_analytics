@@ -11,7 +11,6 @@ import {
   CardTitle,
 } from "../../../ui/components/card";
 import { Button } from "../../../ui/components/button";
-import PlayersOrderedList from "../../players/components/PlayersOrderedList";
 import {
   DndContext,
   closestCenter,
@@ -122,31 +121,7 @@ export function ManualModePanel({
   );
 
   return (
-    <div className="grid md:grid-cols-2 gap-6">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-blue-900/10 rounded-lg">
-              <Zap className="h-5 w-5 text-blue-900" />
-            </div>
-            <div>
-              <CardTitle>Selected Players</CardTitle>
-              <CardDescription>
-                Your 9 selected players - drag them to arrange batting order
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <PlayersOrderedList
-            players={lineupPlayers}
-            onItemClick={onPlayerClick}
-            badgeClassName="bg-gray-400 text-white"
-            showInitials={true}
-          />
-        </CardContent>
-      </Card>
-
+    <div className="max-w-2xl mx-auto">
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
