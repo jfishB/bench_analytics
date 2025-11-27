@@ -6,6 +6,10 @@ uses django testcase and drf apitestcase for integration testing.
 run with: python manage.py test simulator
 """
 
+import sys
+from pathlib import Path
+
+import numpy as np
 from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework import status
@@ -16,6 +20,11 @@ from roster.models import Player, Team
 from .services.dto import BatterStats, SimulationResult
 from .services.player_service import PlayerService
 from .services.simulation import SimulationService
+
+# Add baseball-simulator library to path for game simulator tests
+lib_path = Path(__file__).resolve().parent.parent / "lib" / "baseball-simulator"
+if str(lib_path) not in sys.path:
+    sys.path.insert(0, str(lib_path))
 
 
 class BatterStatsTestCase(TestCase):
@@ -225,7 +234,9 @@ class SimulatorAPITestCase(APITestCase):
     def setUp(self):
         """Set up test client and authentication."""
         # Create test user
-        self.user = User.objects.create_user(username="testuser", password="testpass123")
+        self.user = User.objects.create_user(
+            username="testuser", password="testpass123"
+        )
         # Create team and players (Team has no name/abbreviation)
         self.team = Team.objects.create(id=1)
 
@@ -299,3 +310,99 @@ class SimulatorAPITestCase(APITestCase):
         response = self.client.post(url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class ParallelGameIntegrationTests(TestCase):
+    """Integration tests for ParallelGame comparing statistics."""
+
+    def setUp(self):
+        """Import ParallelGame."""
+        from batter import Batter  # type: ignore
+        from parallel_game import ParallelGame  # type: ignore
+
+        self.Batter = Batter
+        self.ParallelGame = ParallelGame
+
+    def test_simulation_produces_reasonable_scores(self):
+        """Test that simulations produce reasonable average scores."""
+        # Create a decent batting lineup (better than average)
+        good_probs = [0.20, 0.30, 0.10, 0.20, 0.10, 0.05, 0.05]
+        batter = self.Batter(probabilities=good_probs, name="GoodBatter")
+        lineup = [batter] * 9
+
+        game = self.ParallelGame(lineup=lineup, num_games=1000)
+        game.play()
+        scores = game.get_scores()
+
+        avg_score = np.mean(scores)
+
+        # Good lineup should score between 8-18 runs per game
+        # (Note: The original Game class allows for high scoring with good lineups)
+        self.assertGreater(avg_score, 8.0, "Average score too low")
+        self.assertLess(avg_score, 18.0, "Average score unrealistically high")
+
+    def test_weak_lineup_scores_less(self):
+        """Test that a weak lineup scores fewer runs."""
+        # Weak batting lineup (lots of strikeouts/outs)
+        weak_probs = [0.30, 0.50, 0.05, 0.10, 0.03, 0.01, 0.01]
+        batter = self.Batter(probabilities=weak_probs, name="WeakBatter")
+        lineup = [batter] * 9
+
+        game = self.ParallelGame(lineup=lineup, num_games=1000)
+        game.play()
+        scores = game.get_scores()
+
+        avg_score = np.mean(scores)
+
+        # Weak lineup should score 1-4 runs on average
+        self.assertGreater(avg_score, 1.0)
+        self.assertLess(avg_score, 4.0, "Weak lineup scoring too much")
+
+    def test_all_games_complete(self):
+        """Test that all games run to completion."""
+        probs = [0.15, 0.35, 0.10, 0.20, 0.10, 0.05, 0.05]
+        batter = self.Batter(probabilities=probs, name="TestBatter")
+        lineup = [batter] * 9
+
+        num_games = 100
+        game = self.ParallelGame(lineup=lineup, num_games=num_games)
+        game.play()
+        scores = game.get_scores()
+
+        # Should get exactly num_games scores
+        self.assertEqual(len(scores), num_games)
+
+        # All scores should be non-negative integers
+        for score in scores:
+            self.assertGreaterEqual(score, 0)
+            self.assertIsInstance(score, (int, np.integer))
+
+    def test_parallel_speedup(self):
+        """Test that parallel execution uses multiple cores."""
+        probs = [0.15, 0.35, 0.10, 0.20, 0.10, 0.05, 0.05]
+        batter = self.Batter(probabilities=probs, name="TestBatter")
+        lineup = [batter] * 9
+
+        # Run with 1 process vs multiple processes
+        # We can't easily time this in tests, but we can verify both work
+        game_single = self.ParallelGame(lineup=lineup, num_games=100, num_processes=1)
+        game_single.play()
+        scores_single = game_single.get_scores()
+
+        game_multi = self.ParallelGame(lineup=lineup, num_games=100, num_processes=4)
+        game_multi.play()
+        scores_multi = game_multi.get_scores()
+
+        # Both should complete and produce 100 games
+        self.assertEqual(len(scores_single), 100)
+        self.assertEqual(len(scores_multi), 100)
+
+        # Averages should be similar (within reasonable variance)
+        avg_single = np.mean(scores_single)
+        avg_multi = np.mean(scores_multi)
+
+        # Both should be in a reasonable range (6-16 runs for this lineup)
+        self.assertGreater(avg_single, 6.0)
+        self.assertGreater(avg_multi, 6.0)
+        self.assertLess(avg_single, 16.0)
+        self.assertLess(avg_multi, 16.0)

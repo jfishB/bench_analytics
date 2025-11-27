@@ -92,8 +92,8 @@ const HowToGuide: React.FC = () => {
           </CardHeader>
           <CardContent>
             <p className="mb-4">
-              Switch to the Analysis tab to review recommended lineups and the
-              rationale behind each suggestion.
+              Switch to the Simulate tab to review and compare saved lineups using
+              Monte Carlo simulation.
             </p>
             <ProTip>
               Consider other factors beyond the data—injuries, matchups, or
