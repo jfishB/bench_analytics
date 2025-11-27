@@ -27,7 +27,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { CHART_COLORS } from "../../../shared/designTokens";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, ChevronDown, ChevronRight } from "lucide-react";
 
 interface LineupSimulatorTabProps {
   savedLineups: SavedLineup[];
@@ -39,6 +39,7 @@ export function LineupSimulatorTab({
   loading,
 }: LineupSimulatorTabProps) {
   const [selectedLineupIds, setSelectedLineupIds] = useState<number[]>([]);
+  const [expandedLineupIds, setExpandedLineupIds] = useState<number[]>([]);
   const [includeWobaBaseline, setIncludeWobaBaseline] = useState(false);
   const [numGames, setNumGames] = useState<number>(20000);
   const [statusMessage, setStatusMessage] = useState("");
@@ -229,66 +230,90 @@ export function LineupSimulatorTab({
               </p>
             </div>
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-2">
               {savedLineups.map((lineup) => {
                 const isSelected = selectedLineupIds.includes(lineup.id);
+                const isExpanded = expandedLineupIds.includes(lineup.id);
                 return (
-                  <Card
+                  <div
                     key={lineup.id}
-                    className={`cursor-pointer transition-all ${
+                    className={`border rounded-lg transition-all ${
                       isSelected
-                        ? "ring-2 ring-primary shadow-lg bg-blue-50/50"
-                        : "hover:shadow-lg"
+                        ? "border-blue-500 bg-blue-50/30"
+                        : "border-gray-200 bg-white hover:border-gray-300"
                     }`}
-                    onClick={() => handleToggleLineup(lineup.id)}
                   >
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start">
-                        <CardTitle className="text-lg">{lineup.name}</CardTitle>
-                        {isSelected && (
-                          <span className="bg-primary text-white text-xs px-2 py-1 rounded-full">
-                            Selected
-                          </span>
-                        )}
-                      </div>
-                      <CardDescription className="text-xs">
-                        Created:{" "}
-                        {new Date(lineup.created_at).toLocaleDateString()}
-                        <Button
-                          onClick={(ev) => handleDeleteLineup(lineup.id, ev)}
-                          variant="outline"
-                          size="sm"
-                          className="ml-2 h-6 text-xs bg-transparent border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                    {/* Header - Always Visible */}
+                    <div className="flex items-center justify-between p-4">
+                      <div className="flex items-center gap-3 flex-1">
+                        <button
+                          onClick={() => {
+                            setExpandedLineupIds(prev =>
+                              prev.includes(lineup.id)
+                                ? prev.filter(id => id !== lineup.id)
+                                : [...prev, lineup.id]
+                            );
+                          }}
+                          className="text-gray-400 hover:text-gray-600 transition-colors"
                         >
-                          Delete
-                        </Button>
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <div className="text-sm font-medium text-gray-700 mb-2">
-                          Batting Order:
+                          {isExpanded ? (
+                            <ChevronDown className="h-5 w-5" />
+                          ) : (
+                            <ChevronRight className="h-5 w-5" />
+                          )}
+                        </button>
+                        <div 
+                          className="flex-1 cursor-pointer"
+                          onClick={() => handleToggleLineup(lineup.id)}
+                        >
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-gray-900">
+                              {lineup.name}
+                            </h3>
+                            {isSelected && (
+                              <span className="bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full">
+                                Selected
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-500 mt-0.5">
+                            {new Date(lineup.created_at).toLocaleDateString()}
+                          </p>
                         </div>
-                        <div className="space-y-1">
+                      </div>
+                      <Button
+                        onClick={(ev) => handleDeleteLineup(lineup.id, ev)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-gray-400 hover:text-red-600 hover:bg-red-50"
+                      >
+                        Delete
+                      </Button>
+                    </div>
+
+                    {/* Expanded Content - Players List */}
+                    {isExpanded && (
+                      <div className="px-4 pb-4 pt-2 border-t border-gray-100">
+                        <div className="space-y-2">
                           {(lineup.players ?? [])
                             .sort((a, b) => a.batting_order - b.batting_order)
                             .map((player) => (
                               <div
                                 key={player.player_id}
-                                className="flex items-center text-sm"
+                                className="flex items-center text-sm py-1"
                               >
-                                <span className="w-5 h-5 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-[10px] font-bold mr-2">
+                                <span className="w-6 h-6 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-semibold mr-3">
                                   {player.batting_order}
                                 </span>
-                                <span className="flex-1 truncate">
+                                <span className="text-gray-700">
                                   {player.player_name}
                                 </span>
                               </div>
                             ))}
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
+                    )}
+                  </div>
                 );
               })}
             </div>
