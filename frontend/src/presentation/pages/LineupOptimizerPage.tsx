@@ -127,7 +127,7 @@ export function LineupOptimizer() {
     const selectedPlayers = players.filter((p) => selectedPlayerIds.has(p.id));
     const lineup = createLineup(selectedPlayers);
     setBattingOrderLineup(lineup);
-    setActiveTab("optimizer");
+    setActiveTab("manual");
   };
 
   // Wrapper handlers for save operations with error handling
