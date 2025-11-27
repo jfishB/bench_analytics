@@ -67,6 +67,7 @@ export function LineupOptimizer() {
     selectionWarning,
     setSelectionWarning,
     togglePlayerSelection,
+    clearSelection,
   } = usePlayerSelection();
 
   const {
@@ -120,6 +121,12 @@ export function LineupOptimizer() {
   // Handle player selection with lineup reset
   const handleTogglePlayerSelection = (player: any) => {
     togglePlayerSelection(player, () => setLineupCreated(false));
+  };
+
+  // Handle clear selection
+  const handleClearSelection = () => {
+    clearSelection();
+    setLineupCreated(false);
   };
 
   // Handle create lineup button
@@ -291,13 +298,24 @@ export function LineupOptimizer() {
                     >
                       Batters selected: {selectedPlayerIds.size}/9
                     </div>
-                    <Button
-                      className="w-full disabled:bg-gray-200 disabled:cursor-not-allowed"
-                      disabled={selectedPlayerIds.size !== 9}
-                      onClick={handleCreateLineup}
-                    >
-                      Build Team
-                    </Button>
+                    <div className="space-y-2">
+                      <Button
+                        className="w-full disabled:bg-gray-200 disabled:cursor-not-allowed"
+                        disabled={selectedPlayerIds.size !== 9}
+                        onClick={handleCreateLineup}
+                      >
+                        Build Team
+                      </Button>
+                      {selectedPlayerIds.size > 0 && (
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={handleClearSelection}
+                        >
+                          Clear Selection
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Player details card */}
