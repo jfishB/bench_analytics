@@ -64,7 +64,7 @@ function SortablePlayerItem({ player, index }: SortablePlayerItemProps) {
       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-blue-500/20 to-blue-500/0 opacity-0 group-hover:opacity-100 transition-opacity"></div>
       <div className="relative flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-md bg-gradient-to-br from-blue-600 to-blue-800">
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-md bg-gradient-to-br from-[#1e3a8a] to-[#1e40af]">
             <span className="text-sm font-semibold">
               {player.batting_order || index + 1}
             </span>
