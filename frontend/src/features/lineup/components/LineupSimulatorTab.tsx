@@ -294,18 +294,21 @@ export function LineupSimulatorTab({
                     {/* Expanded Content - Players List */}
                     {isExpanded && (
                       <div className="px-4 pb-4 pt-2 border-t border-gray-100">
-                        <div className="space-y-2">
+                        <div className="space-y-1">
+                          <div className="text-lg font-semibold text-gray-700 mb-2">
+                            Batting Order:
+                          </div>
                           {(lineup.players ?? [])
                             .sort((a, b) => a.batting_order - b.batting_order)
                             .map((player) => (
                               <div
                                 key={player.player_id}
-                                className="flex items-center text-sm py-1"
+                                className="flex items-center text-base py-0.5 gap-2"
                               >
-                                <span className="w-6 h-6 rounded-full bg-blue-900 text-white flex items-center justify-center text-xs font-semibold mr-3">
+                                <span className="w-7 h-7 rounded-full bg-blue-900 text-white flex items-center justify-center text-sm font-semibold mr-2">
                                   {player.batting_order}
                                 </span>
-                                <span className="text-gray-700">
+                                <span className="flex-1 truncate text-base font-semibold">
                                   {player.player_name}
                                 </span>
                               </div>
