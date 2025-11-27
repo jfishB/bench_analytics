@@ -296,7 +296,7 @@ export function LineupOptimizer() {
                       disabled={selectedPlayerIds.size !== 9}
                       onClick={handleCreateLineup}
                     >
-                      Create Lineup
+                      Build Team
                     </Button>
                   </div>
 
