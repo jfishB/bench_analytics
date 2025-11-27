@@ -288,17 +288,23 @@ const HowToGuide: React.FC = () => {
             <div className="grid md:grid-cols-3 gap-y-6 gap-x-10 text-base">
               {/* Focus on Runs */}
               <div className="space-y-1">
-                <p className="font-semibold text-foreground">Focus on Expected Runs</p>
+                <p className="font-semibold text-foreground">
+                  Focus on Expected Runs
+                </p>
                 <p className="text-muted-foreground">
-                  Runs and expected runs are at the core of Sabermetrics principles
+                  Runs and expected runs are at the core of Sabermetrics
+                  principles
                 </p>
               </div>
 
               {/* Advanced Metrics */}
               <div className="space-y-1">
-                <p className="font-semibold text-foreground">Advanced Metrics</p>
+                <p className="font-semibold text-foreground">
+                  Advanced Metrics
+                </p>
                 <p className="text-muted-foreground">
-                  Sabermetrics utilizes a wide range of player statistics to evaluate batter contribution
+                  Sabermetrics utilizes a wide range of player statistics to
+                  evaluate batter contribution
                 </p>
               </div>
 
@@ -306,7 +312,8 @@ const HowToGuide: React.FC = () => {
               <div className="space-y-1">
                 <p className="font-semibold text-foreground">BaseRuns</p>
                 <p className="text-muted-foreground">
-                  A formula designed to estimate how many runs a team would be expected to score
+                  A formula designed to estimate how many runs a team would be
+                  expected to score
                 </p>
               </div>
             </div>
@@ -335,7 +342,8 @@ const HowToGuide: React.FC = () => {
                   <span>Permute</span>
                 </CardTitle>
                 <p className="text-muted-foreground">
-                  Take the given 9 players and run through all the possible permutations (9! = 362,880) of batting orders
+                  Take the given 9 players and run through all the possible
+                  permutations (9! = 362,880) of batting orders.
                 </p>
               </div>
 
@@ -348,7 +356,7 @@ const HowToGuide: React.FC = () => {
                   <span>Adjust</span>
                 </CardTitle>
                 <p className="text-muted-foreground">
-                  For each lineup adjust player stats based on current position
+                  For each lineup adjust player stats based on current position.
                 </p>
               </div>
 
@@ -361,7 +369,8 @@ const HowToGuide: React.FC = () => {
                   <span>Aggregate</span>
                 </CardTitle>
                 <p className="text-muted-foreground">
-                  Use adjusted player stats and BaseRuns to estimate lineup score
+                  Use adjusted player stats and BaseRuns to estimate lineup
+                  score.
                 </p>
               </div>
 
@@ -374,7 +383,7 @@ const HowToGuide: React.FC = () => {
                   <span>Output</span>
                 </CardTitle>
                 <p className="text-muted-foreground">
-                  Recommend lineup with highest expected runs based on data
+                  Recommend lineup with highest expected runs based on data.
                 </p>
               </div>
             </div>
