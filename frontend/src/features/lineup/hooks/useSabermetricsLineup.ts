@@ -83,7 +83,6 @@ export function useSabermetricsLineup(
   const clearGeneratedLineup = () => {
       setGeneratedLineup([]);
       setSabermetricsLineupName("");
-      // any other reset you need
     };
 
   return {
