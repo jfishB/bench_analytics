@@ -497,7 +497,7 @@ export function LineupSimulatorTab({
                       label={{
                         value: "Runs Scored",
                         position: "insideBottom",
-                        offset: -5,
+                        offset: -15,
                       }}
                     />
                     <YAxis
@@ -505,6 +505,7 @@ export function LineupSimulatorTab({
                         value: "Games",
                         angle: -90,
                         position: "insideLeft",
+                        offset: 10,
                       }}
                     />
                     <Tooltip />
