@@ -115,10 +115,12 @@ export function PlayerList({
             )}
             <div className="relative flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className={cn(
-                  "w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-md bg-gradient-to-br from-blue-600 to-blue-800",
-                  badgeClassName
-                )}>
+                <div
+                  className={cn(
+                    "w-10 h-10 rounded-lg flex items-center justify-center text-white shadow-md bg-gradient-to-br from-[#1e3a8a] to-[#1e40af]",
+                    badgeClassName
+                  )}
+                >
                   <span className="text-sm font-semibold">
                     {showInitials
                       ? getPlayerInitials(it.name)

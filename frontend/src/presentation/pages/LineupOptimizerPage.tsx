@@ -67,6 +67,7 @@ export function LineupOptimizer() {
     selectionWarning,
     setSelectionWarning,
     togglePlayerSelection,
+    clearSelection,
   } = usePlayerSelection();
 
   const {
@@ -122,12 +123,18 @@ export function LineupOptimizer() {
     togglePlayerSelection(player, () => setLineupCreated(false));
   };
 
+  // Handle clear selection
+  const handleClearSelection = () => {
+    clearSelection();
+    setLineupCreated(false);
+  };
+
   // Handle create lineup button
   const handleCreateLineup = () => {
     const selectedPlayers = players.filter((p) => selectedPlayerIds.has(p.id));
     const lineup = createLineup(selectedPlayers);
     setBattingOrderLineup(lineup);
-    setActiveTab("optimizer");
+    setActiveTab("manual");
   };
 
   // Wrapper handlers for save operations with error handling
@@ -291,13 +298,24 @@ export function LineupOptimizer() {
                     >
                       Batters selected: {selectedPlayerIds.size}/9
                     </div>
-                    <Button
-                      className="w-full disabled:bg-gray-200 disabled:cursor-not-allowed"
-                      disabled={selectedPlayerIds.size !== 9}
-                      onClick={handleCreateLineup}
-                    >
-                      Create Lineup
-                    </Button>
+                    <div className="space-y-2">
+                      <Button
+                        className="w-full disabled:bg-gray-200 disabled:cursor-not-allowed"
+                        disabled={selectedPlayerIds.size !== 9}
+                        onClick={handleCreateLineup}
+                      >
+                        Build Team
+                      </Button>
+                      {selectedPlayerIds.size > 0 && (
+                        <Button
+                          variant="outline"
+                          className="w-full"
+                          onClick={handleClearSelection}
+                        >
+                          Clear Selection
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Player details card */}
