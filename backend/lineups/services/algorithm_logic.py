@@ -8,10 +8,6 @@ logic for creating batting lineups.
 from itertools import permutations
 from typing import Dict, Tuple
 
-from django.contrib.auth import get_user_model
-from django.db import transaction
-
-from lineups.models import Lineup, LineupPlayer
 from lineups.services.validator import validate_data
 from roster.models import Player
 
