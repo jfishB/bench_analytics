@@ -305,7 +305,7 @@ export function LineupSimulatorTab({
                                 key={player.player_id}
                                 className="flex items-center text-base py-0.5 gap-2"
                               >
-                                <span className="w-7 h-7 rounded-full bg-blue-900 text-white flex items-center justify-center text-sm font-semibold mr-2">
+                                <span className="w-7 h-7 rounded-full bg-blue-900 text-white flex items-center justify-center text-sm font-semibold">
                                   {player.batting_order}
                                 </span>
                                 <span className="flex-1 truncate text-base font-semibold">
