@@ -10,7 +10,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import {
   BarChart3,
-  Lightbulb,
   Target,
   Zap,
   Award,
@@ -81,11 +80,6 @@ const Home: React.FC = () => {
       title: "Reliable, Repeatable Process",
       description:
         "Eliminate guesswork with a consistent system for lineup creation.",
-    },
-    {
-      icon: Lightbulb,
-      title: "Easy to understand",
-      description: "Designed to be intuitive and simple for coaches to use.",
     },
   ];
 
@@ -183,10 +177,8 @@ const Home: React.FC = () => {
       {/* Displays our benefits in block */}
 
       <section className="bg-gray-100/50 rounded-lg p-8 max-w-6xl mx-auto">
-        <h2 className="text-3xl mb-8 text-center text-primary">
-          Why Coaches Love Us
-        </h2>
-        <div className="grid md:grid-cols-4 gap-6">
+        <h2 className="text-3xl mb-8 text-center text-primary">Key Benefits</h2>
+        <div className="grid md:grid-cols-3 gap-6">
           {benefits.map((benefit, index) => {
             const Icon = benefit.icon;
             return (
