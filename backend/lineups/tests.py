@@ -324,7 +324,7 @@ class LineupValidationTests(TestCase):
     def test_get_helper_function_all_paths(self):
         """Test _get helper function with all possible input
         types and edge cases."""
-        from lineups.services.validator import _get
+        from lineups.services.utils import get as _get
         from lineups.services.input_data import LineupPlayerInput
         # Test with None object returns default
         result = _get(None, "any_key", "default_value")
@@ -365,7 +365,7 @@ class LineupValidationTests(TestCase):
         # (line 32 else branch)
         with self.assertRaises(BadBattingOrder) as cm:
             validate_batting_orders(players)
-        self.assertIn("All players must have a batting order",
+        self.assertIn("batting order assigned",
                       str(cm.exception))
 
 
@@ -492,7 +492,7 @@ class LineupServiceTests(TestCase):
                         for p in self.players]
         with self.assertRaises(BadBattingOrder) as cm:
             validate_batting_orders(players_none)
-        self.assertIn("must have a batting order", str(cm.exception))
+        self.assertIn("batting order assigned", str(cm.exception))
         # Test wrong player count rejection
         players_few = [{"player_id": p.id, "batting_order": idx + 1} for idx,
                        p in enumerate(self.players[:5])]
@@ -770,15 +770,15 @@ class LineupCreationHandlerTests(TestCase):
         }
         original_batting_orders = [idx + 1 for idx in range(9)]
         # Test validation exception
-        with patch('lineups.services.lineup_creation_handler.\
-        validate_lineup_model') as mock_validate:
+        patch_path = 'lineups.services.lineup_creation_handler' \
+                     '.validate_lineup_model'
+        with patch(patch_path) as mock_validate:
             mock_validate.side_effect = Exception("Test validation error")
             with self.assertRaises(DomainError) as cm:
                 handle_lineup_save(validated_data, original_batting_orders)
             self.assertIn("Test validation error", str(cm.exception))
         # Test validation returns False
-        with patch('lineups.services.lineup_creation_handler.\
-        validate_lineup_model') as mock_validate:
+        with patch(patch_path) as mock_validate:
             mock_validate.return_value = False
             with self.assertRaises(DomainError) as cm:
                 handle_lineup_save(validated_data, original_batting_orders)
