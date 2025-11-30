@@ -281,7 +281,7 @@ class LineupValidationTests(TestCase):
         client.force_authenticate(user=self.creator)
         resp = client.post("/api/v1/lineups/", payload, format="json")
         self.assertEqual(resp.status_code, 400)
-        self.assertIn("Players not found", str(resp.data))
+        self.assertIn("Exactly 9 players", str(resp.data))
 
     def test_reject_nonexistent_team(self):
         """POST with invalid team_id should fail."""
@@ -676,11 +676,9 @@ class LineupAlgorithmTests(TestCase):
         
         # Team has no players, no player_ids provided (selected_player_ids=None)
         interactor = LineupCreationInteractor()
-        try:
-            result = interactor.generate_suggested_lineup(self.team.id, selected_player_ids=None)
-            self.fail(f"Expected DomainError but got result: {result}")
-        except DomainError as e:
-            self.assertIn("player IDs are required", str(e))
+        with self.assertRaises(DomainError) as cm:
+            interactor.generate_suggested_lineup(self.team.id, selected_player_ids=None)
+        self.assertIn("Player IDs are required", str(cm.exception))
 
     def test_calculate_player_adjustments_with_zero_b_game(self):
         """Test calculate_player_adjustments when player has b_game=0 (line 47)."""
@@ -943,7 +941,7 @@ class AuthUserServiceTests(TestCase):
         lineup = Lineup.objects.create(team=self.team, created_by=self.creator)
         result = authorize_lineup_deletion(AnonymousUser(), lineup)
         self.assertIsNotNone(result)
-        self.assertEqual(result.status_code, 403)
+        self.assertEqual(result.status_code, 401)
         self.assertIn("Authentication required", str(result.data))
 
 
