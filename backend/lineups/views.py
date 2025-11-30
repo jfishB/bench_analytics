@@ -128,12 +128,10 @@ class LineupDeleteView(APIView):
     """
 
     permission_classes = [permissions.IsAuthenticated]
-    permission_classes = [permissions.IsAuthenticated]
 
     def delete(self, request, pk: int):
         """Delete a lineup. Allowed only for the creator or a superuser.
 
-        Returns 204 No Content on success, 401 if not authenticated, 403 if not permitted, 404 if not found.
         Returns 204 No Content on success, 401 if not authenticated, 403 if not permitted, 404 if not found.
         """
         lineup = get_object_or_404(Lineup, pk=pk)
@@ -158,18 +156,6 @@ class LineupViewSet(viewsets.ModelViewSet):
     """
 
     serializer_class = LineupModelSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    http_method_names = ['get', 'head', 'options']
-
-    def get_queryset(self):
-        user = getattr(self.request, "user", None)
-
-        if not user or not getattr(user, "is_authenticated", False):
-            return Lineup.objects.none()
-        # Super users can see everything ***CAN BE CHANGED***
-        if getattr(user, "is_superuser", False):
-            return Lineup.objects.all()
-        return Lineup.objects.filter(created_by_id=user.id)
     permission_classes = [permissions.IsAuthenticated]
     http_method_names = ['get', 'head', 'options']
 
