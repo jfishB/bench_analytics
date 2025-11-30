@@ -1,3 +1,5 @@
+"""Test settings for backend."""
+
 from .settings import *
 
 DATABASES = {

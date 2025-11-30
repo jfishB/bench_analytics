@@ -49,7 +49,7 @@ def validate_batting_orders(players):
     if len(set(batting_orders)) != len(batting_orders):
         raise BadBattingOrder("Batting orders must be unique")
 
-    # Explicitly check that batting orders are exactly 1-9 
+    # Explicitly check that batting orders are exactly 1-9
     # for defensive programming.
     if sorted(batting_orders) != list(range(1, 10)):
         raise BadBattingOrder("Batting orders must be the numbers 1 through 9,\
@@ -131,4 +131,3 @@ def validate_lineup_model(lineup):
         raise BadBattingOrder()
     if sorted(orders) != list(range(1, len(orders) + 1)):
         raise BadBattingOrder()
-

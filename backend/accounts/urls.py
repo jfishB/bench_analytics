@@ -1,5 +1,5 @@
 """
-- This file defines the HTTP routes (URL configuration) for the 
+- This file defines the HTTP routes (URL configuration) for the
 accounts module.
 - Part of the web/API adapter layer; maps URLs to views only.
 """

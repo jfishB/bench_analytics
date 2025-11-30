@@ -15,9 +15,9 @@ def determine_request_mode(lineup_data: dict) -> Tuple[str, Optional[dict]]:
     """Determine if request is for manual save or algorithm generation.
 
     Returns:
-        - ("manual_save", data) if players list exists with 9 items 
+        - ("manual_save", data) if players list exists with 9 items
         all having batting_order
-        - ("algorithm_generate", None) otherwise (for team_id-only or 
+        - ("algorithm_generate", None) otherwise (for team_id-only or
         incomplete players)
     """
     players_data = lineup_data.get("players", [])
@@ -67,7 +67,7 @@ def handle_lineup_save(val_data: dict, original_batting_orders: list)\
             }
         )
 
-    lineup, lineup_players = saving_lineup_to_db(team_obj, players_payload, 
+    lineup, lineup_players = saving_lineup_to_db(team_obj, players_payload,
                                                  lineup_name, created_by_id)
 
     # Validate created lineup model

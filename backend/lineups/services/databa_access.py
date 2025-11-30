@@ -20,7 +20,7 @@ def saving_lineup_to_db(team_obj, players_payload, lineup_name, created_by_id):
 
     Expected arguments:
       - team_obj: Team model instance
-      - players_payload: list of dicts with keys 'player' (Player model) and 
+      - players_payload: list of dicts with keys 'player' (Player model) and
       'batting_order' (int)
       - lineup_name: desired name for the created lineup
       - created_by_id: user id who created the lineup
@@ -52,26 +52,26 @@ def saving_lineup_to_db(team_obj, players_payload, lineup_name, created_by_id):
 
 def fetch_players_by_ids(player_ids: list):
     """Fetch players from database by IDs in the specified order.
-    
+
     Args:
         player_ids: List of player IDs in desired order
-        
+
     Returns:
         List of Player objects in the same order as player_ids,
         with player_id attribute attached to each player
-        
+
     Raises:
         ValueError: If any player IDs are not found in database
     """
-    
+
     players_qs = list(Player.objects.filter(id__in=player_ids)
                       .select_related("team"))
-    
+
     # Check that we got all requested players
     if len(players_qs) != len(player_ids):
         raise ValueError(f"Expected {len(player_ids)} players, "
                          f"found {len(players_qs)}")
-    
+
     # Re-order players to match the input order and attach player_id attribute
     players_by_id = {p.id: p for p in players_qs}
     ordered_players = []
@@ -80,14 +80,14 @@ def fetch_players_by_ids(player_ids: list):
         # Attach helper attribute expected by the algorithm
         setattr(player_obj, "player_id", player_obj.id)
         ordered_players.append(player_obj)
-    
+
     return ordered_players
 
 
 def fetch_team_by_id(team_id: int):
     """Fetch a team from database by ID.
     Args:
-        team_id: The team ID to fetch   
+        team_id: The team ID to fetch
     Returns:
         Team object or None if not found
     """
@@ -96,7 +96,7 @@ def fetch_team_by_id(team_id: int):
 
 
 def fetch_lineup_data(payload):
-    """Fetch all data needed for lineup creation from database.   
+    """Fetch all data needed for lineup creation from database.
     This is a helper function for interactors that need to fetch team,
     players, and creator information after validation.
     Args:
@@ -107,10 +107,12 @@ def fetch_lineup_data(payload):
     """
     # Fetch team
     team_obj = fetch_team_by_id(get(payload, "team_id"))
+
     # Extract and fetch players
-    ids = [get(p, "player_id") if not isinstance(p, (int,)) else p 
+    ids = [get(p, "player_id") if not isinstance(p, (int,)) else p
            for p in get(payload, "players", [])]
     players_qs = fetch_players_by_ids(ids)
+
     # Get or determine created_by_id
     created_by_id = get(payload, "requested_user_id")
     if not created_by_id:
@@ -118,6 +120,7 @@ def fetch_lineup_data(payload):
         # Try to find a superuser as fallback creator
         created_by_id = User.objects.filter(is_superuser=True).\
             values_list("id", flat=True).first()
+
     return {
         "team": team_obj,
         "players": players_qs,

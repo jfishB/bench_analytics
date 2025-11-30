@@ -82,9 +82,9 @@ def calculate_player_adjustments(p: Player, position: int, adjustments:
 
 # BaseRun formula to calculate lineups expected runs for a game
 def calculate_player_baserun_values(lineup: Tuple[Player, ...]) -> float:
-    """Calculate given players scaled stats and from there A,B,C,D values to 
+    """Calculate given players scaled stats and from there A,B,C,D values to
         use in BaseRun formula.
-        BaseRun Formula and method source: 
+        BaseRun Formula and method source:
         https://library.fangraphs.com/features/baseruns/
 
     Args:
@@ -176,10 +176,10 @@ def algorithm_create_lineup(players_list: list) -> Tuple[Player, ...]:
     best_lineup = None
 
     # -------- Brute Force Optimization -------- #
-    for lineup in permutations(players_list):  
+    for lineup in permutations(players_list):
         # Going through all 9! possible lineups
         # Calculate scores for all available players for this spot
-        runs = calculate_player_baserun_values(lineup)  
+        runs = calculate_player_baserun_values(lineup)
         # Expected Runs for current lineup
 
         if runs > best_runs:
