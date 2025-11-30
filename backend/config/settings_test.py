@@ -1,6 +1,7 @@
-from .settings import *  # noqa: F401, F403
+"""Test settings for backend."""
 
-# Use an in-memory SQLite database for tests to avoid requiring Postgres locally.
+from .settings import *
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",

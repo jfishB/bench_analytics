@@ -1,9 +1,21 @@
+"""
+- This file implements the domain/application services for user accounts
+- Imported by:
+    - backend/accounts/views.py
+usage:
+    - `register_user` is used by the register view to create a new user
+    - `login_user` is used by the login view to authenticate and issue tokens
+"""
+
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .exceptions import EmailAlreadyExistsError, InvalidCredentialsError, MissingFieldsError, UserAlreadyExistsError
+from .exceptions import (
+    EmailAlreadyExistsError, InvalidCredentialsError,
+    MissingFieldsError, UserAlreadyExistsError
+)
 
 
 def register_user(username, email, password) -> User:
@@ -20,8 +32,10 @@ def register_user(username, email, password) -> User:
     if User.objects.filter(email=email).exists():
         raise EmailAlreadyExistsError("Email already exists.")
 
-    try:  # To handle cases where several of a similar user is trying to be created within a short time frame
-        user = User.objects.create_user(username=username, email=email, password=password)
+    try:  # To handle cases where several of a similar user is trying
+        # to be created within a short time frame
+        user = User.objects.create_user(username=username, email=email,
+                                        password=password)
 
         return user
 

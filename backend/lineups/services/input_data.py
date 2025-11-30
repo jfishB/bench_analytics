@@ -1,9 +1,10 @@
-##########################################
 """
-- This file contains the input data structures
-- used in views
+- This file defines input data structures (dataclasses) for lineup creation.
+- Imported by:
+  - backend/lineups/services/lineup_creation_handler.py
+  - backend/lineups/interactor.py
 """
-###########################################
+
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -20,3 +21,4 @@ class CreateLineupInput:
     team_id: int
     players: List[LineupPlayerInput]
     requested_user_id: Optional[int] = None
+    name: Optional[str] = None
