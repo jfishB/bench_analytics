@@ -10,7 +10,7 @@ from django.contrib.auth import get_user_model
 from .databa_access import fetch_players_by_ids, fetch_team_by_id
 from .exceptions import (BadBattingOrder, NoCreator,
                          PlayersNotFound, PlayersWrongTeam, TeamNotFound)
-from .utils import _get
+from .utils import get
 
 
 def validate_batting_orders(players):
@@ -63,14 +63,14 @@ def validate_data(payload, require_creator: bool = True):
       existence).
     Raises domain exceptions if validation fails; returns nothing if valid.
     """
-    team_obj = fetch_team_by_id(_get(payload, "team_id"))
+    team_obj = fetch_team_by_id(get(payload, "team_id"))
     if not team_obj:
         raise TeamNotFound()
 
     # Extract player ids from input
     ids = []
-    for p in _get(payload, "players", []):
-        pid = _get(p, "player_id") if not isinstance(p, (int,)) else p
+    for p in get(payload, "players", []):
+        pid = get(p, "player_id") if not isinstance(p, (int,)) else p
         if pid is None:
             raise PlayersNotFound()
         ids.append(pid)
@@ -90,7 +90,7 @@ def validate_data(payload, require_creator: bool = True):
         raise PlayersWrongTeam()
 
     # Validate creator requirement
-    created_by_id = _get(payload, "requested_user_id")
+    created_by_id = get(payload, "requested_user_id")
     User = get_user_model()
     if not created_by_id and require_creator:
         # Check that a superuser exists to be used as creator
@@ -132,5 +132,3 @@ def validate_lineup_model(lineup):
     if sorted(orders) != list(range(1, len(orders) + 1)):
         raise BadBattingOrder()
 
-    # All checks passed — return True for convenience
-    return True
