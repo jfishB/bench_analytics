@@ -1,5 +1,6 @@
 """
-- This file defines the API views for lineup creation, retrieval, and management.
+- This file defines the API views for lineup creation, retrieval,
+ and management.
 - Imported by:
   - backend/lineups/urls.py
 """
@@ -11,7 +12,10 @@ from rest_framework.views import APIView
 
 from .interactor import LineupCreationInteractor
 from .models import Lineup, LineupPlayer
-from .serializers import LineupModelSerializer, LineupOut, LineupPlayerOut, LineupCreate
+from .serializers import (
+    LineupModelSerializer, LineupOut,
+    LineupPlayerOut, LineupCreate
+)
 from .services.auth_user import authorize_lineup_deletion
 from .services.exceptions import DomainError
 from .services.lineup_creation_handler import (
@@ -20,37 +24,37 @@ from .services.lineup_creation_handler import (
 #############################################################################
 # lineups endpoint
 #############################################################################
+
+
 class LineupCreateView(APIView):
     """Create or generate a lineup.
     URL:
       POST /api/v1/lineups/ -> create or generate lineup
     Delegates to interactor for use case handling.
     """
-    permission_classes = [permissions.AllowAny]  # TODO: decide 
+    permission_classes = [permissions.AllowAny]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.interactor = LineupCreationInteractor()
-    
+
     def post(self, request):
         # 1. Deserialize HTTP request
         serializer = LineupCreate(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        
         # 2. Determine mode
         mode, _ = determine_request_mode(data)
-        
         # 3. Call appropriate interactor method
         try:
             if mode == "manual_save":
                 # Check authentication for save operations
                 if not getattr(request.user, "is_authenticated", False):
                     return Response(
-                        {"detail": "Authentication required to save a lineup."}, 
+                        {"detail": "Authentication "
+                         "required to save a lineup."},
                         status=status.HTTP_403_FORBIDDEN
                     )
-                
                 lineup, lineup_players = self.interactor.create_manual_lineup(
                     team_id=data["team_id"],
                     players_data=data.get("players"),
@@ -64,20 +68,24 @@ class LineupCreateView(APIView):
 
                 if data.get("team_id") is None:
                     return Response(
-                        {"detail": "team_id is required to generate a suggested lineup."},
+                        {"detail": "team_id is required to generate"
+                         " a suggested lineup."},
                         status=status.HTTP_400_BAD_REQUEST
                     )
                 suggested_players = self.interactor.generate_suggested_lineup(
                     team_id=data.get("team_id"),
                     selected_player_ids=selected_ids
                 )
-                return self._build_suggested_response(data.get("team_id"), suggested_players)
+                return self._build_suggested_response(data.get("team_id"),
+                                                      suggested_players)
         except DomainError as e:
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-    
-    # Helper methods 
+            return Response({"detail": str(e)},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+    # Helper methods
     def _build_saved_response(self, lineup, lineup_players):
-        """Transform domain objects (lineup, lineup_players) to HTTP Response."""
+        """Transform domain objects
+        (lineup, lineup_players) to HTTP Response."""
         out = LineupOut({
             "id": lineup.id,
             "team_id": lineup.team.id,
@@ -94,7 +102,7 @@ class LineupCreateView(APIView):
             "created_at": lineup.created_at,
         })
         return Response(out.data, status=status.HTTP_201_CREATED)
-    
+
     def _build_suggested_response(self, team_id, suggested_players):
         """Transform suggested players to HTTP Response."""
         out = {
@@ -102,18 +110,17 @@ class LineupCreateView(APIView):
             "players": suggested_players,
         }
         return Response(out, status=status.HTTP_201_CREATED)
-    
+
     def _extract_player_ids(self, data):
         """Extract optional player IDs from validated data.
-        
         Returns:
             List of player IDs or None if no players provided
         """
         players_payload = data.get("players")
         if isinstance(players_payload, list):
             player_ids = [
-                p.get("player_id") 
-                for p in players_payload 
+                p.get("player_id")
+                for p in players_payload
                 if isinstance(p, dict) and p.get("player_id")
             ]
             return player_ids if player_ids else None
@@ -132,7 +139,8 @@ class LineupDeleteView(APIView):
     def delete(self, request, pk: int):
         """Delete a lineup. Allowed only for the creator or a superuser.
 
-        Returns 204 No Content on success, 401 if not authenticated, 403 if not permitted, 404 if not found.
+        Returns 204 No Content on success, 401 if not authenticated,
+        403 if not permitted, 404 if not found.
         """
         lineup = get_object_or_404(Lineup, pk=pk)
 

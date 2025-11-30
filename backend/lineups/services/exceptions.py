@@ -29,7 +29,8 @@ class PlayersWrongTeam(DomainError):
 
 
 class BadBattingOrder(DomainError):
-    def __init__(self, detail: str = "Batting orders must be unique and between 1 and n."):
+    def __init__(self, detail: str = "Batting orders must be unique and\
+                  between 1 and n."):
         super().__init__(detail)
 
 

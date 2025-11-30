@@ -38,7 +38,8 @@ def register(request):
         user = register_user(username, email, password)
 
         return Response(
-            {"message": "User created successfully!", "username": user.username},
+            {"message": "User created successfully!", "username":
+             user.username},
             status=status.HTTP_201_CREATED,
         )
 
@@ -82,16 +83,20 @@ def logout(request):
     try:
         refresh_token = request.data.get("refresh")
         if not refresh_token:
-            return Response({"error": "Refresh token is required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Refresh token is required."},
+                            status=status.HTTP_400_BAD_REQUEST)
         token = RefreshToken(refresh_token)
         token.blacklist()
-        return Response({"message": "Logout successful."}, status=status.HTTP_200_OK)
+        return Response({"message": "Logout successful."},
+                        status=status.HTTP_200_OK)
 
     except TokenError:
-        return Response({"error": "Invalid or already blacklisted token."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Invalid or already blacklisted token."},
+                        status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         print("Logout error:", e)
-        return Response({"error": "Unexpected server error."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": "Unexpected server error."},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):

@@ -8,17 +8,21 @@
 """
 from django.contrib.auth import get_user_model
 from .databa_access import fetch_players_by_ids, fetch_team_by_id
-from .exceptions import BadBattingOrder, NoCreator, PlayersNotFound, PlayersWrongTeam, TeamNotFound
+from .exceptions import (BadBattingOrder, NoCreator,
+                         PlayersNotFound, PlayersWrongTeam, TeamNotFound)
+from .utils import _get
 
 
 def validate_batting_orders(players):
     """Validate that batting orders are unique and cover positions 1-9.
 
     Args:
-        players: List of LineupPlayerInput objects or similar objects with batting_order attribute
+        players: List of LineupPlayerInput objects or similar objects with
+        batting_order attribute
 
     Raises:
-        BadBattingOrder: If batting orders are invalid (missing, not unique, or don't cover 1-9)
+        BadBattingOrder: If batting orders are invalid (missing, not unique,
+        or don't cover 1-9)
     """
     # Extract batting orders
     batting_orders = []
@@ -32,37 +36,31 @@ def validate_batting_orders(players):
             bo = None
 
         if bo is None:
-            raise BadBattingOrder("All players must have a batting order assigned")
+            raise BadBattingOrder("All players must have a \
+                                  batting order assigned")
         batting_orders.append(bo)
 
     # Check that we have exactly 9 players
     if len(batting_orders) != 9:
-        raise BadBattingOrder(f"Lineup must have exactly 9 players, got {len(batting_orders)}")
+        raise BadBattingOrder(f"Lineup must have exactly 9 players, got "
+                              f"{len(batting_orders)}")
 
     # Check for uniqueness
     if len(set(batting_orders)) != len(batting_orders):
         raise BadBattingOrder("Batting orders must be unique")
 
-    # Explicitly check that batting orders are exactly 1-9 for defensive programming.
+    # Explicitly check that batting orders are exactly 1-9 
+    # for defensive programming.
     if sorted(batting_orders) != list(range(1, 10)):
-        raise BadBattingOrder("Batting orders must be the numbers 1 through 9, each used exactly once")
-
-
-def _get(obj, name, default=None):
-    """Helper to read either dataclass attributes or dict keys."""
-    if obj is None:
-        return default
-    if hasattr(obj, name):
-        return getattr(obj, name)
-    if isinstance(obj, dict):
-        return obj.get(name, default)
-    return default
+        raise BadBattingOrder("Batting orders must be the numbers 1 through 9,\
+        each used exactly once")
 
 
 def validate_data(payload, require_creator: bool = True):
     """Validate the lineup data structure and domain rules.
 
-    Performs validation with necessary database lookups (e.g., team and player existence).
+    Performs validation with necessary database lookups (e.g., team and player
+      existence).
     Raises domain exceptions if validation fails; returns nothing if valid.
     """
     team_obj = fetch_team_by_id(_get(payload, "team_id"))
@@ -96,12 +94,10 @@ def validate_data(payload, require_creator: bool = True):
     User = get_user_model()
     if not created_by_id and require_creator:
         # Check that a superuser exists to be used as creator
-        created_by_id = User.objects.filter(is_superuser=True).values_list("id", flat=True).first()
+        created_by_id = User.objects.filter(is_superuser=True)\
+            .values_list("id", flat=True).first()
         if created_by_id is None:
             raise NoCreator()
-
-
-
 
 
 def validate_lineup_model(lineup):

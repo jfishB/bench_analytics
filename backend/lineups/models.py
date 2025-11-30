@@ -15,10 +15,14 @@ from django.db import models
 from roster.models import Player, Team
 
 
-class Lineup(models.Model):  # each instance is a saved batting lineup for a team
-    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name="lineups")
-    name = models.CharField(max_length=120)  # coach-entered name for the lineup
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+# each instance is a saved batting lineup for a team
+class Lineup(models.Model):
+    team = models.ForeignKey(Team, on_delete=models.CASCADE,
+                             related_name="lineups")
+    # coach-entered name for the lineup
+    name = models.CharField(max_length=120)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL,
+                                   on_delete=models.PROTECT)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -32,17 +36,20 @@ class Lineup(models.Model):  # each instance is a saved batting lineup for a tea
 
 
 class LineupPlayer(models.Model):
-    lineup = models.ForeignKey(Lineup, on_delete=models.CASCADE, related_name="players")
+    lineup = models.ForeignKey(Lineup, on_delete=models.CASCADE,
+                               related_name="players")
     player = models.ForeignKey(Player, on_delete=models.PROTECT)
     batting_order = models.PositiveSmallIntegerField(
-        null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(9)]
+        null=True, blank=True, validators=[MinValueValidator(1),
+                                           MaxValueValidator(9)]
     )
 
     class Meta:
         db_table = "lineup_players"
         ordering = ["batting_order"]  # 1..9 by default
         constraints = [
-            models.UniqueConstraint(fields=["lineup", "player"], name="unique_player_per_lineup"),
+            models.UniqueConstraint(fields=["lineup", "player"],
+                                    name="unique_player_per_lineup"),
             models.UniqueConstraint(
                 fields=["lineup", "batting_order"],
                 name="unique_batting_order_per_lineup",

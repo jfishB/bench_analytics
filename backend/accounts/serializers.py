@@ -2,7 +2,8 @@
 - This file defines the API "contract" for saving a user account
 - Imported by:
   - backend/accounts/views.py
-usage: CustomTokenObtainPairSerializer → used by CustomTokenObtainPairView (login)
+usage: CustomTokenObtainPairSerializer →
+used by CustomTokenObtainPairView (login)
 """
 
 from django.contrib.auth.models import User

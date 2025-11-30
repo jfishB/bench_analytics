@@ -8,7 +8,8 @@ from django.views.generic import RedirectView
 urlpatterns = [
     # Redirect the root URL to the saved lineups list so visiting
     # http://127.0.0.1:8000/ shows a useful page instead of a 404.
-    path("", RedirectView.as_view(url="/api/v1/lineups/saved/", permanent=False)),
+    path("", RedirectView.as_view(url="/api/v1/lineups/saved/",
+                                  permanent=False)),
     path("admin/", admin.site.urls),
     path("api/v1/lineups/", include("lineups.urls")),
     path("api/v1/auth/", include("accounts.urls")),

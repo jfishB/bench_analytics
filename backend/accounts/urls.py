@@ -1,10 +1,13 @@
 """
-- This file defines the HTTP routes (URL configuration) for the accounts module.
+- This file defines the HTTP routes (URL configuration) for the 
+accounts module.
 - Part of the web/API adapter layer; maps URLs to views only.
 """
 
 from django.urls import path
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView, TokenRefreshView
+)
 
 from . import views
 

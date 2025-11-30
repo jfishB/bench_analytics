@@ -17,7 +17,8 @@ app_name = "lineups"
 router = DefaultRouter()
 
 router.register(r"saved", views.LineupViewSet, basename="lineup")
-router.register(r"lineup-players", views.LineupPlayerViewSet, basename="lineupplayer")
+router.register(r"lineup-players", views.LineupPlayerViewSet,
+                basename="lineupplayer")
 
 urlpatterns = [
     # POST /api/v1/lineups/ -> create a lineup via algorithm

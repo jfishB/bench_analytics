@@ -14,16 +14,19 @@ class LineupPlayerIn(serializers.Serializer):
 
     player_id = serializers.IntegerField()
     # bating order is optional because the algorithm may assign it
-    batting_order = serializers.IntegerField(min_value=1, max_value=9, required=False, allow_null=True)
-
+    batting_order = serializers.IntegerField(min_value=1, max_value=9, 
+                                             required=False, allow_null=True)
 
 
 class LineupCreate(serializers.Serializer):
     """This is the entire request body to save a lineup."""
 
     team_id = serializers.IntegerField()
-    players = LineupPlayerIn(many=True, min_length=0, max_length=9, required=False)  # optional for team_id-only requests
-    name = serializers.CharField(max_length=120, required=False, allow_blank=False)
+    # optional for team_id-only requests
+    players = LineupPlayerIn(many=True, min_length=0, max_length=9,
+                             required=False)
+    name = serializers.CharField(max_length=120, required=False,
+                                 allow_blank=False)
 
 
 # ---- Response schema (server -> client) ----
@@ -54,20 +57,23 @@ class LineupOut(serializers.Serializer):
 
 
 class LineupModelSerializer(serializers.ModelSerializer):
-    """ModelSerializer for Lineup - used by ViewSet for list/retrieve operations."""
+    """ModelSerializer for Lineup - used by ViewSet for
+    list/retrieve operations."""
 
     created_by = serializers.ReadOnlyField(source="created_by_id")
     players = serializers.SerializerMethodField()
 
     class Meta:
         model = Lineup
-        fields = ["id", "team_id", "name", "created_by", "created_at", "players"]
+        fields = ["id", "team_id", "name", "created_by", "created_at",
+                  "players"]
         read_only_fields = ["id", "created_at", "created_by"]
 
     def get_players(self, obj):
         """Return the lineup players in batting order.
 
-        Filters out players with None batting_order to handle incomplete lineups.
+        Filters out players with None batting_order to handle incomplete
+          lineups.
         """
         lineup_players = obj.players.order_by("batting_order")
         return [
