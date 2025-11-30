@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from roster.services.importer import import_from_csv
+from roster.services.player_import import PlayerImportService
 
 
 class Command(BaseCommand):
@@ -29,7 +29,7 @@ class Command(BaseCommand):
         dry_run = options.get("dry_run")
 
         try:
-            result = import_from_csv(path, team_id=team_id_arg, dry_run=dry_run)
+            result = PlayerImportService.import_from_csv(path, team_id=team_id_arg, dry_run=dry_run)
         except FileNotFoundError:
             raise CommandError(f"File not found: {path}")
 

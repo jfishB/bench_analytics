@@ -17,6 +17,7 @@ import sys
 from typing import List
 
 from .dto import BatterStats, SimulationResult
+from .player_service import PlayerService
 
 lib_path = os.path.join(
     os.path.dirname(__file__), "..", "..", "lib", "baseball-simulator"
@@ -78,3 +79,40 @@ class SimulationService:
             std_dev=std_dev,
             all_scores=scores,
         )
+
+    def run_simulation_flow(
+        self, player_input: list | int, num_games: int, fetch_method: str
+    ) -> SimulationResult:
+        """
+        Orchestrate the simulation flow: fetch players -> validate -> simulate.
+
+        Args:
+            player_input: List of IDs, names, or a team ID
+            num_games: Number of games to simulate
+            fetch_method: 'ids', 'names', or 'team'
+
+        Returns:
+            SimulationResult object
+
+        Raises:
+            ValueError: If validation fails (wrong number of players, not found, etc.)
+        """
+        player_service = PlayerService()
+
+        # 1. Fetch players based on method
+        if fetch_method == "ids":
+            batter_stats = player_service.get_players_by_ids(player_input)
+        elif fetch_method == "names":
+            batter_stats = player_service.get_players_by_names(player_input)
+        elif fetch_method == "team":
+            batter_stats = player_service.get_team_players(player_input, limit=9)
+            if len(batter_stats) < 9:
+                raise ValueError(
+                    f"Team {player_input} only has {len(batter_stats)} players with valid stats. Need exactly 9."
+                )
+        else:
+            raise ValueError(f"Invalid fetch method: {fetch_method}")
+
+        # 2. Run simulation (validation happens inside simulate_lineup)
+        return self.simulate_lineup(batter_stats, num_games=num_games)
+

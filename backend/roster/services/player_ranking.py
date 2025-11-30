@@ -11,6 +11,31 @@ from typing import Any, Dict, List, Optional
 from roster.models import Player, Team
 
 
+class PlayerRankingService:
+    """Service for player ranking operations."""
+
+    @staticmethod
+    def get_ids_sorted_by_woba(player_ids: List[int]) -> List[int]:
+        """
+        Sort a list of player IDs by their xwoba (descending).
+
+        Args:
+            player_ids: List of player IDs to sort
+
+        Returns:
+            List of player IDs sorted by xwoba
+        """
+        if not player_ids:
+            return []
+
+        # Fetch players with the given IDs and sort by xwoba descending
+        # We use filter(id__in=...) to get the objects, then order_by
+        players = Player.objects.filter(id__in=player_ids).order_by("-xwoba")
+
+        # Return the sorted player IDs
+        return [player.id for player in players]
+
+
 def get_all_players_with_stats() -> List[Dict[str, Any]]:
     """
     Fetch all players with a subset of their stats as dictionaries.
@@ -51,59 +76,6 @@ def get_ranked_players(ascending: bool = False, top_n: Optional[int] = None) -> 
     # sort by wos_score
     result.sort(key=lambda p: p["wos_score"], reverse=not ascending)
     return result
-
-
-def get_all_players_with_stats() -> List[Dict[str, Any]]:
-    """
-    Fetch all players with their stats as dictionaries.
-
-    Returns:
-            List of player dictionaries containing stats.
-    """
-    return list(
-        Player.objects.all().values(
-            "id",
-            "name",
-            "team_id",
-            "bb_percent",
-            "k_percent",
-            "pa",
-            "year",
-        )
-    )
-
-
-# def get_ranked_players(ascending: bool = False, top_n: Optional[int] = None) -> List[Dict[str, Any]]:
-#     """
-#     Get players ranked by WOS score.
-
-#     TODO: Implement actual WOS ranking algorithm.
-#     For now, returns all players without ranking.
-
-#     Args:
-#         ascending: Sort order (False = highest first)
-#         top_n: Optional limit on number of results
-
-#     Returns:
-#         List of player dictionaries with wos_score field added.
-#     """
-#     players = get_all_players_with_stats()
-
-#     if not players:
-#         return []
-
-#     # TODO: Replace with actual WOS ranking logic from lineups/services/algorithm_logic.py
-#     result = []
-#     for player in players:
-#         player_data = dict(player)
-#         player_data["wos_score"] = 0.0  # Placeholder
-#         result.append(player_data)
-
-#     # Apply limit if specified
-#     if top_n:
-#         result = result[:top_n]
-
-#     return result
 
 
 def create_player_with_stats(name: str, **stats) -> Player:

@@ -22,5 +22,4 @@ router.register(r"players", views.PlayerViewSet, basename="player")
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("sort-by-woba/", views.sort_players_by_woba, name="sort-by-woba"),
 ]

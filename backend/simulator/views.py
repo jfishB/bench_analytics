@@ -19,7 +19,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .serializers import PlayerInputSerializer, PlayerNameInputSerializer, SimulationResultSerializer, TeamInputSerializer
-from .services.player_service import PlayerService
 from .services.simulation import SimulationService
 
 logger = logging.getLogger(__name__)
@@ -28,41 +27,39 @@ logger = logging.getLogger(__name__)
 def _handle_simulation_request(player_input, num_games, fetch_method):
     """
     Helper to handle simulation request with consistent error handling.
-
-    Args:
-        player_input: Player IDs, names, or team ID
-        num_games: Number of games to simulate
-        fetch_method: 'ids', 'names', or 'team'
-
-    Returns:
-        Response object with simulation results or error
+    Delegates orchestration to SimulationService.
     """
     try:
-        player_service = PlayerService()
+        service = SimulationService()
+        result = service.run_simulation_flow(player_input, num_games, fetch_method)
 
-        # Fetch players based on method
-        if fetch_method == "ids":
-            batter_stats = player_service.get_players_by_ids(player_input)
-        elif fetch_method == "names":
-            batter_stats = player_service.get_players_by_names(player_input)
-        elif fetch_method == "team":
-            batter_stats = player_service.get_team_players(player_input, limit=9)
-            if len(batter_stats) < 9:
-                return Response(
-                    {"error": f"Team {player_input} only has {len(batter_stats)} players with valid stats. Need exactly 9."},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-        else:
-            return Response({"error": "Invalid fetch method"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        # Handle empty scores edge case
+        if not result.all_scores:
+            return Response(
+                {"error": "Simulation produced no results. Please check input data."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
-        return _run_simulation_and_format_response(batter_stats, num_games)
+        response_data = {
+            "lineup": result.lineup_names,
+            "num_games": result.num_games,
+            "avg_score": result.avg_score,
+            "median_score": result.median_score,
+            "std_dev": result.std_dev,
+            "min_score": min(result.all_scores),
+            "max_score": max(result.all_scores),
+            "score_distribution": _calculate_distribution(result.all_scores),
+        }
+
+        output_serializer = SimulationResultSerializer(response_data)
+        return Response(output_serializer.data, status=status.HTTP_200_OK)
 
     except ValueError as e:
         # Player not found or data validation error
         logger.warning(f"ValueError in simulation: {str(e)}")
         return Response(
             {"error": str(e), "hint": "Check that all player IDs/names exist and have valid statistics."},
-            status=status.HTTP_404_NOT_FOUND,
+            status=status.HTTP_400_BAD_REQUEST,
         )
     except Exception as e:
         # Unexpected error - log for debugging
@@ -71,35 +68,6 @@ def _handle_simulation_request(player_input, num_games, fetch_method):
             {"error": "An unexpected error occurred during simulation.", "detail": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
-
-
-def _run_simulation_and_format_response(batter_stats, num_games):
-    """
-    Helper function to run simulation and format response.
-    Eliminates code duplication across view functions.
-    """
-    service = SimulationService()
-    result = service.simulate_lineup(batter_stats, num_games=num_games)
-
-    # Handle empty scores edge case
-    if not result.all_scores:
-        return Response(
-            {"error": "Simulation produced no results. Please check input data."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-    response_data = {
-        "lineup": result.lineup_names,
-        "num_games": result.num_games,
-        "avg_score": result.avg_score,
-        "median_score": result.median_score,
-        "std_dev": result.std_dev,
-        "min_score": min(result.all_scores),
-        "max_score": max(result.all_scores),
-        "score_distribution": _calculate_distribution(result.all_scores),
-    }
-
-    output_serializer = SimulationResultSerializer(response_data)
-    return Response(output_serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])
