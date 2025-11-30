@@ -155,6 +155,8 @@ class LineupAPITests(TestCase):
 
 
 class LineupModelTests(TestCase):
+    """Tests for Lineup and LineupPlayer models.
+    Covers basic creation and __str__ methods."""
     def setUp(self):
         self.team = Team.objects.create()
         self.player = Player.objects.create(name="Player 1", team=self.team)
@@ -172,8 +174,9 @@ class LineupModelTests(TestCase):
 
         self.assertEqual(lineup.players.count(), 1)
 
-    def test_lineup_str_method(self):
-        """Test Lineup __str__ method."""
+    def test_model_str_methods(self):
+        """Test __str__ methods for Lineup and LineupPlayer models."""
+        # Test Lineup __str__
         lineup = Lineup.objects.create(
             team=self.team, 
             name="Test Lineup",
@@ -182,10 +185,8 @@ class LineupModelTests(TestCase):
         str_repr = str(lineup)
         self.assertIn("Test Lineup", str_repr)
         self.assertIn(f"Team {self.team.id}", str_repr)
-
-    def test_lineup_player_str_method(self):
-        """Test LineupPlayer __str__ method."""
-        lineup = Lineup.objects.create(team=self.team, created_by=self.creator)
+        
+        # Test LineupPlayer __str__
         lp = LineupPlayer.objects.create(
             lineup=lineup, 
             player=self.player, 
@@ -197,7 +198,8 @@ class LineupModelTests(TestCase):
 
 
 class LineupValidationTests(TestCase):
-    """Tests for lineup validation logic to achieve 100% coverage."""
+    """Tests for lineup validation logic to achieve 100% coverage.
+    Covers edge cases in validator.py not hit by other tests."""
 
     def setUp(self):
         self.team = Team.objects.create()
@@ -217,134 +219,81 @@ class LineupValidationTests(TestCase):
         User = get_user_model()
         self.creator = User.objects.create_user(username="creator", password="pw")
 
-    def test_reject_duplicate_batting_orders(self):
-        """POST with duplicate batting orders should fail with 400."""
+    def test_api_validation_batting_order_errors(self):
+        """Test API validation for batting order related errors."""
         client = APIClient()
+        client.force_authenticate(user=self.creator)
+        
+        # Test duplicate batting orders
         payload = {
             "team_id": self.team.id,
             "name": "Duplicate Orders",
             "players": [
                 {"player_id": self.players[0].id, "batting_order": 1},
                 {"player_id": self.players[1].id, "batting_order": 1},  # duplicate
-                {"player_id": self.players[2].id, "batting_order": 3},
-                {"player_id": self.players[3].id, "batting_order": 4},
-                {"player_id": self.players[4].id, "batting_order": 5},
-                {"player_id": self.players[5].id, "batting_order": 6},
-                {"player_id": self.players[6].id, "batting_order": 7},
-                {"player_id": self.players[7].id, "batting_order": 8},
-                {"player_id": self.players[8].id, "batting_order": 9},
-            ],
+            ] + [{"player_id": p.id, "batting_order": i+3} for i, p in enumerate(self.players[2:])],
         }
-
-        client.force_authenticate(user=self.creator)
         resp = client.post("/api/v1/lineups/", payload, format="json")
         self.assertEqual(resp.status_code, 400)
         self.assertIn("Batting orders must be unique", str(resp.data))
-
-    def test_reject_invalid_batting_order_range(self):
-        """POST with batting orders not covering 1-9 should fail."""
-        client = APIClient()
+        
+        # Test invalid batting order range
         payload = {
             "team_id": self.team.id,
             "name": "Invalid Range",
-            "players": [
-                {"player_id": self.players[0].id, "batting_order": 2},  # missing 1
-                {"player_id": self.players[1].id, "batting_order": 3},
-                {"player_id": self.players[2].id, "batting_order": 4},
-                {"player_id": self.players[3].id, "batting_order": 5},
-                {"player_id": self.players[4].id, "batting_order": 6},
-                {"player_id": self.players[5].id, "batting_order": 7},
-                {"player_id": self.players[6].id, "batting_order": 8},
-                {"player_id": self.players[7].id, "batting_order": 9},
-                {"player_id": self.players[8].id, "batting_order": 10},  # invalid
-            ],
+            "players": [{"player_id": p.id, "batting_order": i+2} for i, p in enumerate(self.players)],
         }
-
-        client.force_authenticate(user=self.creator)
         resp = client.post("/api/v1/lineups/", payload, format="json")
-        # Serializer validation catches batting_order > 9 before domain validation
         self.assertEqual(resp.status_code, 400)
-
-    def test_reject_wrong_number_of_players(self):
-        """POST with != 9 players should fail."""
-        client = APIClient()
+        
+        # Test wrong number of players
         payload = {
             "team_id": self.team.id,
             "name": "Too Few Players",
-            "players": [
-                {"player_id": self.players[0].id, "batting_order": 1},
-                {"player_id": self.players[1].id, "batting_order": 2},
-                # only 2 players, need 9
-            ],
+            "players": [{"player_id": p.id, "batting_order": i+1} for i, p in enumerate(self.players[:2])],
         }
-
-        client.force_authenticate(user=self.creator)
         resp = client.post("/api/v1/lineups/", payload, format="json")
         self.assertEqual(resp.status_code, 400)
         self.assertIn("Exactly 9 players", str(resp.data))
 
-    def test_reject_nonexistent_team(self):
-        """POST with invalid team_id should fail."""
+    def test_api_validation_data_errors(self):
+        """Test API validation for team and player data errors."""
         client = APIClient()
-        payload = {
-            "team_id": 99999,  # doesn't exist
-            "name": "Bad Team",
-            "players": [
-                {"player_id": p.id, "batting_order": idx + 1}
-                for idx, p in enumerate(self.players)
-            ],
-        }
-
         client.force_authenticate(user=self.creator)
+        
+        # Test nonexistent team
+        payload = {
+            "team_id": 99999,
+            "name": "Bad Team",
+            "players": [{"player_id": p.id, "batting_order": i+1} for i, p in enumerate(self.players)],
+        }
         resp = client.post("/api/v1/lineups/", payload, format="json")
         self.assertEqual(resp.status_code, 400)
         self.assertIn("Unknown team", str(resp.data))
-
-    def test_reject_nonexistent_players(self):
-        """POST with invalid player_id should fail."""
-        client = APIClient()
+        
+        # Test nonexistent player
         payload = {
             "team_id": self.team.id,
             "name": "Bad Players",
-            "players": [
-                {"player_id": 99999, "batting_order": 1},  # doesn't exist
-            ] + [
-                {"player_id": p.id, "batting_order": idx + 2}
-                for idx, p in enumerate(self.players[1:])
-            ],
+            "players": [{"player_id": 99999, "batting_order": 1}] + 
+                      [{"player_id": p.id, "batting_order": i+2} for i, p in enumerate(self.players[1:])],
         }
-
-        client.force_authenticate(user=self.creator)
         resp = client.post("/api/v1/lineups/", payload, format="json")
         self.assertEqual(resp.status_code, 400)
         self.assertIn("Players not found", str(resp.data))
-
-    def test_reject_players_from_wrong_team(self):
-        """POST with players from different teams should fail."""
+        
+        # Test players from wrong team
         other_team = Team.objects.create()
         wrong_player = Player.objects.create(
-            name="Wrong Team Player",
-            team=other_team,
-            b_game=10.0,
-            pa=40,
-            hit=10,
-            home_run=1,
-            walk=2,
+            name="Wrong Team Player", team=other_team,
+            b_game=10.0, pa=40, hit=10, home_run=1, walk=2,
         )
-
-        client = APIClient()
         payload = {
             "team_id": self.team.id,
             "name": "Mixed Teams",
-            "players": [
-                {"player_id": wrong_player.id, "batting_order": 1},  # wrong team
-            ] + [
-                {"player_id": p.id, "batting_order": idx + 2}
-                for idx, p in enumerate(self.players[1:])
-            ],
+            "players": [{"player_id": wrong_player.id, "batting_order": 1}] + 
+                      [{"player_id": p.id, "batting_order": i+2} for i, p in enumerate(self.players[1:])],
         }
-
-        client.force_authenticate(user=self.creator)
         resp = client.post("/api/v1/lineups/", payload, format="json")
         self.assertEqual(resp.status_code, 400)
         self.assertIn("Players must belong to the same team", str(resp.data))
@@ -366,9 +315,60 @@ class LineupValidationTests(TestCase):
         self.assertEqual(resp.status_code, 403)
         self.assertIn("Authentication required", str(resp.data))
 
+    def test_get_helper_function_all_paths(self):
+        """Test _get helper function with all possible input types and edge cases."""
+        from lineups.services.validator import _get
+        from lineups.services.input_data import LineupPlayerInput
+        
+        # Test with None object returns default
+        result = _get(None, "any_key", "default_value")
+        self.assertEqual(result, "default_value")
+        
+        # Test with None object and no default returns None
+        result = _get(None, "any_key")
+        self.assertIsNone(result)
+        
+        # Test with unknown type (string - neither hasattr success nor dict)
+        result = _get("some_string", "attr", "default")
+        self.assertEqual(result, "default")
+        
+        # Test with dataclass object (hasattr path)
+        player_input = LineupPlayerInput(player_id=1, batting_order=1)
+        result = _get(player_input, "player_id")
+        self.assertEqual(result, 1)
+        
+        # Test with dict (isinstance dict path)
+        dict_obj = {"player_id": 2}
+        result = _get(dict_obj, "player_id")
+        self.assertEqual(result, 2)
+        
+        # Test with object without attribute
+        class ObjWithoutAttr:
+            pass
+        obj = ObjWithoutAttr()
+        result = _get(obj, "nonexistent_attr", "my_default")
+        self.assertEqual(result, "my_default")
+
+    def test_validate_batting_orders_with_neither_dataclass_nor_dict(self):
+        """Test validator.py line 32: validate_batting_orders with object that's neither dataclass nor dict."""
+        from lineups.services.validator import validate_batting_orders
+        from lineups.services.exceptions import BadBattingOrder
+        
+        # Create a simple object that's neither dataclass nor dict
+        class SimpleObject:
+            pass
+        
+        players = [SimpleObject() for _ in range(9)]
+        
+        # Should raise BadBattingOrder because bo will be None (line 32 else branch)
+        with self.assertRaises(BadBattingOrder) as cm:
+            validate_batting_orders(players)
+        self.assertIn("All players must have a batting order", str(cm.exception))
+
 
 class LineupViewSetTests(TestCase):
-    """Tests for LineupViewSet to cover remaining view logic."""
+    """Tests for LineupViewSet to cover remaining view logic.
+    Covers queryset filtering by user and permissions."""
 
     def setUp(self):
         self.team = Team.objects.create()
@@ -387,13 +387,33 @@ class LineupViewSetTests(TestCase):
         self.superuser = User.objects.create_superuser(username="admin", password="pw")
         self.other = User.objects.create_user(username="other", password="pw")
 
-    def test_viewset_queryset_for_unauthenticated(self):
-        """Unauthenticated requests should get empty queryset."""
+    def test_viewset_queryset_unauthenticated_scenarios(self):
+        """Test all unauthenticated user scenarios return empty queryset or 401."""
+        from lineups.views import LineupViewSet
+        from unittest.mock import Mock
+        
+        # Test 1: Unauthenticated API request gets 401
         client = APIClient()
-        # Don't authenticate
         resp = client.get("/api/v1/lineups/saved/")
-        # Should get 401 from IsAuthenticated permission
         self.assertEqual(resp.status_code, 401)
+        
+        # Test 2: ViewSet with None user
+        viewset = LineupViewSet()
+        mock_request = Mock()
+        mock_request.user = None
+        viewset.request = mock_request
+        queryset = viewset.get_queryset()
+        self.assertEqual(queryset.count(), 0)
+        
+        # Test 3: ViewSet with unauthenticated user object
+        viewset = LineupViewSet()
+        mock_request = Mock()
+        mock_user = Mock()
+        mock_user.is_authenticated = False
+        mock_request.user = mock_user
+        viewset.request = mock_request
+        queryset = viewset.get_queryset()
+        self.assertEqual(queryset.count(), 0)
 
     def test_viewset_queryset_for_superuser(self):
         """Superuser should see all lineups."""
@@ -422,7 +442,8 @@ class LineupViewSetTests(TestCase):
 
 
 class LineupServiceTests(TestCase):
-    """Unit tests for lineup services to achieve 100% coverage."""
+    """Unit tests for lineup services to achieve 100% coverage.
+    Covers edge cases in service functions not hit by other tests."""
 
     def setUp(self):
         self.team = Team.objects.create()
@@ -442,223 +463,134 @@ class LineupServiceTests(TestCase):
         User = get_user_model()
         self.creator = User.objects.create_user(username="creator", password="pw")
 
-    def test_validate_batting_orders_with_dict_input(self):
-        """Test validate_batting_orders with dict input (alternative code path)."""
+    def test_validate_batting_orders_comprehensive(self):
+        """Test validate_batting_orders with different inputs and error cases."""
         from lineups.services.validator import validate_batting_orders
+        from lineups.services.input_data import LineupPlayerInput
+        from lineups.services.exceptions import BadBattingOrder
         
-        # Use dicts instead of dataclass objects
-        players_dict = [
-            {"player_id": p.id, "batting_order": idx + 1}
-            for idx, p in enumerate(self.players)
-        ]
-        
-        # Should not raise
+        # Test with dicts (valid)
+        players_dict = [{"player_id": p.id, "batting_order": idx + 1} for idx, p in enumerate(self.players)]
         validate_batting_orders(players_dict)
-
-    def test_validate_batting_orders_rejects_none(self):
-        """Test that None batting_order is rejected."""
-        from lineups.services.validator import validate_batting_orders
-        from lineups.services.exceptions import BadBattingOrder
         
-        players_dict = [
-            {"player_id": p.id, "batting_order": None}  # explicit None
-            for p in self.players
-        ]
+        # Test with dataclass objects (valid)
+        players_dataclass = [LineupPlayerInput(player_id=p.id, batting_order=idx + 1) for idx, p in enumerate(self.players)]
+        validate_batting_orders(players_dataclass)
         
+        # Test None batting_order rejection
+        players_none = [{"player_id": p.id, "batting_order": None} for p in self.players]
         with self.assertRaises(BadBattingOrder) as cm:
-            validate_batting_orders(players_dict)
+            validate_batting_orders(players_none)
         self.assertIn("must have a batting order", str(cm.exception))
-
-    def test_validate_batting_orders_wrong_count(self):
-        """Test that wrong player count is rejected."""
-        from lineups.services.validator import validate_batting_orders
-        from lineups.services.exceptions import BadBattingOrder
         
-        # Only 5 players
-        players_dict = [
-            {"player_id": p.id, "batting_order": idx + 1}
-            for idx, p in enumerate(self.players[:5])
-        ]
-        
+        # Test wrong player count rejection
+        players_few = [{"player_id": p.id, "batting_order": idx + 1} for idx, p in enumerate(self.players[:5])]
         with self.assertRaises(BadBattingOrder) as cm:
-            validate_batting_orders(players_dict)
+            validate_batting_orders(players_few)
         self.assertIn("exactly 9 players", str(cm.exception))
 
-    def test_validate_data_with_dict_payload(self):
-        """Test validate_data with dict payload (alternative code path)."""
-        from lineups.services.validator import validate_data
-        from lineups.services.databa_access import fetch_lineup_data
-        
-        # Use plain dict instead of dataclass
-        payload_dict = {
-            "team_id": self.team.id,
-            "players": [
-                {"player_id": p.id}
-                for p in self.players
-            ],
-            "requested_user_id": self.creator.id,
-        }
-        
-        # Validate then fetch
-        validate_data(payload_dict)
-        result = fetch_lineup_data(payload_dict)
-        self.assertEqual(result["team"].id, self.team.id)
-        self.assertEqual(len(result["players"]), 9)
-
-    def test_validate_lineup_model_missing_batting_orders(self):
-        """Test validate_lineup_model rejects lineup with missing batting_orders."""
+    def test_validate_lineup_model_batting_order_errors(self):
+        """Test validate_lineup_model rejects invalid batting orders."""
         from lineups.services.validator import validate_lineup_model
         from lineups.services.exceptions import BadBattingOrder
         
-        lineup = Lineup.objects.create(team=self.team, created_by=self.creator)
-        # Create player without batting_order (None)
-        LineupPlayer.objects.create(lineup=lineup, player=self.players[0], batting_order=None)
-        
+        # Test missing batting_order (None)
+        lineup1 = Lineup.objects.create(team=self.team, created_by=self.creator)
+        LineupPlayer.objects.create(lineup=lineup1, player=self.players[0], batting_order=None)
         with self.assertRaises(BadBattingOrder):
-            validate_lineup_model(lineup)
-
-    def test_validate_lineup_model_non_consecutive_orders(self):
-        """Test validate_lineup_model rejects non-consecutive batting orders."""
-        from lineups.services.validator import validate_lineup_model
-        from lineups.services.exceptions import BadBattingOrder
+            validate_lineup_model(lineup1)
         
-        lineup = Lineup.objects.create(team=self.team, created_by=self.creator)
-        # Create players with non-consecutive orders (skip 2)
+        # Test non-consecutive batting orders
+        lineup2 = Lineup.objects.create(team=self.team, created_by=self.creator)
         for idx, p in enumerate(self.players):
             order = idx + 1 if idx < 1 else idx + 2  # 1, 3, 4, 5, 6, 7, 8, 9, 10
-            LineupPlayer.objects.create(lineup=lineup, player=p, batting_order=order)
-        
+            LineupPlayer.objects.create(lineup=lineup2, player=p, batting_order=order)
         with self.assertRaises(BadBattingOrder):
-            validate_lineup_model(lineup)
+            validate_lineup_model(lineup2)
 
-    def test_validate_data_no_creator_with_require_creator(self):
-        """Test validate_data raises NoCreator when no superuser exists."""
+    def test_validate_data_creator_handling(self):
+        """Test validate_data with required and optional creator scenarios."""
         from lineups.services.validator import validate_data
+        from lineups.services.databa_access import fetch_lineup_data
         from lineups.services.exceptions import NoCreator
         from django.contrib.auth import get_user_model
         
-        # Delete all users including superuser
+        payload_dict = {
+            "team_id": self.team.id,
+            "players": [{"player_id": p.id} for p in self.players],
+            "requested_user_id": None,
+        }
+        
+        # Test require_creator=True raises NoCreator when no users exist
         User = get_user_model()
         User.objects.all().delete()
-        
-        payload_dict = {
-            "team_id": self.team.id,
-            "players": [{"player_id": p.id} for p in self.players],
-            "requested_user_id": None,  # No user provided
-        }
-        
-        # Should raise NoCreator since require_creator=True by default
         with self.assertRaises(NoCreator):
             validate_data(payload_dict, require_creator=True)
-
-    def test_validate_data_no_creator_optional(self):
-        """Test validate_data doesn't raise when require_creator=False and no creator provided."""
-        from lineups.services.validator import validate_data
-        from lineups.services.databa_access import fetch_lineup_data
         
-        payload_dict = {
-            "team_id": self.team.id,
-            "players": [{"player_id": p.id} for p in self.players],
-            "requested_user_id": None,  # No user provided
-        }
-        
-        # Should not raise when require_creator=False
+        # Test require_creator=False doesn't raise
         validate_data(payload_dict, require_creator=False)
-        
-        # Check that fetch returns None for created_by_id when no user provided
         result = fetch_lineup_data(payload_dict)
         self.assertIsNone(result["created_by_id"])
 
-    def test_validate_lineup_model_none_input(self):
-        """Test validate_lineup_model raises PlayersNotFound for None."""
+    def test_validate_lineup_model_error_cases(self):
+        """Test validate_lineup_model with various error conditions."""
         from lineups.services.validator import validate_lineup_model
-        from lineups.services.exceptions import PlayersNotFound
+        from lineups.services.exceptions import PlayersNotFound, PlayersWrongTeam
         
+        # Test None input
         with self.assertRaises(PlayersNotFound):
             validate_lineup_model(None)
-
-    def test_validate_lineup_model_no_team(self):
-        """Test validate_lineup_model raises PlayersWrongTeam for lineup without team."""
-        from lineups.services.validator import validate_lineup_model
-        from lineups.services.exceptions import PlayersWrongTeam
         
-        # Create lineup without team (using create with team_id=None won't work due to FK)
-        # Instead, test with a lineup object that has team_id attribute set to None
-        lineup = Lineup(name="Test", created_by=self.creator)
-        lineup.team_id = None
-        
+        # Test lineup without team
+        lineup_no_team = Lineup(name="Test", created_by=self.creator)
+        lineup_no_team.team_id = None
         with self.assertRaises(PlayersWrongTeam):
-            validate_lineup_model(lineup)
-
-    def test_validate_lineup_model_empty_players(self):
-        """Test validate_lineup_model raises PlayersNotFound for lineup without players."""
-        from lineups.services.validator import validate_lineup_model
-        from lineups.services.exceptions import PlayersNotFound
+            validate_lineup_model(lineup_no_team)
         
-        lineup = Lineup.objects.create(team=self.team, created_by=self.creator)
-        # Don't add any players
-        
+        # Test lineup without players
+        lineup_empty = Lineup.objects.create(team=self.team, created_by=self.creator)
         with self.assertRaises(PlayersNotFound):
-            validate_lineup_model(lineup)
-
-    def test_validate_lineup_model_wrong_team_player(self):
-        """Test validate_lineup_model raises PlayersWrongTeam when player from different team."""
-        from lineups.services.validator import validate_lineup_model
-        from lineups.services.exceptions import PlayersWrongTeam
+            validate_lineup_model(lineup_empty)
         
+        # Test lineup with player from wrong team
         other_team = Team.objects.create()
         wrong_player = Player.objects.create(
-            name="Wrong Team",
-            team=other_team,
-            b_game=10.0,
-            pa=40,
-            hit=10,
-            home_run=1,
-            walk=2,
+            name="Wrong Team", team=other_team,
+            b_game=10.0, pa=40, hit=10, home_run=1, walk=2,
         )
-        
-        lineup = Lineup.objects.create(team=self.team, created_by=self.creator)
-        LineupPlayer.objects.create(lineup=lineup, player=wrong_player, batting_order=1)
-        
+        lineup_wrong = Lineup.objects.create(team=self.team, created_by=self.creator)
+        LineupPlayer.objects.create(lineup=lineup_wrong, player=wrong_player, batting_order=1)
         with self.assertRaises(PlayersWrongTeam):
-            validate_lineup_model(lineup)
+            validate_lineup_model(lineup_wrong)
 
-    def test_validate_data_player_id_as_int(self):
-        """Test validate_data handles player IDs provided as plain integers."""
+    def test_validate_data_player_id_formats(self):
+        """Test validate_data with different player ID formats and edge cases."""
         from lineups.services.validator import validate_data
         from lineups.services.databa_access import fetch_lineup_data
-        
-        # Pass player IDs as integers instead of dicts
-        payload_dict = {
-            "team_id": self.team.id,
-            "players": [p.id for p in self.players],  # plain ints
-            "requested_user_id": self.creator.id,
-        }
-        
-        # Test that validation passes
-        validate_data(payload_dict)
-        
-        # Test that fetch returns correct data
-        result = fetch_lineup_data(payload_dict)
-        self.assertEqual(result["team"].id, self.team.id)
-        self.assertEqual(len(result["players"]), 9)
-
-    def test_validate_data_missing_player_id(self):
-        """Test validate_data raises PlayersNotFound when player_id is None."""
-        from lineups.services.validator import validate_data
         from lineups.services.exceptions import PlayersNotFound
         
-        payload_dict = {
+        # Test with plain integers (valid)
+        payload_ints = {
+            "team_id": self.team.id,
+            "players": [p.id for p in self.players],
+            "requested_user_id": self.creator.id,
+        }
+        validate_data(payload_ints)
+        result = fetch_lineup_data(payload_ints)
+        self.assertEqual(result["team"].id, self.team.id)
+        self.assertEqual(len(result["players"]), 9)
+        
+        # Test with None player_id (invalid)
+        payload_none = {
             "team_id": self.team.id,
             "players": [
                 {"player_id": self.players[0].id},
-                {"player_id": None},  # Missing player_id
+                {"player_id": None},
             ] + [{"player_id": p.id} for p in self.players[2:]],
             "requested_user_id": self.creator.id,
         }
-        
         with self.assertRaises(PlayersNotFound):
-            validate_data(payload_dict)
+            validate_data(payload_none)
 
 
 class LineupAlgorithmTests(TestCase):
@@ -680,50 +612,39 @@ class LineupAlgorithmTests(TestCase):
             interactor.generate_suggested_lineup(self.team.id, selected_player_ids=None)
         self.assertIn("Player IDs are required", str(cm.exception))
 
-    def test_calculate_player_adjustments_with_zero_b_game(self):
-        """Test calculate_player_adjustments when player has b_game=0 (line 47)."""
+    def test_calculate_player_adjustments_with_invalid_b_game(self):
+        """Test calculate_player_adjustments when player has b_game=0 or None."""
         from lineups.services.algorithm_logic import calculate_player_adjustments
         
-        player = Player.objects.create(
+        adjustments = {
+            "h_adj": 0, "hr_adj": 0, "bb_adj": 0, "ibb_adj": 0, "hbp_adj": 0,
+            "sb_adj": 0, "cs_adj": 0, "gidp_adj": 0, "sf_adj": 0, "sh_adj": 0, "tb_adj": 0
+        }
+        
+        # Test with b_game=0
+        player_zero = Player.objects.create(
             name="Zero Games",
             team=self.team,
-            b_game=0,  # Zero games
+            b_game=0,
             pa=0,
             hit=0,
             home_run=0,
             walk=0,
         )
-        
-        adjustments = {
-            "h_adj": 0, "hr_adj": 0, "bb_adj": 0, "ibb_adj": 0, "hbp_adj": 0,
-            "sb_adj": 0, "cs_adj": 0, "gidp_adj": 0, "sf_adj": 0, "sh_adj": 0, "tb_adj": 0
-        }
-        
-        result = calculate_player_adjustments(player, 1, adjustments)
-        # Should return adjustments unchanged
+        result = calculate_player_adjustments(player_zero, 1, adjustments)
         self.assertEqual(result, adjustments)
-
-    def test_calculate_player_adjustments_with_none_b_game(self):
-        """Test calculate_player_adjustments when player has b_game=None (line 47)."""
-        from lineups.services.algorithm_logic import calculate_player_adjustments
         
-        player = Player.objects.create(
+        # Test with b_game=None
+        player_none = Player.objects.create(
             name="None Games",
             team=self.team,
-            b_game=None,  # None games
+            b_game=None,
             pa=10,
             hit=5,
             home_run=1,
             walk=2,
         )
-        
-        adjustments = {
-            "h_adj": 0, "hr_adj": 0, "bb_adj": 0, "ibb_adj": 0, "hbp_adj": 0,
-            "sb_adj": 0, "cs_adj": 0, "gidp_adj": 0, "sf_adj": 0, "sh_adj": 0, "tb_adj": 0
-        }
-        
-        result = calculate_player_adjustments(player, 1, adjustments)
-        # Should return adjustments unchanged
+        result = calculate_player_adjustments(player_none, 1, adjustments)
         self.assertEqual(result, adjustments)
 
     def test_calculate_baserun_with_zero_denominator(self):
@@ -813,8 +734,8 @@ class LineupCreationHandlerTests(TestCase):
         User = get_user_model()
         self.creator = User.objects.create_user(username="creator", password="pw")
 
-    def test_handle_lineup_save_validation_exception(self):
-        """Test handle_lineup_save when validate_lineup_model raises exception (lines 78-79)."""
+    def test_handle_lineup_save_validation_failures(self):
+        """Test handle_lineup_save with validation exception and False return."""
         from lineups.services.lineup_creation_handler import handle_lineup_save
         from lineups.services.input_data import LineupPlayerInput
         from lineups.services.exceptions import DomainError
@@ -824,74 +745,41 @@ class LineupCreationHandlerTests(TestCase):
             "team": self.team,
             "players": self.players,
             "created_by_id": self.creator.id,
-            "original_players": [
-                LineupPlayerInput(player_id=p.id, batting_order=idx + 1)
-                for idx, p in enumerate(self.players)
-            ],
+            "original_players": [LineupPlayerInput(player_id=p.id, batting_order=idx + 1) for idx, p in enumerate(self.players)],
             "name": "Test Lineup",
         }
+        original_batting_orders = [idx + 1 for idx in range(9)]
         
-        # Mock validate_lineup_model to raise an exception
+        # Test validation exception
         with patch('lineups.services.lineup_creation_handler.validate_lineup_model') as mock_validate:
             mock_validate.side_effect = Exception("Test validation error")
-            
-            original_batting_orders = [idx + 1 for idx in range(9)]
             with self.assertRaises(DomainError) as cm:
                 handle_lineup_save(validated_data, original_batting_orders)
-            
             self.assertIn("Test validation error", str(cm.exception))
-
-    def test_handle_lineup_save_validation_returns_false(self):
-        """Test handle_lineup_save when validate_lineup_model returns False (line 81)."""
-        from lineups.services.lineup_creation_handler import handle_lineup_save
-        from lineups.services.input_data import LineupPlayerInput
-        from lineups.services.exceptions import DomainError
-        from unittest.mock import patch
         
-        validated_data = {
-            "team": self.team,
-            "players": self.players,
-            "created_by_id": self.creator.id,
-            "original_players": [
-                LineupPlayerInput(player_id=p.id, batting_order=idx + 1)
-                for idx, p in enumerate(self.players)
-            ],
-            "name": "Test Lineup",
-        }
-        
-        # Mock validate_lineup_model to return False
+        # Test validation returns False
         with patch('lineups.services.lineup_creation_handler.validate_lineup_model') as mock_validate:
             mock_validate.return_value = False
-            
-            original_batting_orders = [idx + 1 for idx in range(9)]
             with self.assertRaises(DomainError) as cm:
                 handle_lineup_save(validated_data, original_batting_orders)
-            
             self.assertIn("Lineup validation failed", str(cm.exception))
 
-    def test_generate_suggested_lineup_empty_tuple(self):
-        """Test generate_suggested_lineup returns empty list when algorithm returns empty tuple (line 117)."""
+    def test_generate_suggested_lineup_empty_or_none_result(self):
+        """Test generate_suggested_lineup returns empty list for empty tuple or None from algorithm."""
         from lineups.interactor import LineupCreationInteractor
         from unittest.mock import patch
         
-        # Mock algorithm_create_lineup to return empty tuple
+        interactor = LineupCreationInteractor()
+        
+        # Test with empty tuple
         with patch('lineups.interactor.algorithm_create_lineup') as mock_algo:
-            mock_algo.return_value = tuple()  # Empty tuple
-            
-            interactor = LineupCreationInteractor()
+            mock_algo.return_value = tuple()
             result = interactor.generate_suggested_lineup(self.team.id, [p.id for p in self.players])
             self.assertEqual(result, [])
-
-    def test_generate_suggested_lineup_none_result(self):
-        """Test generate_suggested_lineup handles None result from algorithm (line 117)."""
-        from lineups.interactor import LineupCreationInteractor
-        from unittest.mock import patch
         
-        # Mock algorithm_create_lineup to return None
+        # Test with None
         with patch('lineups.interactor.algorithm_create_lineup') as mock_algo:
             mock_algo.return_value = None
-            
-            interactor = LineupCreationInteractor()
             result = interactor.generate_suggested_lineup(self.team.id, [p.id for p in self.players])
             self.assertEqual(result, [])
 
@@ -907,38 +795,28 @@ class AuthUserServiceTests(TestCase):
         self.other = User.objects.create_user(username="other", password="pw")
         self.superuser = User.objects.create_superuser(username="admin", password="pw")
 
-    def test_authorize_lineup_deletion_creator_allowed(self):
-        """Test that creator can delete their own lineup."""
-        from lineups.services.auth_user import authorize_lineup_deletion
-        
-        lineup = Lineup.objects.create(team=self.team, created_by=self.creator)
-        result = authorize_lineup_deletion(self.creator, lineup)
-        self.assertIsNone(result)  # None means authorized
-
-    def test_authorize_lineup_deletion_other_user_denied(self):
-        """Test that other user cannot delete lineup (triggers line 14)."""
-        from lineups.services.auth_user import authorize_lineup_deletion
-        
-        lineup = Lineup.objects.create(team=self.team, created_by=self.creator)
-        result = authorize_lineup_deletion(self.other, lineup)
-        self.assertIsNotNone(result)  # Response means denied
-        self.assertEqual(result.status_code, 403)
-        self.assertIn("do not have permission", str(result.data))
-
-    def test_authorize_lineup_deletion_superuser_allowed(self):
-        """Test that superuser can delete any lineup (triggers is_superuser check)."""
-        from lineups.services.auth_user import authorize_lineup_deletion
-        
-        lineup = Lineup.objects.create(team=self.team, created_by=self.creator)
-        result = authorize_lineup_deletion(self.superuser, lineup)
-        self.assertIsNone(result)  # None means authorized
-
-    def test_authorize_lineup_deletion_unauthenticated(self):
-        """Test that unauthenticated user is denied."""
+    def test_authorize_lineup_deletion_all_scenarios(self):
+        """Test authorize_lineup_deletion for all user types and permissions."""
         from lineups.services.auth_user import authorize_lineup_deletion
         from django.contrib.auth.models import AnonymousUser
         
         lineup = Lineup.objects.create(team=self.team, created_by=self.creator)
+        
+        # Test creator allowed
+        result = authorize_lineup_deletion(self.creator, lineup)
+        self.assertIsNone(result)
+        
+        # Test other user denied
+        result = authorize_lineup_deletion(self.other, lineup)
+        self.assertIsNotNone(result)
+        self.assertEqual(result.status_code, 403)
+        self.assertIn("do not have permission", str(result.data))
+        
+        # Test superuser allowed
+        result = authorize_lineup_deletion(self.superuser, lineup)
+        self.assertIsNone(result)
+        
+        # Test unauthenticated denied
         result = authorize_lineup_deletion(AnonymousUser(), lineup)
         self.assertIsNotNone(result)
         self.assertEqual(result.status_code, 401)
@@ -976,34 +854,97 @@ class LineupViewEdgeCaseTests(TestCase):
             self.assertEqual(resp.status_code, 400)
             self.assertIn("team_id is required", str(resp.data))
 
-    def test_viewset_get_queryset_with_none_user(self):
-        """Test ViewSet get_queryset when request.user is None (line 181)."""
-        from lineups.views import LineupViewSet
-        from unittest.mock import Mock
+    def test_views_extract_player_ids_with_non_list(self):
+        """Test views.py line 120: _extract_player_ids returns None for non-list."""
+        from lineups.views import LineupCreateView
         
-        viewset = LineupViewSet()
+        view = LineupCreateView()
         
-        # Create a mock request with user=None
-        mock_request = Mock()
-        mock_request.user = None
-        viewset.request = mock_request
+        # Test with non-list input (e.g., None, string, int)
+        result = view._extract_player_ids({"players": None})
+        self.assertIsNone(result)
         
-        queryset = viewset.get_queryset()
-        self.assertEqual(queryset.count(), 0)  # Should return empty queryset
+        result = view._extract_player_ids({"players": "not_a_list"})
+        self.assertIsNone(result)
+        
+        result = view._extract_player_ids({"players": 123})
+        self.assertIsNone(result)
 
-    def test_viewset_get_queryset_with_unauthenticated_user(self):
-        """Test ViewSet get_queryset when user.is_authenticated is False."""
-        from lineups.views import LineupViewSet
-        from unittest.mock import Mock
+
+class LineupInteractorTests(TestCase):
+    """Additional tests to achieve 100% code coverage."""
+
+    def setUp(self):
+        self.team = Team.objects.create()
+        self.players = []
+        for i in range(9):
+            p = Player.objects.create(
+                name=f"Player {i+1}",
+                team=self.team,
+                b_game=10.0,
+                pa=40 + i,
+                hit=10 + i,
+                home_run=1 + (i % 3),
+                walk=2 + (i % 2),
+            )
+            self.players.append(p)
+        User = get_user_model()
+        self.creator = User.objects.create_user(username="creator", password="pw")
+
+    def test_generate_suggested_lineup_none_team_id(self):
+        """Test interactor.py line 64: team_id is None raises DomainError."""
+        from lineups.interactor import LineupCreationInteractor
+        from lineups.services.exceptions import DomainError
         
-        viewset = LineupViewSet()
+        interactor = LineupCreationInteractor()
+        with self.assertRaises(DomainError) as cm:
+            interactor.generate_suggested_lineup(None, selected_player_ids=[1, 2, 3])
+        self.assertIn("team_id is required", str(cm.exception))
+
+    
+class LineupDatabaseTests(TestCase):
+    """Tests for database access layer functionality."""
+    def setUp(self):
+        self.team = Team.objects.create()
+        self.players = []
+        for i in range(9):
+            p = Player.objects.create(
+                name=f"Player {i+1}",
+                team=self.team,
+                b_game=10.0,
+                pa=40 + i,
+                hit=10 + i,
+                home_run=1 + (i % 3),
+                walk=2 + (i % 2),
+            )
+            self.players.append(p)
+        User = get_user_model()
+        self.creator = User.objects.create_user(username="creator", password="pw")
+
+    def test_fetch_lineup_data_with_optional_fields(self):
+        """Test fetch_lineup_data handles optional fields correctly."""
+        from lineups.services.databa_access import fetch_lineup_data
+        from lineups.services.input_data import CreateLineupInput, LineupPlayerInput
         
-        # Create a mock request with unauthenticated user
-        mock_request = Mock()
-        mock_user = Mock()
-        mock_user.is_authenticated = False
-        mock_request.user = mock_user
-        viewset.request = mock_request
+        # Test with all fields provided
+        payload_full = CreateLineupInput(
+            team_id=self.team.id,
+            players=[LineupPlayerInput(player_id=p.id) for p in self.players],
+            requested_user_id=self.creator.id,
+        )
+        result = fetch_lineup_data(payload_full)
+        self.assertEqual(result["team"].id, self.team.id)
+        self.assertEqual(len(result["players"]), 9)
         
-        queryset = viewset.get_queryset()
-        self.assertEqual(queryset.count(), 0)  # Should return empty queryset
+        # Test with minimal payload (None optional fields)
+        payload_minimal = CreateLineupInput(
+            team_id=self.team.id,
+            players=[LineupPlayerInput(player_id=p.id) for p in self.players],
+            requested_user_id=None,
+            name=None,
+        )
+        result = fetch_lineup_data(payload_minimal)
+        self.assertIsNone(result["name"])
+        self.assertIsNone(result["created_by_id"])
+
+    
