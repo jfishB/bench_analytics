@@ -9,8 +9,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "ui/components/card";
-import { Button } from "ui/components/button";
+} from "@/ui/components/card";
+import { Button } from "@/ui/components/button";
 import {
   DndContext,
   closestCenter,
