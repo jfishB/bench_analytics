@@ -16,7 +16,15 @@ export const playersService = {
     const response = await fetch(`${API_BASE}/players`);
     
     if (!response.ok) {
-      throw new Error("Failed to fetch players");
+      const status = response.status;
+      if (status === 404) {
+        throw new Error("Players endpoint not found");
+      } else if (status >= 500) {
+        throw new Error("Server error while fetching players");
+      } else if (status === 401 || status === 403) {
+        throw new Error("Unauthorized to fetch players");
+      }
+      throw new Error(`Failed to fetch players (status: ${status})`);
     }
     
     return response.json();
