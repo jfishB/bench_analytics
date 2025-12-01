@@ -93,6 +93,12 @@ export const authService = {
     });
 
     if (!response.ok) {
+      const status = response.status;
+      if (status === 401) {
+        throw new Error("Session expired. Please log in again");
+      } else if (status >= 500) {
+        throw new Error("Server error. Please try again later");
+      }
       throw new Error("Token refresh failed");
     }
 
