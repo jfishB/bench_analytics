@@ -29,11 +29,13 @@ import { useLineupSimulator } from "../hooks/useLineupSimulator";
 interface LineupSimulatorTabProps {
   savedLineups: SavedLineup[];
   loading: boolean;
+  onLineupDeleted?: () => void;
 }
 
 export function LineupSimulatorTab({
   savedLineups,
   loading,
+  onLineupDeleted,
 }: LineupSimulatorTabProps) {
   const {
     selectedLineupIds,
@@ -51,7 +53,7 @@ export function LineupSimulatorTab({
     handleRunSimulation,
     handleDeleteLineup,
     handleClearResults,
-  } = useLineupSimulator(savedLineups);
+  } = useLineupSimulator(savedLineups, onLineupDeleted);
 
   // Returns a distinct color for each index, using the palette for the first 8, then generating new HSL colors as needed
   function getColor(index: number): string {

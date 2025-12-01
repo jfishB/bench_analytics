@@ -9,9 +9,12 @@ import {
   useMonteCarloSimulation,
   SimulationConfig,
 } from "./useMonteCarloSimulation";
-import { SIMULATION_CONFIG, STATUS_MESSAGES } from "shared";
+import { SIMULATION_CONFIG, STATUS_MESSAGES, UI_MESSAGES } from "shared";
 
-export function useLineupSimulator(savedLineups: SavedLineup[]) {
+export function useLineupSimulator(
+  savedLineups: SavedLineup[],
+  onLineupDeleted?: () => void
+) {
   const [selectedLineupIds, setSelectedLineupIds] = useState<number[]>([]);
   const [expandedLineupIds, setExpandedLineupIds] = useState<number[]>([]);
   const [includeWobaBaseline, setIncludeWobaBaseline] = useState(false);
@@ -125,16 +128,17 @@ export function useLineupSimulator(savedLineups: SavedLineup[]) {
 
   const handleDeleteLineup = async (lineupId: number, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    if (!window.confirm("Are you sure you want to delete this lineup?")) return;
+    if (!window.confirm(UI_MESSAGES.DELETE_CONFIRMATION)) return;
 
     try {
       await deleteLineup(lineupId);
-      // clear selection if deleted lineup was selected
+      // Clear selection if deleted lineup was selected
       setSelectedLineupIds((prev) => prev.filter((id) => id !== lineupId));
-      // simple refresh: ask parent to re-fetch instead if available
-      window.location.reload();
+      // Clear expanded state for deleted lineup
+      setExpandedLineupIds((prev) => prev.filter((id) => id !== lineupId));
+      // Trigger parent component to refresh the lineup list
+      onLineupDeleted?.();
     } catch (err: any) {
-      // show error (uses existing simulation error setter)
       setSimulationError?.(String(err) ?? "Failed to delete lineup");
     }
   };

@@ -138,8 +138,9 @@ export function LineupOptimizer() {
     setActiveTab("manual");
     try {
       clearGeneratedLineup?.();
+    } catch {
+      /* ignore */
     }
-    catch { /* ignore */ }
   };
 
   // Wrapper handlers for save operations with error handling
@@ -487,6 +488,7 @@ export function LineupOptimizer() {
           <LineupSimulatorTab
             savedLineups={savedLineups}
             loading={loadingLineups}
+            onLineupDeleted={fetchSavedLineups}
           />
         </TabsContent>
       </Tabs>
