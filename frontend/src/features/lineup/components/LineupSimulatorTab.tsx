@@ -9,8 +9,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../../../ui/components/card";
-import { Button } from "../../../ui/components/button";
+} from "ui/components/card";
+import { Button } from "ui/components/button";
 import { SavedLineup } from "../services/lineupService";
 import {
   BarChart,
@@ -22,8 +22,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { CHART_COLORS } from "../../../shared/designTokens";
-import { SIMULATION_CONFIG, UI_MESSAGES } from "../../../shared/constants";
+import { CHART_COLORS, SIMULATION_CONFIG, UI_MESSAGES } from "shared";
 import { BarChart3, ChevronDown, ChevronRight } from "lucide-react";
 import { useLineupSimulator } from "../hooks/useLineupSimulator";
 

@@ -9,7 +9,7 @@ import {
   useMonteCarloSimulation,
   SimulationConfig,
 } from "./useMonteCarloSimulation";
-import { SIMULATION_CONFIG, STATUS_MESSAGES } from "../../../shared/constants";
+import { SIMULATION_CONFIG, STATUS_MESSAGES } from "shared";
 
 export function useLineupSimulator(savedLineups: SavedLineup[]) {
   const [selectedLineupIds, setSelectedLineupIds] = useState<number[]>([]);
