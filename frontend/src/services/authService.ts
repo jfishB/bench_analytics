@@ -29,7 +29,18 @@ export const authService = {
     });
 
     if (!response.ok) {
-      throw new Error("Login failed");
+      const status = response.status;
+      let message = "Login failed";
+      if (status === 401) {
+        message = "Invalid username or password";
+      } else if (status >= 500) {
+        message = "Server error. Please try again later";
+      } else {
+        // Try to include more details if available
+        const errorText = await response.text();
+        message = errorText || `Login failed (status ${status}: ${response.statusText})`;
+      }
+      throw new Error(message);
     }
 
     return response.json();
