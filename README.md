@@ -31,31 +31,61 @@ Built with amateur and youth coaches in mind, the tool gives teams without dedic
 
 ## Code Architecture
 
-## System Architecutre
+## System Architecture
+
+Bench Analytics follows a decoupled **Client-Server architecture**, separating the user interface from the data processing logic. This ensures modularity, allowing the frontend and backend to be developed, tested, and deployed independently.
 
 ## Hosted connected ...
+
+**Local Development**: 
+- The project utilizes Docker and Docker Compose to containerize the PostgreSQL database and pgAdmin interface, ensuring a consistent data environment across different developer machines.
+- The application services currently run on local runtimes (Node.js and Python).
+**Production (Hosting & Architecture)**:
+- The production environment is deployed on Render, where the backend service is hosted as a separate web services and the frontend service is hosted as a static site.
+- The backend (Django REST Framework) runs as a Render web service and connects to a managed PostgreSQL database provided by Render while both being hosted in the same region in organ.
+- The frontend (Next.js/React) is deployed as a static site or web service on Render, and communicates directly with the backend API over HTTPS.
+- Environment variables (API URLs, database credentials, JWT secrets, etc.) are securely stored in Render’s environment settings.
+- All services are connected using Render’s internal networking to ensure secure and efficient communication.
+**CI Pipelines**: GitHub Actions workflows (```bash frontend-ci.yml```, ```bash backend-ci.yml```) are configured to automatically run linting (ESLint, Flake8), type checking (TypeScript), and unit tests (Jest, Pytest) on every push to ```bash main``` or ```bash develop```.
 
 ## Tech Stack
 
 **Frontend**
 
-- React (TypeScript)
-- Tailwind CSS
+- **Core**: React 18 with TypeScript for type-safe component logic.
+- **Styling**: Tailwind CSS for utility-first styling, using ```bash tailwind-merge``` and ```bash clsx``` for dynamic class management
+- **UI Components**: Built with **Radix UI** primitives (```bash @radix-ui```) for accessible, headless interactive components.
+- **Visualization: Recharts**: For rendering responsive baseball analytics charts.
+- **Interactions: dnd-kit**: (```bash @dnd-kit```) for complex drag-and-drop lineup management.
+- **State & Networking**: React Context API for global auth state; standard ```bash fetch``` wrapper for API consumption.
 
-**Backend**
+**Backend (REST API)**
 
-- Django 5 (Python)
-- REST API architecture
+- **Framework**: Django 5 with **Django REST Framework (DRF)**.
+- **Authentication: SimpleJWT**: Implementation for stateless JSON Web Token (JWT) authentication.
+- **Configuration**: ```bash django-environ``` for 12-factor app configuration management.
+- **Testing**: ```bash pytest``` with ```bash pytest-django``` and ```bash coverage``` for robust backend testing.
+
+**System Design & Connectivity**
+
+1. **Client-Side**: The React frontend acts as the consumer. It manages application state and communicates with the backend via a RESTful API.
+2. **API Layer**: The Django backend exposes structured endpoints. It handles business logic (lineup optimization algorithms), data validation, and serialization.
+- **Communication**: JSON over HTTP.
+- **Security**: Routes are protected via JWT Access/Refresh tokens.
+- **CORS**: Configured to allow cross-origin requests, facilitating the split-stack development workflow.
+3. **Data Layer**: The backend communicates with the PostgreSQL database using Django's ORM, ensuring database-agnostic queries and secure transaction management.
 
 **Database**
 
-- PostgreSQL (via Docker Compose for local development)
+- **Primary DB: PostgreSQL 16**: Chosen for its robustness with relational data (players, teams, lineups).
 
 **Dev Tools & Infrastructure**
 
-- Docker
+- Docker for local development
 - Git & GitHub for version control
 - ESLint + Prettier for clean and consistent code
+- TypeScript for type checking
+- Jest + Pytest for unit tests
 
 ## Hosting Instructions
 
