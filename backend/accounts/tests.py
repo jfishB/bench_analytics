@@ -64,8 +64,8 @@ class AccountServiceTests(TestCase):
             register_user("newuser2", "test@example.com", "password")
 
     def test_register_user_existing_username_and_email(self):
-        # Both username and email already taken – should raise username error first
-        with self.assertRaises(UserAlreadyExistsError):
+        # Both username and email already taken – should raise email error first
+        with self.assertRaises(EmailAlreadyExistsError):
             register_user("testuser", "test@example.com", "password")
 
     # --- login_user tests ---
@@ -252,6 +252,16 @@ class AccountExceptionTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("error", response.data)
 
+    def test_logout_successful(self):
+        refresh = RefreshToken.for_user(self.user)
+        access = str(refresh.access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
+
+        response = self.client.post(self.logout_url, data={"refresh": str(refresh)})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("message", response.data)
+        self.assertEqual(response.data["message"], "Logout successful.")
+
     def test_logout_invalid_token_returns_400(self):
         # Authenticate
         refresh = RefreshToken.for_user(self.user)
@@ -274,4 +284,3 @@ class AccountExceptionTests(TestCase):
             response = self.client.post(self.logout_url, data={"refresh": "anything"})
             self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
             self.assertIn("error", response.data)
-
