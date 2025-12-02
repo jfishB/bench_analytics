@@ -63,3 +63,10 @@ class PlayerRankingServiceTestCase(TestCase):
 
         t_none = get_team_by_id(999)
         self.assertIsNone(t_none)
+
+    def test_get_ranked_players_empty(self):
+        """Test ranking with no players."""
+        # Clear players created in setUp
+        Player.objects.all().delete()
+        result = get_ranked_players()
+        self.assertEqual(result, [])

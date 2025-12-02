@@ -198,6 +198,8 @@ class SimulationFlowTestCase(TestCase):
     def test_flow_team_not_enough_players(self):
         """Test team with insufficient players."""
         empty_team = Team.objects.create(id=2)
+        # Add one player so we don't get "No players found" error
+        Player.objects.create(name="Lonely Player", team=empty_team, pa=100)
         with self.assertRaises(ValueError) as ctx:
             self.service.run_simulation_flow(empty_team.id, 10, "team")
         self.assertIn("Need exactly 9", str(ctx.exception))

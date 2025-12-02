@@ -48,3 +48,10 @@ class PlayerViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    @action(detail=False, methods=["get"])
+    def ranked(self, request):
+        """Get all players ranked by wos_score."""
+        from .services.player_ranking import get_ranked_players
+        ranked_players = get_ranked_players()
+        return Response({"players": ranked_players})
+

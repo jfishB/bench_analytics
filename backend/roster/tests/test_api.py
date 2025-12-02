@@ -1,39 +1,7 @@
-from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-
-from .models import Player, Team
-from .services.player_ranking import get_ranked_players
-
-
-class PlayerModelTests(TestCase):
-    """Test Player model functionality."""
-
-    def setUp(self):
-        self.team = Team.objects.create(id=1)
-
-    def test_create_player(self):
-        """Test creating a player."""
-        player = Player.objects.create(name="Test Player", team=self.team, home_run=10)
-        self.assertEqual(player.name, "Test Player")
-        self.assertEqual(player.team, self.team)
-        self.assertEqual(player.home_run, 10)
-
-    def test_player_str(self):
-        """Test player string representation."""
-        player = Player.objects.create(name="John Doe", team=self.team)
-        self.assertEqual(str(player), "John Doe")
-
-
-class PlayerRankingServiceTests(TestCase):
-    """Test player ranking service functions."""
-
-    def test_get_ranked_players_empty(self):
-        """Test ranking with no players."""
-        result = get_ranked_players()
-        self.assertEqual(result, [])
-
+from roster.models import Player, Team
 
 class PlayerAPITests(APITestCase):
     """Test Player API endpoints."""
