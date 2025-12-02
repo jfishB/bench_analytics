@@ -86,7 +86,7 @@ jobs:
       env:
         DJANGO_SETTINGS_MODULE: config.settings
       run: |
-        pytest lineups/tests.py accounts/tests.py roster/tests.py simulator/tests.py --cov=lineups --cov=accounts --cov=roster --cov=simulator --cov-report=xml --cov-report=term-missing
+        pytest lineups/tests.py accounts/tests.py roster/tests/ simulator/tests.py --cov=lineups --cov=accounts --cov=roster --cov=simulator --cov-report=xml --cov-report=term-missing
 
     - name: Check for security vulnerabilities in dependencies
       run: |
