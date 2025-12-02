@@ -96,12 +96,3 @@ def logout(request):
         print("Logout error:", e)
         return Response({"error": "Unexpected server error."},
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class CustomTokenObtainPairView(TokenObtainPairView):
-    """
-    Custom login view using CustomTokenObtainPairSerializer
-    to include username/email in the response.
-    """
-
-    serializer_class = CustomTokenObtainPairSerializer
