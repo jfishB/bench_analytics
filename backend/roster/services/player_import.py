@@ -118,7 +118,9 @@ class PlayerImportService:
             or row.get("last_name, first_name")
             or row.get("name")
         )
-        if name is None:
+        
+        # If name is None or empty string, try to construct from parts
+        if not name:
             first = row.get(" first_name") or row.get("first_name")
             last = row.get("last_name")
             if first and last:

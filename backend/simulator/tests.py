@@ -134,20 +134,73 @@ class SimulationServiceTestCase(TestCase):
         self.assertIn("exactly 9 batters", str(context.exception))
 
     def test_simulate_lineup_deterministic_stats(self):
-        """Test that more games produces more stable statistics."""
+        """Test that more games produces more stable statistics (lower standard error)."""
         # Run with few games
         result_small = self.service.simulate_lineup(self.lineup, num_games=10)
 
         # Run with many games
         result_large = self.service.simulate_lineup(self.lineup, num_games=1000)
 
-        # Larger sample should have more stable (lower) std dev relative to mean
-        cv_small = result_small.std_dev / result_small.avg_score
-        cv_large = result_large.std_dev / result_large.avg_score
+        # Calculate Standard Error of the Mean (SEM)
+        # SEM = std_dev / sqrt(n)
+        # This represents the uncertainty in the average score and should decrease with N
+        sem_small = result_small.std_dev / np.sqrt(result_small.num_games)
+        sem_large = result_large.std_dev / np.sqrt(result_large.num_games)
 
-        # This is probabilistic but should generally hold
-        # (coefficient of variation decreases with sample size)
-        self.assertGreater(cv_small, cv_large * 0.5)
+        # Larger sample should have lower standard error (more precise mean)
+        self.assertGreater(sem_small, sem_large)
+
+
+class SimulationFlowTestCase(TestCase):
+    """Test SimulationService.run_simulation_flow orchestration."""
+
+    def setUp(self):
+        self.service = SimulationService()
+        self.team = Team.objects.create(id=1)
+        self.players = []
+        for i in range(9):
+            p = Player.objects.create(
+                name=f"P{i}",
+                team=self.team,
+                pa=500,
+                hit=100,
+                double=20,
+                triple=2,
+                home_run=10,
+                strikeout=100,
+                walk=50
+            )
+            self.players.append(p)
+
+    def test_flow_by_ids(self):
+        """Test flow with IDs."""
+        ids = [p.id for p in self.players]
+        result = self.service.run_simulation_flow(ids, num_games=10, fetch_method="ids")
+        self.assertIsInstance(result, SimulationResult)
+        self.assertEqual(len(result.lineup_names), 9)
+
+    def test_flow_by_names(self):
+        """Test flow with names."""
+        names = [p.name for p in self.players]
+        result = self.service.run_simulation_flow(names, num_games=10, fetch_method="names")
+        self.assertIsInstance(result, SimulationResult)
+
+    def test_flow_by_team(self):
+        """Test flow with team ID."""
+        result = self.service.run_simulation_flow(self.team.id, num_games=10, fetch_method="team")
+        self.assertIsInstance(result, SimulationResult)
+
+    def test_flow_invalid_method(self):
+        """Test invalid fetch method."""
+        with self.assertRaises(ValueError):
+            self.service.run_simulation_flow([], 10, "invalid")
+
+    def test_flow_team_not_enough_players(self):
+        """Test team with insufficient players."""
+        empty_team = Team.objects.create(id=2)
+        with self.assertRaises(ValueError) as ctx:
+            self.service.run_simulation_flow(empty_team.id, 10, "team")
+        self.assertIn("Need exactly 9", str(ctx.exception))
 
 
 class PlayerServiceTestCase(TestCase):
