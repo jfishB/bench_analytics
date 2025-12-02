@@ -67,9 +67,10 @@ def validate_data(payload, require_creator: bool = True):
     team_id = get(payload, "team_id")
     team_obj = fetch_team_by_id(team_id)
     if not team_obj:
-        # Auto-create the team if it doesn't exist (for production deployment)
-        if team_id is not None:
-            team_obj, _ = Team.objects.get_or_create(pk=team_id)
+        # Auto-create only the default team (id=1) for production deployment
+        # Other team IDs should raise TeamNotFound to prevent accidental creation
+        if team_id == 1:
+            team_obj, _ = Team.objects.get_or_create(pk=1)
         else:
             raise TeamNotFound()
 
