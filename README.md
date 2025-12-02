@@ -36,55 +36,44 @@ Built with amateur and youth coaches in mind, the tool gives teams without dedic
 **1. Single Responsibility Principle**
 _"A class should have only one reason to change."_
 
-Each custom hook and service has exactly one responsibility:
+Each hook or service handles one job:
 
-- `useRosterData.ts` - Only handles fetching and managing roster data from the API.
-- `usePlayerSelection.ts` - Only manages player selection logic and validation (max 9 players).
-- `useLineupCreation.ts` - Only handles the overall lineup creation workflow and state.
-- `useSavedLineups.ts` - Only manages saved lineups fetching and caching.
-- `lineupService.ts` - Only contains API calls and data transformation, no UI logic.
-- `AuthContext.tsx` - Only handles authentication state and token management.
+- useRosterData → fetches and manages roster data
+- usePlayerSelection → handles player selection rules
+- useLineupCreation → manages the lineup-building workflow
+- useSavedLineups → loads and caches saved lineups
+- lineupService → API calls and data shaping
+- AuthContext → authentication and tokens
 
-This separation means changes to roster fetching don't affect player selection logic, and authentication changes don't impact lineup creation.
+Because each piece has a narrow focus, changes stay contained.
 
 **2. Open/Closed Principle**
 _"Software entities should be open for extension, closed for modification."_
 
-Our design token system uses this principle:
+The system without rewriting existing code:
 
-- Base design tokens define core spacing, colors, and typography.
-- Component-specific tokens extend the base system without modifying it.
-- New UI components can be added using existing tokens or extend with new ones.
-
-Component composition pattern allows extension:
-
-- UI components built with Radix primitives can be extended with additional props.
-- New tabs can be added to the lineup optimizer without modifying existing tab logic.
+- Design tokens give you a stable base for spacing, colors, and type.
+- New components can build on those tokens or add their own.
+- UI composition (like Radix primitives or adding new tabs) lets you add features without touching what’s already there.
 
 **3. Liskov Substitution Principle**
 _"Objects of a supertype should be replaceable with objects of a subtype."_
 
-All custom hooks follow consistent interfaces:
+Anything built on the same interface can be swapped in:
 
-- Every data-fetching hook returns `{ loading, data, error }` pattern.
-- Any hook can be swapped for another following the same pattern.
-- Components expect standard React props and can be substituted with enhanced versions.
+- All data hooks return { loading, data, error }, so components can switch between them easily.
+- Components follow standard prop patterns, making it simple to replace or enhance them.
 
 **4. Interface Segregation Principle**
 _"Clients should not be forced to depend on interfaces they don't use."_
 
-Instead of monolithic interfaces, we use focused, specific types:
+Types and services stay focused:
 
-- `Player` type contains only essential fields used across components.
-- `SavedLineup`, `GeneratedLineup`, and `SimulationRequest` are separate interfaces for specific use cases.
-- Components only import the hooks and services they actually need.
+- Player, SavedLineup, GeneratedLineup, etc., each serve specific purposes.
+- Components only import what they need.
+- Service functions are small and targeted—fetching players, saving lineups, running simulations.
 
-API service functions are granular:
-
-- `fetchPlayers()` - Only fetches roster data.
-- `saveLineup()` - Only handles lineup persistence.
-- `runSimulation()` - Only handles Monte Carlo simulation.
-- Components use only the functions they need, not a giant service object.
+No one is forced to pull in a giant “everything” interface.
 
 **5. Dependency Inversion Principle**
 _"High-level modules should not depend on low-level modules. Both should depend on abstractions."_
