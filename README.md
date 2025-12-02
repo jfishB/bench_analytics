@@ -31,6 +31,72 @@ Built with amateur and youth coaches in mind, the tool gives teams without dedic
 
 ## Code Architecture
 
+### SOLID Principles
+
+**1. Single Responsibility Principle**
+_"A class should have only one reason to change."_
+
+Each custom hook and service has exactly one responsibility:
+
+- `useRosterData.ts` - Only handles fetching and managing roster data from the API.
+- `usePlayerSelection.ts` - Only manages player selection logic and validation (max 9 players).
+- `useLineupCreation.ts` - Only handles the overall lineup creation workflow and state.
+- `useSavedLineups.ts` - Only manages saved lineups fetching and caching.
+- `lineupService.ts` - Only contains API calls and data transformation, no UI logic.
+- `AuthContext.tsx` - Only handles authentication state and token management.
+
+This separation means changes to roster fetching don't affect player selection logic, and authentication changes don't impact lineup creation.
+
+**2. Open/Closed Principle**
+_"Software entities should be open for extension, closed for modification."_
+
+Our design token system uses this principle:
+
+- Base design tokens define core spacing, colors, and typography.
+- Component-specific tokens extend the base system without modifying it.
+- New UI components can be added using existing tokens or extend with new ones.
+
+Component composition pattern allows extension:
+
+- UI components built with Radix primitives can be extended with additional props.
+- New tabs can be added to the lineup optimizer without modifying existing tab logic.
+
+**3. Liskov Substitution Principle**
+_"Objects of a supertype should be replaceable with objects of a subtype."_
+
+All custom hooks follow consistent interfaces:
+
+- Every data-fetching hook returns `{ loading, data, error }` pattern.
+- Any hook can be swapped for another following the same pattern.
+- Components expect standard React props and can be substituted with enhanced versions.
+
+**4. Interface Segregation Principle**
+_"Clients should not be forced to depend on interfaces they don't use."_
+
+Instead of monolithic interfaces, we use focused, specific types:
+
+- `Player` type contains only essential fields used across components.
+- `SavedLineup`, `GeneratedLineup`, and `SimulationRequest` are separate interfaces for specific use cases.
+- Components only import the hooks and services they actually need.
+
+API service functions are granular:
+
+- `fetchPlayers()` - Only fetches roster data.
+- `saveLineup()` - Only handles lineup persistence.
+- `runSimulation()` - Only handles Monte Carlo simulation.
+- Components use only the functions they need, not a giant service object.
+
+**5. Dependency Inversion Principle**
+_"High-level modules should not depend on low-level modules. Both should depend on abstractions."_
+
+High-level components depend on hook abstractions, not concrete implementations:
+
+- `LineupOptimizerPage` uses `useRosterData()` hook, not direct API calls.
+- If we switch from REST API to GraphQL, only the service layer changes.
+- Components don't know whether data comes from API, localStorage, or mock data.
+
+This architecture ensures that business logic is testable, UI components are reusable, and changes to external dependencies (like API endpoints) don't ripple through the entire codebase. Each layer has clear boundaries and responsibilities, making the codebase maintainable as it grows.
+
 ## System Architecutre
 
 ## Hosted connected ...
