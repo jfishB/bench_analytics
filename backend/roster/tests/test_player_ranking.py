@@ -41,6 +41,11 @@ class PlayerRankingServiceTestCase(TestCase):
         self.assertIn("wos_score", ranked[0])
         self.assertEqual(ranked[0]["wos_score"], 0.0)
 
+    def test_get_ranked_players_top_n(self):
+        """Test fetching ranked players with top_n limit."""
+        ranked = get_ranked_players(top_n=2)
+        self.assertEqual(len(ranked), 2)
+
     def test_create_player_with_stats(self):
         """Test helper to create player."""
         p = create_player_with_stats("New Guy", xwoba=0.350, team=self.team)

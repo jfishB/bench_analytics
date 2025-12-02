@@ -9,6 +9,11 @@ omit =
     */venv/*
     */.venv/*
     */env/*
+    manage.py
+    config/asgi.py
+    config/wsgi.py
+    */tests_*.py
+    check_coverage.py
 
 [report]
 exclude_lines =
