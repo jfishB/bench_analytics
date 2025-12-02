@@ -25,18 +25,18 @@ Bench Analytics follows a decoupled **Client-Server architecture**, separating t
 **Frontend**
 
 - **Core**: React 18 with TypeScript for type-safe component logic.
-- **Styling**: Tailwind CSS for utility-first styling, using tailwind-merge and clsx for dynamic class management
-- **UI Components**: Built with **Radix UI** primitives (@radix-ui) for accessible, headless interactive components.
+- **Styling**: Tailwind CSS for utility-first styling, using ```bash tailwind-merge``` and ```bash clsx``` for dynamic class management
+- **UI Components**: Built with **Radix UI** primitives (```bash @radix-ui```) for accessible, headless interactive components.
 - **Visualization: Recharts**: For rendering responsive baseball analytics charts.
-- **Interactions: dnd-kit**: (@dnd-kit) for complex drag-and-drop lineup management.
-- **State & Networking**: React Context API for global auth state; standard fetch wrapper for API consumption.
+- **Interactions: dnd-kit**: (```bash @dnd-kit```) for complex drag-and-drop lineup management.
+- **State & Networking**: React Context API for global auth state; standard ```bash fetch``` wrapper for API consumption.
 
 **Backend (REST API)**
 
 - **Framework**: Django 5 with **Django REST Framework (DRF)**.
 - **Authentication: SimpleJWT**: Implementation for stateless JSON Web Token (JWT) authentication.
-- **Configuration**: django-environ for 12-factor app configuration management.
-- **Testing**: pytest with pytest-django and coverage for robust backend testing.
+- **Configuration**: ```bash django-environ``` for 12-factor app configuration management.
+- **Testing**: ```bash pytest``` with ```bash pytest-django``` and ```bash coverage``` for robust backend testing.
 
 **System Design & Connectivity**
 
@@ -54,7 +54,7 @@ Bench Analytics follows a decoupled **Client-Server architecture**, separating t
 **Infrastructure & Hosting**
 
 - **Local Development**: The project utilizes Docker and Docker Compose to containerize the PostgreSQL database and pgAdmin interface, ensuring a consistent data environment across different developer machines. The application services currently run on local runtimes (Node.js and Python).
-- **CI Pipelines**: GitHub Actions workflows (frontend-ci.yml, backend-ci.yml) are configured to automatically run linting (ESLint, Flake8), type checking (TypeScript), and unit tests (Jest, Pytest) on every push to main or develop.
+- **CI Pipelines**: GitHub Actions workflows (```bash frontend-ci.yml```, ```bash backend-ci.yml```) are configured to automatically run linting (ESLint, Flake8), type checking (TypeScript), and unit tests (Jest, Pytest) on every push to ```bash main``` or ```bash develop```.
 
 ## Run Locally
 
