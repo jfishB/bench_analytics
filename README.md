@@ -45,7 +45,7 @@ Bench Analytics follows a decoupled **Client-Server architecture**, separating t
 **Production (Hosting & Architecture)**:
 
 - The production environment is deployed on Render, where the backend service is hosted as a separate web services and the frontend service is hosted as a static site.
-- The backend (Django REST Framework) runs as a Render web service and connects to a managed PostgreSQL database provided by Render while both being hosted in the same region in organ.
+- The backend (Django REST Framework) runs as a Render web service and connects to a managed PostgreSQL database provided by Render while both being hosted in the same region in oregon.
 - The frontend (Next.js/React) is deployed as a static site or web service on Render, and communicates directly with the backend API over HTTPS.
 - Environment variables (API URLs, database credentials, JWT secrets, etc.) are securely stored in Render’s environment settings.
 - All services are connected using Render’s internal networking to ensure secure and efficient communication.
