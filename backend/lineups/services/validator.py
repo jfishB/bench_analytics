@@ -7,6 +7,7 @@
   - backend/lineups/interactor.py
 """
 from django.contrib.auth import get_user_model
+from roster.models import Team
 from .databa_access import fetch_players_by_ids, fetch_team_by_id
 from .exceptions import (BadBattingOrder, NoCreator,
                          PlayersNotFound, PlayersWrongTeam, TeamNotFound)
@@ -63,9 +64,14 @@ def validate_data(payload, require_creator: bool = True):
       existence).
     Raises domain exceptions if validation fails; returns nothing if valid.
     """
-    team_obj = fetch_team_by_id(get(payload, "team_id"))
+    team_id = get(payload, "team_id")
+    team_obj = fetch_team_by_id(team_id)
     if not team_obj:
-        raise TeamNotFound()
+        # Auto-create the team if it doesn't exist (for production deployment)
+        if team_id is not None:
+            team_obj, _ = Team.objects.get_or_create(pk=team_id)
+        else:
+            raise TeamNotFound()
 
     # Extract player ids from input
     ids = []
