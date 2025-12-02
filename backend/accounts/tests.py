@@ -9,9 +9,12 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
+from rest_framework_simplejwt.tokens import RefreshToken, TokenError
+from unittest.mock import patch
 
 from .exceptions import EmailAlreadyExistsError, InvalidCredentialsError, MissingFieldsError, UserAlreadyExistsError
 from .services import login_user, register_user
+from django.urls import resolve
 
 
 def test_smoke():
@@ -173,5 +176,91 @@ class AccountViewTests(TestCase):
     # --- protected endpoint tests ---
 
     def test_protected_view_requires_auth(self):
+        # No auth token provided / Unauthenticated request
         response = self.client.get(self.protected_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        # Authenticate using a JWT access token and retry
+        refresh = RefreshToken.for_user(self.user)
+        access = str(refresh.access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
+
+        response = self.client.get(self.protected_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("message", response.data)
+        self.assertIn(self.user.username, response.data["message"])
+
+
+class AccountExceptionTests(TestCase):
+    """Tests view-layer error handling for domain and unexpected exceptions.
+
+    Mocks service-layer functions to ensure the views map DomainError subclasses
+    to appropriate HTTP responses and that unexpected exceptions result in 500.
+    """
+
+    def setUp(self):
+        self.client = APIClient()
+        self.register_url = "/api/v1/auth/register/"
+        self.login_url = "/api/v1/auth/login/"
+        self.logout_url = "/api/v1/auth/logout/"
+
+        # Create a sample user for login tests
+        self.user = User.objects.create_user(
+            username="testuser", email="test@example.com", password="test123"
+        )
+
+    def test_register_view_handles_domain_error(self):
+        with patch("accounts.views.register_user", side_effect=UserAlreadyExistsError("username")):
+            data = {"username": "testuser", "email": "new@example.com", "password": "pass"}
+            res = self.client.post(self.register_url, data)
+            self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertIn("error", res.data)
+
+    def test_register_view_handles_unexpected_exception(self):
+        with patch("accounts.views.register_user", side_effect=Exception("boom")):
+            data = {"username": "newuser", "email": "new@example.com", "password": "pass"}
+            res = self.client.post(self.register_url, data)
+            self.assertEqual(res.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+            self.assertIn("error", res.data)
+
+    def test_login_view_handles_domain_error(self):
+        with patch("accounts.views.login_user", side_effect=InvalidCredentialsError("bad")):
+            data = {"username": "testuser", "password": "wrong"}
+            res = self.client.post(self.login_url, data)
+            self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+            self.assertIn("detail", res.data)
+
+    def test_logout_missing_refresh_returns_400(self):
+        # Authenticate
+        refresh = RefreshToken.for_user(self.user)
+        access = str(refresh.access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
+
+        # No refresh field -> 400
+        res = self.client.post(self.logout_url, data={})
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", res.data)
+
+    def test_logout_invalid_token_returns_400(self):
+        # Authenticate
+        refresh = RefreshToken.for_user(self.user)
+        access = str(refresh.access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
+
+        # Patch RefreshToken constructor to raise TokenError
+        with patch("accounts.views.RefreshToken", side_effect=TokenError("invalid")):
+            res = self.client.post(self.logout_url, data={"refresh": "bad"})
+            self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertIn("error", res.data)
+
+    def test_logout_unexpected_exception_returns_500(self):
+        # Authenticate
+        refresh = RefreshToken.for_user(self.user)
+        access = str(refresh.access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
+
+        with patch("accounts.views.RefreshToken", side_effect=Exception("boom")):
+            res = self.client.post(self.logout_url, data={"refresh": "anything"})
+            self.assertEqual(res.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+            self.assertIn("error", res.data)
+
