@@ -16,7 +16,7 @@ Bench Analytics is a web application designed to help baseball coaches build the
 
 - Algorithm Rationale – Explain the reasoning behind suggested lineups for transparency.
 
-## Technical Architecture
+## System Architecture
 
 Bench Analytics follows a decoupled **Client-Server architecture**, separating the user interface from the data processing logic. This ensures modularity, allowing the frontend and backend to be developed, tested, and deployed independently.
 
