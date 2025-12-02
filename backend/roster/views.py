@@ -142,59 +142,92 @@ def sort_players_by_woba(request):
 @require_http_methods(["GET", "POST"])
 def load_sample_players(request):
     """API endpoint to load sample players from the CSV file.
-    
+
     GET: Check if players already exist and return status
     POST: Load players from CSV if none exist
-    
+
     Returns:
         - already_loaded: True if players already exist
         - players_count: Number of players in database
+        - team_id: The team ID that players belong to
         - loaded: Number of players loaded (POST only)
     """
     players_count = Player.objects.count()
-    
+
+    # Get or create a default team for the sample players
+    default_team, _ = Team.objects.get_or_create(pk=1)
+
     if request.method == "GET":
-        return JsonResponse({
-            "already_loaded": players_count > 0,
-            "players_count": players_count,
-        })
-    
+        return JsonResponse(
+            {
+                "already_loaded": players_count > 0,
+                "players_count": players_count,
+                "team_id": default_team.id,
+            }
+        )
+
     # POST: Load players from CSV
     if players_count > 0:
-        return JsonResponse({
-            "already_loaded": True,
-            "players_count": players_count,
-            "message": "Players are already loaded. Clear existing players first if you want to reload.",
-        })
-    
+        # Assign existing players without a team to the default team
+        players_without_team = Player.objects.filter(team__isnull=True)
+        updated_count = players_without_team.update(team=default_team)
+
+        return JsonResponse(
+            {
+                "already_loaded": True,
+                "players_count": players_count,
+                "team_id": default_team.id,
+                "players_assigned_to_team": updated_count,
+                "message": (
+                    f"Players are already loaded. Assigned {updated_count} players to team."
+                    if updated_count > 0
+                    else "Players are already loaded."
+                ),
+            }
+        )
+
     # Find the CSV file - check multiple possible locations
     csv_candidates = [
         Path("data/test_dataset_monte_carlo_bluejays.csv"),  # From repo root (Render)
-        Path("../data/test_dataset_monte_carlo_bluejays.csv"),  # From backend/ dir (local)
+        Path(
+            "../data/test_dataset_monte_carlo_bluejays.csv"
+        ),  # From backend/ dir (local)
     ]
-    
+
     csv_path = None
     for candidate in csv_candidates:
         if candidate.exists():
             csv_path = str(candidate)
             break
-    
+
     if not csv_path:
-        return JsonResponse({
-            "error": "CSV file not found. Looked in: " + ", ".join(str(c) for c in csv_candidates),
-        }, status=404)
-    
+        return JsonResponse(
+            {
+                "error": "CSV file not found. Looked in: "
+                + ", ".join(str(c) for c in csv_candidates),
+            },
+            status=404,
+        )
+
     try:
-        result = import_from_csv(csv_path)
-        return JsonResponse({
-            "success": True,
-            "already_loaded": False,
-            "players_count": Player.objects.count(),
-            "loaded": result.get("created", 0),
-            "updated": result.get("updated", 0),
-            "messages": result.get("messages", []),
-        })
+        # Import players and assign them to the default team
+        result = import_from_csv(csv_path, team_id=default_team.id)
+
+        return JsonResponse(
+            {
+                "success": True,
+                "already_loaded": False,
+                "players_count": Player.objects.count(),
+                "team_id": default_team.id,
+                "loaded": result.get("created", 0),
+                "updated": result.get("updated", 0),
+                "messages": result.get("messages", []),
+            }
+        )
     except Exception as e:
-        return JsonResponse({
-            "error": f"Failed to load players: {str(e)}",
-        }, status=500)
+        return JsonResponse(
+            {
+                "error": f"Failed to load players: {str(e)}",
+            },
+            status=500,
+        )

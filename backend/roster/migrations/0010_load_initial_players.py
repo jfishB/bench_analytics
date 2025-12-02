@@ -12,6 +12,11 @@ from django.db import migrations
 def load_players(apps, schema_editor):
     """Load players from the test dataset CSV file."""
     Player = apps.get_model("roster", "Player")
+    Team = apps.get_model("roster", "Team")
+
+    # Create or get the default team (id=1)
+    default_team, _ = Team.objects.get_or_create(pk=1)
+    print(f"Using team ID: {default_team.id}")
 
     # When running on Render, the working directory is the repo root
     # So data/ is accessible directly
@@ -32,7 +37,9 @@ def load_players(apps, schema_editor):
         players_loaded = 0
 
         for row in reader:
-            name = row.get('"last_name, first_name"') or row.get("last_name, first_name")
+            name = row.get('"last_name, first_name"') or row.get(
+                "last_name, first_name"
+            )
             if not name or not name.strip():
                 continue
 
@@ -57,6 +64,7 @@ def load_players(apps, schema_editor):
             Player.objects.update_or_create(
                 name=name.strip(),
                 defaults={
+                    "team": default_team,  # Assign to default team
                     "year": to_int(row.get("year")),
                     "pa": to_int(row.get("pa")),
                     "hit": to_int(row.get("hit")),
@@ -76,7 +84,9 @@ def load_players(apps, schema_editor):
             players_loaded += 1
 
     count = Player.objects.count()
-    print(f"Successfully loaded {players_loaded} players. Total players in database: {count}")
+    print(
+        f"Successfully loaded {players_loaded} players. Total players in database: {count}"
+    )
 
 
 def reverse_players(apps, schema_editor):
@@ -94,5 +104,3 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RunPython(load_players, reverse_players),
     ]
-
-
