@@ -123,7 +123,7 @@ class AccountViewTests(TestCase):
             "password": "pass1234"
         }
         response = self.client.post(self.register_url, data)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data["message"], "User created successfully!")
 
     def test_register_api_missing_username(self):
