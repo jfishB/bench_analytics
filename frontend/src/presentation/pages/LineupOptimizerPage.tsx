@@ -60,7 +60,7 @@ export function LineupOptimizer() {
   }, [activeTab]);
 
   // Custom hooks (domain/business logic layer)
-  const { loading, players, error, setError, teamId } = useRosterData();
+  const { loading, players, error, setError, teamId, loadSamplePlayers, loadingSamplePlayers } = useRosterData();
 
   const {
     selectedPlayerIds,
@@ -163,6 +163,15 @@ export function LineupOptimizer() {
     }
   };
 
+  // Handle loading sample players
+  const handleLoadSamplePlayers = async () => {
+    try {
+      await loadSamplePlayers();
+    } catch (err: any) {
+      setError(err?.message || "Failed to load sample players");
+    }
+  };
+
   const handleSabermetricsSave = async () => {
     try {
       await saveSabermetricsLineup();
@@ -262,6 +271,25 @@ export function LineupOptimizer() {
                       Failed to load roster: {error}{" "}
                       <Button onClick={() => window.location.reload()}>
                         Retry
+                      </Button>
+                    </div>
+                  ) : players.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <div className="p-4 bg-blue-50 rounded-full mb-4">
+                        <Users className="h-12 w-12 text-blue-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        No Players Loaded
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-4 max-w-xs">
+                        Load sample Blue Jays player data to get started with lineup optimization.
+                      </p>
+                      <Button
+                        onClick={handleLoadSamplePlayers}
+                        disabled={loadingSamplePlayers}
+                        className="bg-blue-700 hover:bg-blue-800"
+                      >
+                        {loadingSamplePlayers ? "Loading..." : "Load Sample Players"}
                       </Button>
                     </div>
                   ) : (

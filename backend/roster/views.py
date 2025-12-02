@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -7,6 +8,7 @@ from rest_framework import viewsets
 
 from .models import Player, Team
 from .serializer import PlayerSerializer, TeamSerializer
+from .services.importer import import_from_csv
 
 
 # TODO: implement post as well for clarity
@@ -134,3 +136,65 @@ def sort_players_by_woba(request):
         return JsonResponse({"error": "Invalid JSON"}, status=400)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def load_sample_players(request):
+    """API endpoint to load sample players from the CSV file.
+    
+    GET: Check if players already exist and return status
+    POST: Load players from CSV if none exist
+    
+    Returns:
+        - already_loaded: True if players already exist
+        - players_count: Number of players in database
+        - loaded: Number of players loaded (POST only)
+    """
+    players_count = Player.objects.count()
+    
+    if request.method == "GET":
+        return JsonResponse({
+            "already_loaded": players_count > 0,
+            "players_count": players_count,
+        })
+    
+    # POST: Load players from CSV
+    if players_count > 0:
+        return JsonResponse({
+            "already_loaded": True,
+            "players_count": players_count,
+            "message": "Players are already loaded. Clear existing players first if you want to reload.",
+        })
+    
+    # Find the CSV file - check multiple possible locations
+    csv_candidates = [
+        Path("data/test_dataset_monte_carlo_bluejays.csv"),  # From repo root (Render)
+        Path("../data/test_dataset_monte_carlo_bluejays.csv"),  # From backend/ dir (local)
+    ]
+    
+    csv_path = None
+    for candidate in csv_candidates:
+        if candidate.exists():
+            csv_path = str(candidate)
+            break
+    
+    if not csv_path:
+        return JsonResponse({
+            "error": "CSV file not found. Looked in: " + ", ".join(str(c) for c in csv_candidates),
+        }, status=404)
+    
+    try:
+        result = import_from_csv(csv_path)
+        return JsonResponse({
+            "success": True,
+            "already_loaded": False,
+            "players_count": Player.objects.count(),
+            "loaded": result.get("created", 0),
+            "updated": result.get("updated", 0),
+            "messages": result.get("messages", []),
+        })
+    except Exception as e:
+        return JsonResponse({
+            "error": f"Failed to load players: {str(e)}",
+        }, status=500)

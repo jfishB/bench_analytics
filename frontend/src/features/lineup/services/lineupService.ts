@@ -104,6 +104,42 @@ export async function fetchPlayers(teamId?: number): Promise<Player[]> {
 }
 
 /**
+ * Check if sample players are already loaded.
+ */
+export async function checkSamplePlayersStatus(): Promise<{
+  already_loaded: boolean;
+  players_count: number;
+}> {
+  const res = await fetch(`${ROSTER_BASE}/load-sample-players/`);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return await res.json();
+}
+
+/**
+ * Load sample players from the CSV file on the backend.
+ * Only loads if no players exist yet.
+ */
+export async function loadSamplePlayers(): Promise<{
+  success: boolean;
+  already_loaded: boolean;
+  players_count: number;
+  loaded?: number;
+  message?: string;
+  error?: string;
+}> {
+  const res = await fetch(`${ROSTER_BASE}/load-sample-players/`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  
+  const data = await res.json();
+  if (!res.ok) {
+    throw new Error(data.error || `HTTP ${res.status}`);
+  }
+  return data;
+}
+
+/**
  * Sort a list of player IDs by wOBA (descending) to create a baseline lineup.
  * Fetches full player data and returns IDs sorted by xwoba.
  */
