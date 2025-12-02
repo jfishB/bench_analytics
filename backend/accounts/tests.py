@@ -1,14 +1,15 @@
 """
 - This file contains tests for the accounts module
 - Covers:
-    - domain/application services in `./accounts/services.py`
-    - API views in `./accounts/views.py` wired via `./accounts/urls.py`
-- Notation:
-- 200 - HTTP_200_OK
-- 201 - HTTP_201_CREATED
-- 400 - HTTP_400_BAD_REQUEST
-- 401 - HTTP_401_UNAUTHORIZED
-- 500 - HTTP_500_INTERNAL_SERVER_ERROR
+    - domain/application services in `backend/accounts/services.py`
+    - API views in `backend/accounts/views.py` 
+    - Views are wired via `backend/accounts/urls.py`
+- Notation shortned for style check (HTTP status codes used in tests):
+    - 200 - HTTP_200_OK
+    - 201 - HTTP_201_CREATED
+    - 400 - HTTP_400_BAD_REQUEST
+    - 401 - HTTP_401_UNAUTHORIZED
+    - 500 - HTTP_500_INTERNAL_SERVER_ERROR
 """
 
 from django.contrib.auth.models import User
@@ -17,10 +18,10 @@ from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from unittest.mock import patch
 from django.urls import reverse
-
+from django.db import IntegrityError
 from .exceptions import (
-    EmailAlreadyExistsError, InvalidCredentialsError,
-    MissingFieldsError, UserAlreadyExistsError
+    EmailAlreadyExistsError, InvalidCredentialsError, MissingFieldsError,
+    UserAlreadyExistsError, UsernameConflictError,
 )
 from .services import login_user, register_user
 
@@ -72,9 +73,16 @@ class AccountServiceTests(TestCase):
             register_user("newuser2", "test@example.com", "password")
 
     def test_register_user_existing_username_and_email(self):
-        # Both username and email already taken – raise email error first
-        with self.assertRaises(EmailAlreadyExistsError):
+        # Both username and email already taken – raise username error first
+        with self.assertRaises(UserAlreadyExistsError):
             register_user("testuser", "test@example.com", "password")
+
+    def test_register_user_race_condition_raises_username_conflict(self):
+        # Simulate DB IntegrityError during user creation -> UsernameConflictError
+        with patch("accounts.services.User.objects.create_user") as mock_create_user:
+            mock_create_user.side_effect = IntegrityError("duplicate")
+            with self.assertRaises(UsernameConflictError):
+                register_user("raceuser", "race@example.com", "password123")
 
     # --- login_user tests ---
 
