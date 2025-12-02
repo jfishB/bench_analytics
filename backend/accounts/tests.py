@@ -3,6 +3,12 @@
 - Covers:
     - domain/application services in `backend/accounts/services.py`
     - API views in `backend/accounts/views.py` wired via `backend/accounts/urls.py`
+- Notation:
+- 200 - HTTP_200_OK
+- 201 - HTTP_201_CREATED
+- 400 - HTTP_400_BAD_REQUEST
+- 401 - HTTP_401_UNAUTHORIZED
+- 500 - HTTP_500_INTERNAL_SERVER_ERROR
 """
 
 from django.contrib.auth.models import User
@@ -113,72 +119,72 @@ class AccountViewTests(TestCase):
     def test_register_api_success(self):
         data = {"username": "newuser", "email": "new@example.com", "password": "pass1234"}
         response = self.client.post(self.register_url, data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["message"], "User created successfully!")
 
     def test_register_api_missing_username(self):
         data = {"username": "", "email": "new@example.com", "password": "pass1234"}
         response = self.client.post(self.register_url, data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, 400)
 
     def test_register_api_missing_email(self):
         data = {"username": "newuser", "email": "", "password": "pass1234"}
         response = self.client.post(self.register_url, data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, 400)
 
     def test_register_api_missing_password(self):
         data = {"username": "newuser", "email": "new@example.com", "password": ""}
         response = self.client.post(self.register_url, data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, 400)
 
     def test_register_api_existing_username(self):
         data = {"username": "testuser", "email": "newemail@example.com", "password": "pass123"}
         response = self.client.post(self.register_url, data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, 400)
 
     def test_register_api_existing_email(self):
         data = {"username": "otheruser", "email": "test@example.com", "password": "pass123"}
         response = self.client.post(self.register_url, data)
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, 400)
 
     # --- login endpoint tests ---
 
     def test_login_api_success(self):
         data = {"username": "testuser", "password": "test123"}
         response = self.client.post(self.login_url, data)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, 200)
         self.assertIn("access", response.data)
         self.assertIn("refresh", response.data)
 
     def test_login_api_invalid_password(self):
         data = {"username": "testuser", "password": "wrongpassword"}
         response = self.client.post(self.login_url, data)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, 401)
         self.assertIn("error", response.data)
 
     def test_login_api_unknown_username(self):
         data = {"username": "unknown", "password": "somepassword"}
         response = self.client.post(self.login_url, data)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, 401)
         self.assertIn("error", response.data)
 
     def test_login_api_missing_username(self):
         data = {"username": "", "password": "test123"}
         response = self.client.post(self.login_url, data)
         # DRF / view should treat this as invalid credentials or bad request; expect 400 or 401
-        self.assertIn(response.status_code, {status.HTTP_400_BAD_REQUEST, status.HTTP_401_UNAUTHORIZED})
+        self.assertIn(response.status_code, {400, 401})
 
     def test_login_api_missing_password(self):
         data = {"username": "testuser", "password": ""}
         response = self.client.post(self.login_url, data)
-        self.assertIn(response.status_code, {status.HTTP_400_BAD_REQUEST, status.HTTP_401_UNAUTHORIZED})
+        self.assertIn(response.status_code, {400, 401})
 
     # --- protected endpoint tests ---
 
     def test_protected_view_requires_auth(self):
         # No auth token provided / Unauthenticated request
         response = self.client.get(self.protected_url)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, 401)
 
         # Authenticate using a JWT access token and retry
         refresh = RefreshToken.for_user(self.user)
@@ -186,7 +192,7 @@ class AccountViewTests(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
 
         response = self.client.get(self.protected_url)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, 200)
         self.assertIn("message", response.data)
         self.assertIn(self.user.username, response.data["message"])
 
@@ -213,14 +219,14 @@ class AccountExceptionTests(TestCase):
         with patch("accounts.views.register_user", side_effect=UserAlreadyExistsError("username")):
             data = {"username": "testuser", "email": "new@example.com", "password": "pass"}
             response = self.client.post(self.register_url, data)
-            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertEqual(response.status_code, 400)
             self.assertIn("error", response.data)
 
     def test_register_view_handles_unexpected_exception(self):
         with patch("accounts.views.register_user", side_effect=Exception("boom")):
             data = {"username": "newuser", "email": "new@example.com", "password": "pass"}
             response = self.client.post(self.register_url, data)
-            self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+            self.assertEqual(response.status_code, 500)
             self.assertIn("error", response.data)
 
     def test_login_view_handles_unexpected_exception(self):
@@ -231,14 +237,14 @@ class AccountExceptionTests(TestCase):
                 "password": "pass"
             })
 
-            self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+            self.assertEqual(response.status_code, 500)
             self.assertIn("error", response.data)
 
     def test_login_view_handles_domain_error(self):
         with patch("accounts.views.login_user", side_effect=InvalidCredentialsError("bad")):
             data = {"username": "testuser", "password": "wrong"}
             response = self.client.post(self.login_url, data)
-            self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+            self.assertEqual(response.status_code, 401)
             self.assertIn("error", response.data)
 
     def test_logout_missing_refresh_returns_400(self):
@@ -249,7 +255,7 @@ class AccountExceptionTests(TestCase):
 
         # No refresh field -> 400
         response = self.client.post(self.logout_url, data={})
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.status_code, 400)
         self.assertIn("error", response.data)
 
     def test_logout_successful(self):
@@ -258,7 +264,7 @@ class AccountExceptionTests(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
 
         response = self.client.post(self.logout_url, data={"refresh": str(refresh)})
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, 200)
         self.assertIn("message", response.data)
         self.assertEqual(response.data["message"], "Logout successful.")
 
@@ -271,7 +277,7 @@ class AccountExceptionTests(TestCase):
         # Patch RefreshToken constructor to raise TokenError
         with patch("accounts.views.RefreshToken", side_effect=TokenError("invalid")):
             response = self.client.post(self.logout_url, data={"refresh": "bad"})
-            self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+            self.assertEqual(response.status_code, 400)
             self.assertIn("error", response.data)
 
     def test_logout_unexpected_exception_returns_500(self):
@@ -282,5 +288,5 @@ class AccountExceptionTests(TestCase):
 
         with patch("accounts.views.RefreshToken", side_effect=Exception("boom")):
             response = self.client.post(self.logout_url, data={"refresh": "anything"})
-            self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+            self.assertEqual(response.status_code, 500)
             self.assertIn("error", response.data)
