@@ -78,13 +78,31 @@ No one is forced to pull in a giant “everything” interface.
 **5. Dependency Inversion Principle**
 _"High-level modules should not depend on low-level modules. Both should depend on abstractions."_
 
-High-level components depend on hook abstractions, not concrete implementations:
+High-level components rely on abstractions, not on raw implementations:
 
-- `LineupOptimizerPage` uses `useRosterData()` hook, not direct API calls.
-- If we switch from REST API to GraphQL, only the service layer changes.
-- Components don't know whether data comes from API, localStorage, or mock data.
+- Pages use hooks like useRosterData() instead of calling APIs directly.
+- Switching data sources (REST → GraphQL → local mocks) only touches the service layer.
+- UI stays clean and unaffected by backend changes.
 
-This architecture ensures that business logic is testable, UI components are reusable, and changes to external dependencies (like API endpoints) don't ripple through the entire codebase. Each layer has clear boundaries and responsibilities, making the codebase maintainable as it grows.
+This architecture ensures that business logic is testable, UI components are reusable, and changes to external dependencies (like API endpoints) don't ripple through the entire codebase.
+
+### Design Patterns
+
+**1. Observer Pattern**
+
+Components react automatically to shared state changes. Context, custom hooks, and event-driven auth updates all work as the “subject,” while subscribed components re-render as observers.
+
+**2. Strategy Pattern**
+
+Different behaviors are swapped in at runtime: lineup generation modes, authentication flows, and data-fetching approaches (API, cached, or mock data).
+
+**3. Facade Pattern**
+
+Service files and custom hooks hide complex logic—API calls, caching, validation—behind simple functions that the rest of the app can use without touching the underlying messiness.
+
+**4. Builder Pattern**
+
+More complex structures (like manual lineups or multi-step configuration objects) are assembled piece by piece, keeping the flow easy to follow and modify.
 
 ## System Architecture
 
