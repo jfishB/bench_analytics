@@ -20,12 +20,23 @@ export function useRosterData() {
     try {
       const raw = await lineupService.fetchPlayers(teamId);
       setPlayers(raw);
-      // Detect team id if available
+      // Detect team id if available from player data
       if (raw.length > 0) {
         const first = raw[0];
-        if (first.team && typeof first.team === "string") {
-          const parsedTeamId = parseInt(first.team, 10);
-          if (!isNaN(parsedTeamId)) setTeamId(parsedTeamId);
+        // Handle team as string or number
+        if (first.team) {
+          const parsedTeamId = typeof first.team === "number" 
+            ? first.team 
+            : parseInt(String(first.team), 10);
+          if (!isNaN(parsedTeamId) && parsedTeamId > 0) {
+            setTeamId(parsedTeamId);
+          } else {
+            // Fallback to default team 1 if we have players
+            setTeamId(1);
+          }
+        } else {
+          // Fallback to default team 1 if team field is missing
+          setTeamId(1);
         }
       }
     } catch (err: any) {
@@ -42,6 +53,10 @@ export function useRosterData() {
     try {
       const result = await lineupService.loadSamplePlayers();
       if (result.success || result.already_loaded) {
+        // Set team_id directly from response if available
+        if (result.team_id) {
+          setTeamId(result.team_id);
+        }
         // Refresh the players list
         await fetchPlayers();
       }

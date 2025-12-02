@@ -120,9 +120,10 @@ export async function checkSamplePlayersStatus(): Promise<{
  * Only loads if no players exist yet.
  */
 export async function loadSamplePlayers(): Promise<{
-  success: boolean;
+  success?: boolean;
   already_loaded: boolean;
   players_count: number;
+  team_id?: number;
   loaded?: number;
   message?: string;
   error?: string;
