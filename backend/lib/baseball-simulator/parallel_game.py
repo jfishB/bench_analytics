@@ -4,7 +4,7 @@ Splits game simulations across multiple CPU cores for ~4x speedup on 4-core mach
 """
 
 import multiprocessing as mp
-from functools import partial
+
 import numpy as np
 from baseball import Game
 
@@ -12,11 +12,11 @@ from baseball import Game
 def play_single_game(lineup, game_params):
     """
     Play a single game with the given lineup.
-    
+
     Args:
         lineup: List of Batter objects
         game_params: Dictionary of game parameters
-    
+
     Returns:
         int: Final score of the game
     """
@@ -29,10 +29,10 @@ def play_single_game(lineup, game_params):
 def play_games_chunk(args):
     """
     Play a chunk of games (worker function for multiprocessing).
-    
+
     Args:
         args: Tuple of (lineup, num_games, game_params)
-    
+
     Returns:
         list: Scores from all games in this chunk
     """
@@ -48,7 +48,7 @@ class ParallelGame:
     """
     Runs baseball game simulations in parallel across multiple CPU cores.
     """
-    
+
     def __init__(
         self,
         lineup,
@@ -66,7 +66,7 @@ class ParallelGame:
     ):
         """
         Initialize parallel game simulator.
-        
+
         Args:
             lineup: List of 9 Batter objects
             num_games: Total number of games to simulate
@@ -76,7 +76,7 @@ class ParallelGame:
         """
         self.lineup = lineup
         self.num_games = num_games
-        
+
         # Store game parameters
         self.game_params = {
             'nr_innings': nr_innings,
@@ -89,16 +89,16 @@ class ParallelGame:
             'prob_score_from_2nd_on_single': prob_score_from_2nd_on_single,
             'prob_score_from_1st_on_double': prob_score_from_1st_on_double,
         }
-        
+
         # Determine number of processes to use
         if num_processes is None:
             self.num_processes = mp.cpu_count()
         else:
             self.num_processes = num_processes
-        
+
         # Store scores after playing
         self.scores = None
-    
+
     def play(self):
         """
         Run all game simulations in parallel across multiple CPU cores.
@@ -106,27 +106,27 @@ class ParallelGame:
         # Split games into chunks for each process
         games_per_process = self.num_games // self.num_processes
         remainder = self.num_games % self.num_processes
-        
+
         # Create chunks with sizes as even as possible
         chunks = []
         for i in range(self.num_processes):
             chunk_size = games_per_process + (1 if i < remainder else 0)
             if chunk_size > 0:
                 chunks.append((self.lineup, chunk_size, self.game_params))
-        
+
         # Run simulations in parallel
         with mp.Pool(processes=len(chunks)) as pool:
             results = pool.map(play_games_chunk, chunks)
-        
+
         # Flatten results into single list
         self.scores = []
         for chunk_scores in results:
             self.scores.extend(chunk_scores)
-    
+
     def get_scores(self):
         """
         Get list of all game scores.
-        
+
         Returns:
             list: Scores from all simulated games
         """
@@ -135,16 +135,17 @@ class ParallelGame:
         return self.scores
 
 
-def play_many_games_parallel(lineup, num_games=10000, num_processes=None, **game_params):
+def play_many_games_parallel(lineup, num_games=10000, num_processes=None,
+                             **game_params):
     """
     Convenience function to run parallel game simulations.
-    
+
     Args:
         lineup: List of 9 Batter objects
         num_games: Number of games to simulate
         num_processes: Number of CPU cores to use (None = use all)
         **game_params: Additional game parameters
-    
+
     Returns:
         tuple: (avg_score, median_score, std_dev, all_scores)
     """
@@ -156,10 +157,9 @@ def play_many_games_parallel(lineup, num_games=10000, num_processes=None, **game
     )
     game.play()
     scores = game.get_scores()
-    
+
     avg_score = np.mean(scores)
     median_score = np.median(scores)
     std_dev = np.std(scores)
-    
-    return avg_score, median_score, std_dev, scores
 
+    return avg_score, median_score, std_dev, scores

@@ -119,7 +119,7 @@ def play_one_game(lineup):
     game.play()
     score = game.get_score()
     if score == 1:
-        print(f"\nThe final score is: 1 run.\n")
+        print("\nThe final score is: 1 run.\n")
     else:
         print(f"\nThe final score is: {score} runs.\n")
 

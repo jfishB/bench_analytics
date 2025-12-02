@@ -87,7 +87,6 @@ def players_ranked(request):
             "pa",
             "year",
         )
-        players_list = list(players)
 
         """
         Sort by WOS
