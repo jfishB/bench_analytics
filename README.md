@@ -2,7 +2,9 @@
   <img src="assets/logo.png" alt="Project Logo" width="400"/>
 </p>
 
-Bench Analytics is a web application designed to help baseball coaches build the most effective team lineup. Py combining a lineup opitimizing algorithm and a run per game simulator Bench Analytics provides highlevel baseball analytics to enhance strategic decision-making.
+Bench Analytics is a web platform built to give baseball coaches the kind of strategic insight usually reserved for pro teams. It combines a lineup-optimization algorithm with a run-per-game simulator, allowing coaches to test different batting orders and immediately see how those choices could impact performance. Instead of relying on intuition alone, coaches get a data-driven view of how their roster works together, which helps them make smarter decisions before every game.
+
+Built with amateur and youth coaches in mind, the tool gives teams without dedicated analysts a practical way to explore matchups, understand how player strengths stack together, and prepare a lineup with confidence.
 
 ## Authors
 
@@ -27,11 +29,14 @@ Bench Analytics is a web application designed to help baseball coaches build the
 
 - Algorithm Rationale – Explain the reasoning behind suggested lineups for transparency.
 
-## code architecture 
-## System Architecutre 
+## Code Architecture
+
+## System Architecutre
+
 ## Hosted connected ...
+
 ## Tech Stack
- 
+
 **Frontend**
 
 - React (TypeScript)
@@ -53,10 +58,13 @@ Bench Analytics is a web application designed to help baseball coaches build the
 - ESLint + Prettier for clean and consistent code
 
 ## Hosting Instructions
+
 ## Run Locally
+
 **Install Prerequisites**
+
 ```bash
-   docker 
+   docker
    node
 ```
 
@@ -85,7 +93,6 @@ pip install -r requirements.txt
 
 ```
 
-
 Frontend
 
 ```bash
@@ -98,11 +105,11 @@ Frontend
 Open docker desktop
 
 Project root
+
 ```bash
 docker-compose up -d db
 docker-compose ps
 ```
-
 
 Frontend
 
@@ -115,22 +122,26 @@ Backend
 
 ```bash
 cd backend
-# TODO: add command for filling the datavase 
+# TODO: add command for filling the datavase
 python manage.py migrate   # apply database migrations
 python manage.py runserver
 ```
+
 ## Quick Start for Coaches
 
 ### Create a Lineup in 3 Steps:
+
 1. Upload team csv
 2. Choose 9 players
 3. Click "Generate Lineup" - Algorithm creates optimal batting order
 
 ### Customize Your Lineup:
+
 - Drag and drop players to reorder
 - Save for future use
 
 ### Compare Lineups:
+
 - Simulate multiple lineups
 - Choose the best option based on expected runs
 
