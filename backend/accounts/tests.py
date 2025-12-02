@@ -239,6 +239,7 @@ class AccountViewTests(TestCase):
         self.assertIn("message", response.data)
         self.assertIn(self.user.username, message)
 
+
 class AccountExceptionTests(TestCase):
     """Tests view-layer error handling for domain and unexpected exceptions.
 
@@ -325,7 +326,7 @@ class AccountExceptionTests(TestCase):
         refresh = RefreshToken.for_user(self.user)
         access = str(refresh.access_token)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
-        data={"refresh": str(refresh)}
+        data = {"refresh": str(refresh)}
         response = self.client.post(self.logout_url, data=data)
         message = response.data["message"]
         self.assertEqual(response.status_code, 200)
@@ -341,7 +342,7 @@ class AccountExceptionTests(TestCase):
         # Patch RefreshToken constructor to raise TokenError
         with patch("accounts.views.RefreshToken") as mock_refresh:
             mock_refresh.side_effect = TokenError("invalid")
-            data={"refresh": "bad"}
+            data = {"refresh": "bad"}
             response = self.client.post(self.logout_url, data=data)
             self.assertEqual(response.status_code, 400)
             self.assertIn("error", response.data)
@@ -354,7 +355,7 @@ class AccountExceptionTests(TestCase):
 
         with patch("accounts.views.RefreshToken") as mock_refresh:
             mock_refresh.side_effect = Exception("boom")
-            data={"refresh": "anything"}
+            data = {"refresh": "anything"}
             response = self.client.post(self.logout_url, data=data)
             self.assertEqual(response.status_code, 500)
             self.assertIn("error", response.data)
