@@ -156,8 +156,7 @@ class PlayerServiceTestCase(TestCase):
     def setUp(self):
         """Create test database records."""
         # Create a team (Team model no longer stores name/abbreviation)
-        # Use get_or_create in case migration already created team 1
-        self.team, _ = Team.objects.get_or_create(id=1)
+        self.team = Team.objects.create(id=1)
 
         # Create test players
         self.players = []
@@ -239,8 +238,7 @@ class SimulatorAPITestCase(APITestCase):
             username="testuser", password="testpass123"
         )
         # Create team and players (Team has no name/abbreviation)
-        # Use get_or_create in case migration already created team 1
-        self.team, _ = Team.objects.get_or_create(id=1)
+        self.team = Team.objects.create(id=1)
 
         self.players = []
         for i in range(9):
