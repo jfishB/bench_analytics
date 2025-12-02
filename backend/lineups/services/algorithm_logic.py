@@ -134,10 +134,10 @@ def calculate_player_baserun_values(lineup: Tuple[Player, ...]) -> float:
         1.4 * adjustments["tb_adjust"]
         - 0.6 * adjustments["h_adjust"]
         - 3 * adjustments["hr_adjust"]
-        + 0.1 * (adjustments["bb_adjust"] + adjustments["hbp_adjust"] -
-                 adjustments["ibb_adjust"])
-        + 0.9 * (adjustments["sb_adjust"] - adjustments["cs_adjust"] -
-                 adjustments["gidp_adjust"])
+        + 0.1 * (adjustments["bb_adjust"] + adjustments["hbp_adjust"]
+                 - adjustments["ibb_adjust"])
+        + 0.9 * (adjustments["sb_adjust"] - adjustments["cs_adjust"]
+                 - adjustments["gidp_adjust"])
     )
     c = (
         adjustments["pa_team"]

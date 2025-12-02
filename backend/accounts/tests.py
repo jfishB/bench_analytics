@@ -10,7 +10,12 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from .exceptions import EmailAlreadyExistsError, InvalidCredentialsError, MissingFieldsError, UserAlreadyExistsError
+from .exceptions import (
+    EmailAlreadyExistsError,
+    InvalidCredentialsError,
+    MissingFieldsError,
+    UserAlreadyExistsError,
+)
 from .services import login_user, register_user
 
 
@@ -108,13 +113,16 @@ class AccountViewTests(TestCase):
     # --- register endpoint tests ---
 
     def test_register_api_success(self):
-        data = {"username": "newuser", "email": "new@example.com", "password": "pass1234"}
+        data = {"username": "newuser",
+                "email": "new@example.com", "password": "pass1234"}
         response = self.client.post(self.register_url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data["message"], "User created successfully!")
+        self.assertEqual(response.data["message"],
+                         "User created successfully!")
 
     def test_register_api_missing_username(self):
-        data = {"username": "", "email": "new@example.com", "password": "pass1234"}
+        data = {"username": "", "email": "new@example.com",
+                "password": "pass1234"}
         response = self.client.post(self.register_url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -124,17 +132,20 @@ class AccountViewTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_register_api_missing_password(self):
-        data = {"username": "newuser", "email": "new@example.com", "password": ""}
+        data = {"username": "newuser",
+                "email": "new@example.com", "password": ""}
         response = self.client.post(self.register_url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_register_api_existing_username(self):
-        data = {"username": "testuser", "email": "newemail@example.com", "password": "pass123"}
+        data = {"username": "testuser",
+                "email": "newemail@example.com", "password": "pass123"}
         response = self.client.post(self.register_url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_register_api_existing_email(self):
-        data = {"username": "otheruser", "email": "test@example.com", "password": "pass123"}
+        data = {"username": "otheruser",
+                "email": "test@example.com", "password": "pass123"}
         response = self.client.post(self.register_url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -163,12 +174,14 @@ class AccountViewTests(TestCase):
         data = {"username": "", "password": "test123"}
         response = self.client.post(self.login_url, data)
         # DRF / view should treat this as invalid credentials or bad request; expect 400 or 401
-        self.assertIn(response.status_code, {status.HTTP_400_BAD_REQUEST, status.HTTP_401_UNAUTHORIZED})
+        self.assertIn(response.status_code, {
+                      status.HTTP_400_BAD_REQUEST, status.HTTP_401_UNAUTHORIZED})
 
     def test_login_api_missing_password(self):
         data = {"username": "testuser", "password": ""}
         response = self.client.post(self.login_url, data)
-        self.assertIn(response.status_code, {status.HTTP_400_BAD_REQUEST, status.HTTP_401_UNAUTHORIZED})
+        self.assertIn(response.status_code, {
+                      status.HTTP_400_BAD_REQUEST, status.HTTP_401_UNAUTHORIZED})
 
     # --- protected endpoint tests ---
 

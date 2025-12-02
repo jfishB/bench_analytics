@@ -7,7 +7,8 @@ class Command(BaseCommand):
     help = "Import test roster CSV into Player/Team models."
 
     def add_arguments(self, parser):
-        parser.add_argument("--file", "-f", dest="file", required=True, help="Path to CSV file to import")
+        parser.add_argument("--file", "-f", dest="file",
+                            required=True, help="Path to CSV file to import")
         parser.add_argument(
             "--team-id",
             "-t",
@@ -29,7 +30,8 @@ class Command(BaseCommand):
         dry_run = options.get("dry_run")
 
         try:
-            result = import_from_csv(path, team_id=team_id_arg, dry_run=dry_run)
+            result = import_from_csv(
+                path, team_id=team_id_arg, dry_run=dry_run)
         except FileNotFoundError:
             raise CommandError(f"File not found: {path}")
 
@@ -38,6 +40,7 @@ class Command(BaseCommand):
 
         self.stdout.write(
             self.style.SUCCESS(
-                f"Import summary: processed={result.get('processed')} created={result.get('created')} updated={result.get('updated')}"
+                f"Import summary: processed={result.get('processed')} "
+                f"created={result.get('created')} updated={result.get('updated')}"
             )
         )

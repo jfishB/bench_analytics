@@ -22,7 +22,8 @@ from .services.player_service import PlayerService
 from .services.simulation import SimulationService
 
 # Add baseball-simulator library to path for game simulator tests
-lib_path = Path(__file__).resolve().parent.parent / "lib" / "baseball-simulator"
+lib_path = Path(__file__).resolve().parent.parent / \
+    "lib" / "baseball-simulator"
 if str(lib_path) not in sys.path:
     sys.path.insert(0, str(lib_path))
 
@@ -139,7 +140,8 @@ class SimulationServiceTestCase(TestCase):
         result_small = self.service.simulate_lineup(self.lineup, num_games=10)
 
         # Run with many games
-        result_large = self.service.simulate_lineup(self.lineup, num_games=1000)
+        result_large = self.service.simulate_lineup(
+            self.lineup, num_games=1000)
 
         # Larger sample should have more stable (lower) std dev relative to mean
         cv_small = result_small.std_dev / result_small.avg_score
@@ -187,7 +189,8 @@ class PlayerServiceTestCase(TestCase):
 
     def test_get_players_by_ids_maintains_order(self):
         """Test that player order is preserved."""
-        player_ids = [self.players[5].id, self.players[2].id, self.players[8].id]
+        player_ids = [self.players[5].id,
+                      self.players[2].id, self.players[8].id]
         batter_stats = self.service.get_players_by_ids(player_ids)
 
         self.assertEqual(batter_stats[0].name, "Test Player 6")
@@ -275,7 +278,8 @@ class SimulatorAPITestCase(APITestCase):
     def test_simulate_by_ids_invalid_count(self):
         """Test that endpoint rejects wrong number of players."""
         url = "/api/v1/simulator/simulate-by-ids/"
-        data = {"player_ids": [self.players[0].id], "num_games": 100}  # Only 1 player
+        data = {"player_ids": [self.players[0].id],
+                "num_games": 100}  # Only 1 player
 
         response = self.client.post(url, data, format="json")
 
@@ -305,7 +309,8 @@ class SimulatorAPITestCase(APITestCase):
     def test_simulate_by_names_success(self):
         """Test simulation by player names endpoint."""
         url = "/api/v1/simulator/simulate-by-names/"
-        data = {"player_names": [p.name for p in self.players], "num_games": 100}
+        data = {"player_names": [
+            p.name for p in self.players], "num_games": 100}
 
         response = self.client.post(url, data, format="json")
 
@@ -385,11 +390,13 @@ class ParallelGameIntegrationTests(TestCase):
 
         # Run with 1 process vs multiple processes
         # We can't easily time this in tests, but we can verify both work
-        game_single = self.ParallelGame(lineup=lineup, num_games=100, num_processes=1)
+        game_single = self.ParallelGame(
+            lineup=lineup, num_games=100, num_processes=1)
         game_single.play()
         scores_single = game_single.get_scores()
 
-        game_multi = self.ParallelGame(lineup=lineup, num_games=100, num_processes=4)
+        game_multi = self.ParallelGame(
+            lineup=lineup, num_games=100, num_processes=4)
         game_multi.play()
         scores_multi = game_multi.get_scores()
 

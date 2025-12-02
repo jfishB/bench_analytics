@@ -44,7 +44,8 @@ class Batter:
         :param name: only necessary if not from Excel, otherwise will be taken
         """
         if probabilities is None:
-            self.probs, self.name = compute_probs_from_dataset(dataset, player_id)
+            self.probs, self.name = compute_probs_from_dataset(
+                dataset, player_id)
         else:
             self.probs = probabilities
             self.name = name

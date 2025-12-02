@@ -14,7 +14,8 @@ from django.db import transaction
 from roster.models import Player
 
 
-def load_csv_file(file: str | Path, year: int | None = None, dry_run: bool = False) -> Tuple[int, int, int]:
+def load_csv_file(file: str | Path, year: int | None = None,
+                  dry_run: bool = False) -> Tuple[int, int, int]:
     """Load CSV into roster.Player.
 
     Returns a tuple (imported, updated, skipped).
@@ -65,7 +66,8 @@ def load_csv_file(file: str | Path, year: int | None = None, dry_run: bool = Fal
                     return None
 
             try:
-                savant_id = int(r.get("player_id")) if r.get("player_id") else None
+                savant_id = int(r.get("player_id")) if r.get(
+                    "player_id") else None
             except ValueError:
                 savant_id = None
 
@@ -93,7 +95,8 @@ def load_csv_file(file: str | Path, year: int | None = None, dry_run: bool = Fal
             player.on_base_percent = fflt("on_base_percent")
             player.isolated_power = fflt("isolated_power")
             player.b_total_bases = to_int_cell("b_total_bases")
-            player.r_total_caught_stealing = to_int_cell("r_total_caught_stealing")
+            player.r_total_caught_stealing = to_int_cell(
+                "r_total_caught_stealing")
             player.r_total_stolen_base = to_int_cell("r_total_stolen_base")
             player.b_game = fflt("b_game")
             player.b_gnd_into_dp = fflt("b_gnd_into_dp")

@@ -76,30 +76,8 @@ def player_detail(request, player_id):
 def players_ranked(request):
     """API endpoint to get players ranked by WOS score."""
     try:
-        # Fetch all players with stats
-        players = Player.objects.all().values(
-            "id",
-            "name",
-            "xwoba",
-            "bb_percent",
-            "k_percent",
-            "barrel_batted_rate",
-            "pa",
-            "year",
-        )
-
-        """
-        Sort by WOS
-        sorted_players = sort_players_by_wos(players_list, ascending=False)
-
-        # Add WOS score to each player
-        """
-        """
-        for player in sorted_players:
-            player_data = dict(player)
-            player_data["wos_score"] = round(calculate_wos(player), 2)
-            result.append(player_data)
-        """
+        # TODO: Implement actual WOS ranking logic
+        # For now, returns empty list as placeholder
         result = []
 
         return JsonResponse({"players": result})
@@ -187,7 +165,8 @@ def load_sample_players(request):
 
     # Find the CSV file - check multiple possible locations
     csv_candidates = [
-        Path("data/test_dataset_monte_carlo_bluejays.csv"),  # From repo root (Render)
+        # From repo root (Render)
+        Path("data/test_dataset_monte_carlo_bluejays.csv"),
         Path(
             "../data/test_dataset_monte_carlo_bluejays.csv"
         ),  # From backend/ dir (local)

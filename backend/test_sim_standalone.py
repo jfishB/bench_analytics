@@ -20,8 +20,8 @@ sys.path.insert(0, os.path.dirname(__file__))
 lib_path = os.path.join(os.path.dirname(__file__), "lib", "baseball-simulator")
 sys.path.insert(0, lib_path)
 
-from baseball import Game
-from batter import Batter
+from baseball import Game  # noqa: E402
+from batter import Batter  # noqa: E402
 
 
 @dataclass
@@ -61,7 +61,8 @@ class BatterStats:
         prob_homerun = self.home_runs / pa
 
         # Remaining probability is in-play outs
-        prob_out = 1.0 - (prob_strikeout + prob_walk + prob_single + prob_double + prob_triple + prob_homerun)
+        prob_out = 1.0 - (prob_strikeout + prob_walk
+                          + prob_single + prob_double + prob_triple + prob_homerun)
 
         # Ensure non-negative
         prob_out = max(0.0, prob_out)
@@ -142,7 +143,9 @@ def main():
         obp = (hits + walks) / pa if pa > 0 else 0
         singles = stats.singles
         print(
-            f"{i}. {name:30s} PA:{pa:3d}  AVG:.{int(avg*1000):03d}  OBP:.{int(obp*1000):03d}  1B:{singles:2d}  2B:{doubles:2d}  3B:{triples}  HR:{hrs:2d}  SO:{ks:3d}  BB:{walks:2d}"
+            f"{i}. {name:30s} PA:{pa:3d}  AVG:.{int(avg*1000):03d}  "
+            f"OBP:.{int(obp*1000):03d}  1B:{singles:2d}  2B:{doubles:2d}  "
+            f"3B:{triples}  HR:{hrs:2d}  SO:{ks:3d}  BB:{walks:2d}"
         )
 
     # Run simulation
@@ -153,7 +156,8 @@ def main():
     num_games = 10000
     print(f"Simulating {num_games:,} games...\n")
 
-    avg_score, median_score, std_dev, all_scores = simulate_lineup(lineup, num_games=num_games)
+    avg_score, median_score, std_dev, all_scores = simulate_lineup(
+        lineup, num_games=num_games)
 
     # Display results
     print("=" * 70)
@@ -184,7 +188,8 @@ def main():
 
     # Show interpretation
     print("\n💡 INTERPRETATION:")
-    print(f"   This lineup is expected to score ~{avg_score:.1f} runs per game")
+    print(
+        f"   This lineup is expected to score ~{avg_score:.1f} runs per game")
     print(f"   Most games ({median_score:.0f} runs) fall near the median")
     print(f"   Variation is ±{std_dev:.1f} runs (1 standard deviation)")
 
