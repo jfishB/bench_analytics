@@ -159,8 +159,6 @@ Bench Analytics follows a decoupled **Client-Server architecture**, separating t
 - TypeScript for type checking
 - Jest + Pytest for unit tests
 
-## Hosting Instructions
-
 ## Run Locally
 
 **Install Prerequisites**
@@ -187,6 +185,7 @@ Project root
 
 ```bash
 python -m venv venv         # create virtual environment
+
 source venv/bin/activate    # Linux/macOS
 # or
 venv\Scripts\Activate.ps1   # Windows PowerShell
@@ -198,9 +197,8 @@ pip install -r requirements.txt
 Frontend
 
 ```bash
-  cd frontend
-  npm install
-
+cd frontend
+npm install
 ```
 
 **Start the servers**
@@ -224,8 +222,8 @@ Backend
 
 ```bash
 cd backend
-# TODO: add command for filling the datavase
-python manage.py migrate   # apply database migrations
+python backend/manage.py makemigrations  # make database migrations if needed
+python manage.py migrate                 # apply database migrations
 python manage.py runserver
 ```
 
