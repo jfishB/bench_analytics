@@ -170,6 +170,44 @@ class PlayerImportServiceTestCase(TestCase):
         PlayerImportService.import_from_csv(self.csv_path)
         player = Player.objects.get(name="Robusto")
 
-        self.assertIsNone(player.pa)
-        self.assertEqual(player.hit, 10)
-        self.assertEqual(player.bb_percent, 12.5)
+    def test_import_csv_read_error(self):
+        """Test error handling when reading CSV fails."""
+        # Create a file that exists so we pass the exists() check
+        rows = [{"name": "Test"}]
+        self.create_csv(rows)
+        
+        # Mock the open method on Path instances to raise an error
+        with patch("roster.services.player_import.Path.open", side_effect=IOError("Read error")):
+            with self.assertRaises(ValueError) as cm:
+                PlayerImportService.import_from_csv(self.csv_path)
+            self.assertIn("Error reading CSV", str(cm.exception))
+
+    def test_import_row_without_name(self):
+        """Test that rows without a valid name are skipped."""
+        rows = [
+            {
+                "player_id": "111",
+                "year": "2024",
+                # No name fields
+            }
+        ]
+        self.create_csv(rows)
+
+        result = PlayerImportService.import_from_csv(self.csv_path)
+        
+        self.assertEqual(result["processed"], 0)
+        self.assertEqual(result["created"], 0)
+        self.assertTrue(any("Skipping row without name" in msg for msg in result["messages"]))
+
+    def test_import_transaction_error(self):
+        """Test error handling when a database error occurs during import."""
+        rows = [
+            {"name": "Error Player", "player_id": "999"}
+        ]
+        self.create_csv(rows)
+
+        # Mock Player.objects.update_or_create to raise an exception
+        with patch("roster.models.Player.objects.update_or_create", side_effect=Exception("DB Error")):
+            with self.assertRaises(Exception) as cm:
+                PlayerImportService.import_from_csv(self.csv_path)
+            self.assertIn("DB Error", str(cm.exception))

@@ -366,6 +366,39 @@ class SimulatorAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
+    def test_simulate_by_ids_player_not_found(self):
+        """Test simulation with non-existent player ID."""
+        url = "/api/v1/simulator/simulate-by-ids/"
+        invalid_ids = [99999] * 9  # 9 non-existent IDs
+        data = {"player_ids": invalid_ids, "num_games": 100}
+
+        response = self.client.post(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
+
+    def test_simulate_by_names_player_not_found(self):
+        """Test simulation with non-existent player name."""
+        url = "/api/v1/simulator/simulate-by-names/"
+        invalid_names = ["NonExistent Player"] * 9
+        data = {"player_names": invalid_names, "num_games": 100}
+
+        response = self.client.post(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
+
+    def test_simulate_by_team_no_players(self):
+        """Test simulation with team that has no players."""
+        empty_team = Team.objects.create(id=999)
+        url = "/api/v1/simulator/simulate-by-team/"
+        data = {"team_id": empty_team.id, "num_games": 100}
+
+        response = self.client.post(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
+
 
 class ParallelGameIntegrationTests(TestCase):
     """Integration tests for ParallelGame comparing statistics."""
