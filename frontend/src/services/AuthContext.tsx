@@ -18,12 +18,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
-  // API base for auth endpoints. REACT_APP_API_BASE should be the base URL
-  // (e.g., "https://backend.onrender.com/api/v1"), and we append /auth here.
-  const API_BASE =
-    process.env.REACT_APP_API_BASE || "http://127.0.0.1:8000/api/v1";
-  const AUTH_BASE = `${API_BASE}/auth`;
-
   // --- Initialize auth state on mount ---
   useEffect(() => {
     const init = () => {

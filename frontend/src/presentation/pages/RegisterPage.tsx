@@ -1,11 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-// API base for auth endpoints. REACT_APP_API_BASE should be the base URL
-// (e.g., "https://backend.onrender.com/api/v1"), and we append /auth here.
-const API_BASE =
-  process.env.REACT_APP_API_BASE || "http://127.0.0.1:8000/api/v1";
-const AUTH_BASE = `${API_BASE}/auth`;
+import { authService } from "../../services/authService";
 
 export default function Register() {
   const [username, setUsername] = useState("");
