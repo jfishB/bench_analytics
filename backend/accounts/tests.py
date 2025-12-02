@@ -1,8 +1,8 @@
 """
 - This file contains tests for the accounts module
 - Covers:
-    - domain/application services in `backend/accounts/services.py`
-    - API views in `backend/accounts/views.py` wired via `backend/accounts/urls.py`
+    - domain/application services in `./accounts/services.py`
+    - API views in `./accounts/views.py` wired via `./accounts/urls.py`
 - Notation:
 - 200 - HTTP_200_OK
 - 201 - HTTP_201_CREATED
@@ -13,13 +13,15 @@
 
 from django.contrib.auth.models import User
 from django.test import TestCase
-from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from unittest.mock import patch
 from django.urls import reverse
 
-from .exceptions import EmailAlreadyExistsError, InvalidCredentialsError, MissingFieldsError, UserAlreadyExistsError
+from .exceptions import (
+    EmailAlreadyExistsError, InvalidCredentialsError, 
+    MissingFieldsError, UserAlreadyExistsError
+)
 from .services import login_user, register_user
 
 
@@ -30,7 +32,7 @@ def test_smoke():
 
 
 class AccountServiceTests(TestCase):
-    """Unit tests for the accounts service layer (register_user, login_user)."""
+    """Unit tests for accounts service layer (register_user, login_user)."""
 
     def setUp(self):
         # Create a sample user for login tests
@@ -70,7 +72,7 @@ class AccountServiceTests(TestCase):
             register_user("newuser2", "test@example.com", "password")
 
     def test_register_user_existing_username_and_email(self):
-        # Both username and email already taken – should raise email error first
+        # Both username and email already taken – raise email error first
         with self.assertRaises(EmailAlreadyExistsError):
             register_user("testuser", "test@example.com", "password")
 
@@ -118,18 +120,18 @@ class AccountViewTests(TestCase):
 
     def test_register_api_success(self):
         data = {
-            "username": "newuser", 
-            "email": "new@example.com", 
+            "username": "newuser",
+            "email": "new@example.com",
             "password": "pass1234"
         }
         response = self.client.post(self.register_url, data)
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.data["message"], "User created successfully!")
+        self.assertEqual(response.data["message"], "User created successfully")
 
     def test_register_api_missing_username(self):
         data = {
-            "username": "", 
-            "email": "new@example.com", 
+            "username": "",
+            "email": "new@example.com",
             "password": "pass1234"
         }
         response = self.client.post(self.register_url, data)
@@ -137,8 +139,8 @@ class AccountViewTests(TestCase):
 
     def test_register_api_missing_email(self):
         data = {
-            "username": "newuser", 
-            "email": "", 
+            "username": "newuser",
+            "email": "",
             "password": "pass1234"
         }
         response = self.client.post(self.register_url, data)
@@ -146,8 +148,8 @@ class AccountViewTests(TestCase):
 
     def test_register_api_missing_password(self):
         data = {
-            "username": "newuser", 
-            "email": "new@example.com", 
+            "username": "newuser",
+            "email": "new@example.com",
             "password": ""
         }
         response = self.client.post(self.register_url, data)
@@ -155,8 +157,8 @@ class AccountViewTests(TestCase):
 
     def test_register_api_existing_username(self):
         data = {
-            "username": "testuser", 
-            "email": "newemail@example.com", 
+            "username": "testuser",
+            "email": "newemail@example.com",
             "password": "pass123"
         }
         response = self.client.post(self.register_url, data)
@@ -164,8 +166,8 @@ class AccountViewTests(TestCase):
 
     def test_register_api_existing_email(self):
         data = {
-            "username": "otheruser", 
-            "email": "test@example.com", 
+            "username": "otheruser",
+            "email": "test@example.com",
             "password": "pass123"
         }
         response = self.client.post(self.register_url, data)
@@ -175,7 +177,7 @@ class AccountViewTests(TestCase):
 
     def test_login_api_success(self):
         data = {
-            "username": "testuser", 
+            "username": "testuser",
             "password": "test123"
         }
         response = self.client.post(self.login_url, data)
@@ -185,7 +187,7 @@ class AccountViewTests(TestCase):
 
     def test_login_api_invalid_password(self):
         data = {
-            "username": "testuser", 
+            "username": "testuser",
             "password": "wrongpassword"
         }
         response = self.client.post(self.login_url, data)
@@ -194,7 +196,7 @@ class AccountViewTests(TestCase):
 
     def test_login_api_unknown_username(self):
         data = {
-            "username": "unknown", 
+            "username": "unknown",
             "password": "somepassword"
         }
         response = self.client.post(self.login_url, data)
@@ -203,16 +205,16 @@ class AccountViewTests(TestCase):
 
     def test_login_api_missing_username(self):
         data = {
-            "username": "", 
+            "username": "",
             "password": "test123"
         }
         response = self.client.post(self.login_url, data)
-        # DRF / view should treat this as invalid credentials or bad request; expect 400 or 401
+        # Treat as invalid credentials or bad request; expect 400 or 401
         self.assertIn(response.status_code, {400, 401})
 
     def test_login_api_missing_password(self):
         data = {
-            "username": "testuser", 
+            "username": "testuser",
             "password": ""
         }
         response = self.client.post(self.login_url, data)
@@ -239,7 +241,7 @@ class AccountViewTests(TestCase):
 class AccountExceptionTests(TestCase):
     """Tests view-layer error handling for domain and unexpected exceptions.
 
-    Mocks service-layer functions to ensure the views map DomainError subclasses
+    Mocks service-layer functions to ensure views map DomainError subclasses
     to appropriate HTTP responses and that unexpected exceptions result in 500.
     """
 
@@ -259,8 +261,8 @@ class AccountExceptionTests(TestCase):
             mock_register.side_effect = UserAlreadyExistsError("username")
 
             data = {
-                "username": "testuser", 
-                "email": "new@example.com", 
+                "username": "testuser",
+                "email": "new@example.com",
                 "password": "pass"
             }
 
@@ -273,8 +275,8 @@ class AccountExceptionTests(TestCase):
             mock_register.side_effect = Exception("boom")
 
             data = {
-                "username": "newuser", 
-                "email": "new@example.com", 
+                "username": "newuser",
+                "email": "new@example.com",
                 "password": "pass"
             }
 
@@ -299,10 +301,10 @@ class AccountExceptionTests(TestCase):
             mock_login.side_effect = InvalidCredentialsError("bad")
 
             data = {
-                "username": "testuser", 
+                "username": "testuser",
                 "password": "wrong"
             }
-            
+
             response = self.client.post(self.login_url, data)
             self.assertEqual(response.status_code, 401)
             self.assertIn("error", response.data)
