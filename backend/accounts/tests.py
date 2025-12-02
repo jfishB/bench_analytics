@@ -125,8 +125,9 @@ class AccountViewTests(TestCase):
             "password": "pass1234"
         }
         response = self.client.post(self.register_url, data)
+        message = response.data["message"]
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.data["message"], "User created successfully")
+        self.assertEqual(message, "User created successfully!")
 
     def test_register_api_missing_username(self):
         data = {
@@ -233,10 +234,10 @@ class AccountViewTests(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
 
         response = self.client.get(self.protected_url)
+        message = response.data["message"]
         self.assertEqual(response.status_code, 200)
         self.assertIn("message", response.data)
-        self.assertIn(self.user.username, response.data["message"])
-
+        self.assertIn(self.user.username, message)
 
 class AccountExceptionTests(TestCase):
     """Tests view-layer error handling for domain and unexpected exceptions.
@@ -326,9 +327,10 @@ class AccountExceptionTests(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
         data={"refresh": str(refresh)}
         response = self.client.post(self.logout_url, data=data)
+        message = response.data["message"]
         self.assertEqual(response.status_code, 200)
         self.assertIn("message", response.data)
-        self.assertEqual(response.data["message"], "Logout successful.")
+        self.assertEqual(message, "Logout successful.")
 
     def test_logout_invalid_token_returns_400(self):
         # Authenticate
