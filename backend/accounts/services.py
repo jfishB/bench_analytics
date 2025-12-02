@@ -14,7 +14,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .exceptions import (
     EmailAlreadyExistsError, InvalidCredentialsError,
-    MissingFieldsError, UserAlreadyExistsError
+    MissingFieldsError, UserAlreadyExistsError, UsernameConflictError
 )
 
 
@@ -40,7 +40,7 @@ def register_user(username, email, password) -> User:
         return user
 
     except IntegrityError:
-        raise UserAlreadyExistsError("Username already exists.")
+        raise UsernameConflictError("Username conflict due to concurrent request.")
 
 
 def login_user(username, password) -> dict:
