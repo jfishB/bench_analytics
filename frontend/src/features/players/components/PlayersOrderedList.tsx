@@ -1,6 +1,6 @@
 import React from "react";
-import PlayerList from "../../../ui/components/player-list";
-import type { Player } from "../../../shared/types"; // player type defined in shared/types
+import PlayerList from "ui/components/player-list";
+import type { Player } from "shared";
 
 interface PlayersOrderedListProps {
   players: Array<
@@ -53,11 +53,7 @@ export function PlayersOrderedList({
 
   // Type guard: ensure a Partial<Player> is a complete Player before calling the consumer
   function isCompletePlayer(p: Partial<Player> | undefined): p is Player {
-    return (
-      !!p &&
-      typeof p.id !== "undefined" &&
-      typeof p.name === "string"
-    );
+    return !!p && typeof p.id !== "undefined" && typeof p.name === "string";
   }
 
   return (

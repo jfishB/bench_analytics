@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useState } from "react";
-import { Player } from "../../../shared/types";
+import { Player } from "shared";
 import * as lineupService from "../services/lineupService";
 
 export function useRosterData() {

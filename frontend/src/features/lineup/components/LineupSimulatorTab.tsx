@@ -2,20 +2,16 @@
  * LineupSimulatorTab - Component for displaying all saved lineups and running Monte Carlo simulations
  */
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../../../ui/components/card";
-import { Button } from "../../../ui/components/button";
-import { SavedLineup, deleteLineup } from "../services/lineupService";
-import {
-  useMonteCarloSimulation,
-  SimulationConfig,
-} from "../hooks/useMonteCarloSimulation";
+} from "ui/components/card";
+import { Button } from "ui/components/button";
+import { SavedLineup } from "../services/lineupService";
 import {
   BarChart,
   Bar,
@@ -26,162 +22,49 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { CHART_COLORS } from "../../../shared/designTokens";
+import { CHART_COLORS, SIMULATION_CONFIG, UI_MESSAGES } from "shared";
 import { BarChart3, ChevronDown, ChevronRight } from "lucide-react";
+import { useLineupSimulator } from "../hooks/useLineupSimulator";
 
 interface LineupSimulatorTabProps {
   savedLineups: SavedLineup[];
   loading: boolean;
+  onLineupDeleted?: () => void;
 }
 
 export function LineupSimulatorTab({
   savedLineups,
   loading,
+  onLineupDeleted,
 }: LineupSimulatorTabProps) {
-  const [selectedLineupIds, setSelectedLineupIds] = useState<number[]>([]);
-  const [expandedLineupIds, setExpandedLineupIds] = useState<number[]>([]);
-  const [includeWobaBaseline, setIncludeWobaBaseline] = useState(false);
-  const [numGames, setNumGames] = useState<number>(20000);
-  const [statusMessage, setStatusMessage] = useState("");
   const {
+    selectedLineupIds,
+    expandedLineupIds,
+    includeWobaBaseline,
+    numGames,
+    statusMessage,
     results,
     simulating,
     simulationError,
-    setSimulationError,
-    runSimulations,
-    clearResults,
-  } = useMonteCarloSimulation();
-
-  // Cycle through status messages while simulating
-  useEffect(() => {
-    if (!simulating) {
-      setStatusMessage("");
-      return;
-    }
-
-    const messages = [
-      "Simulating your lineups...",
-      "Calculating runs...",
-      "Tracking base runners...",
-      "Recording outcomes...",
-      "Running Monte Carlo iterations...",
-      "Processing game states...",
-      "Evaluating batting sequences...",
-      "Analyzing scoring patterns...",
-      "Computing probabilities...",
-      "Comparing results...",
-      "Aggregating statistics...",
-    ];
-
-    let currentIndex = 0;
-    const interval = setInterval(() => {
-      setStatusMessage(messages[currentIndex]);
-      currentIndex = (currentIndex + 1) % messages.length;
-    }, 800); // Change message every 800ms
-
-    return () => clearInterval(interval);
-  }, [simulating]);
-
-  const handleToggleLineup = (lineupId: number) => {
-    setSelectedLineupIds((prev) => {
-      if (prev.includes(lineupId)) {
-        return prev.filter((id) => id !== lineupId);
-      } else {
-        return [...prev, lineupId];
-      }
-    });
-  };
-
-  const handleClearResults = () => {
-    clearResults();
-  };
-
-  const handleRunSimulation = async () => {
-    if (selectedLineupIds.length === 0) return;
-
-    const configs: SimulationConfig[] = [];
-
-    // Add selected lineups
-    selectedLineupIds.forEach((id) => {
-      const lineup = savedLineups.find((l) => l.id === id);
-      if (lineup) {
-        const playerIds = lineup.players
-          .sort((a, b) => a.batting_order - b.batting_order)
-          .map((p) => p.player_id);
-
-        if (playerIds.length === 9) {
-          configs.push({
-            id: lineup.id,
-            name: lineup.name,
-            playerIds: playerIds,
-            isBaseline: false,
-          });
-        }
-      }
-    });
-
-    if (configs.length === 0) {
-      setSimulationError("No valid lineups selected (must have 9 players).");
-      return;
-    }
-
-    // Add baseline if requested
-    if (includeWobaBaseline && configs.length > 0) {
-      // Generate a baseline for each unique set of players found in the selected lineups
-      const processedPlayerSets = new Set<string>();
-      // Capture the current length so we don't iterate over newly added baselines
-      const currentConfigsCount = configs.length;
-
-      for (let i = 0; i < currentConfigsCount; i++) {
-        const config = configs[i];
-        // Create a unique key for the set of players (independent of batting order)
-        const playerSetKey = [...config.playerIds]
-          .sort((a, b) => a - b)
-          .join(",");
-
-        if (!processedPlayerSets.has(playerSetKey)) {
-          processedPlayerSets.add(playerSetKey);
-          configs.push({
-            id: `baseline-${config.id}`,
-            name: `wOBA Baseline (${config.name})`,
-            playerIds: config.playerIds,
-            isBaseline: true,
-          });
-        }
-      }
-    }
-
-    await runSimulations(configs, numGames);
-  };
-
-  const handleDeleteLineup = async (lineupId: number, e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    if (!window.confirm("Are you sure you want to delete this lineup?")) return;
-
-    try {
-      await deleteLineup(lineupId);
-      // clear selection if deleted lineup was selected
-      setSelectedLineupIds((prev) => prev.filter((id) => id !== lineupId));
-      // simple refresh: ask parent to re-fetch instead if available
-      window.location.reload();
-    } catch (err: any) {
-      // show error (uses existing simulation error setter)
-      setSimulationError?.(String(err) ?? "Failed to delete lineup");
-    }
-  };
-
-  // Color palette for charts
-  const COLORS = CHART_COLORS;
+    setIncludeWobaBaseline,
+    setNumGames,
+    handleToggleLineup,
+    toggleExpandLineup,
+    handleRunSimulation,
+    handleDeleteLineup,
+    handleClearResults,
+  } = useLineupSimulator(savedLineups, onLineupDeleted);
 
   // Returns a distinct color for each index, using the palette for the first 8, then generating new HSL colors as needed
   function getColor(index: number): string {
-    if (index < COLORS.length) {
-      return COLORS[index];
+    if (index < CHART_COLORS.length) {
+      return CHART_COLORS[index];
     }
     // Generate a new color using HSL for additional indices
     const hue = (index * 47) % 360; // 47 is a prime to help spread hues
     return `hsl(${hue}, 65%, 55%)`;
   }
+
   return (
     <div className="space-y-6">
       {/* Lineup Selection Section */}
@@ -202,7 +85,7 @@ export function LineupSimulatorTab({
         <CardContent>
           {loading ? (
             <div className="text-center text-muted-foreground py-8">
-              Loading lineups...
+              {UI_MESSAGES.LOADING}
             </div>
           ) : savedLineups.length === 0 ? (
             <div className="text-center text-muted-foreground py-8">
@@ -222,11 +105,10 @@ export function LineupSimulatorTab({
                 </svg>
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                No Saved Lineups Yet
+                {UI_MESSAGES.NO_LINEUPS.TITLE}
               </h3>
               <p className="text-sm text-gray-600">
-                Create and save lineups in the Generate Lineup tab to see them
-                here.
+                {UI_MESSAGES.NO_LINEUPS.DESCRIPTION}
               </p>
             </div>
           ) : (
@@ -247,13 +129,7 @@ export function LineupSimulatorTab({
                     <div className="flex items-center justify-between p-4">
                       <div className="flex items-center gap-3 flex-1">
                         <button
-                          onClick={() => {
-                            setExpandedLineupIds(prev =>
-                              prev.includes(lineup.id)
-                                ? prev.filter(id => id !== lineup.id)
-                                : [...prev, lineup.id]
-                            );
-                          }}
+                          onClick={() => toggleExpandLineup(lineup.id)}
                           className="text-gray-400 hover:text-gray-600 transition-colors"
                         >
                           {isExpanded ? (
@@ -262,7 +138,7 @@ export function LineupSimulatorTab({
                             <ChevronRight className="h-5 w-5" />
                           )}
                         </button>
-                        <div 
+                        <div
                           className="flex-1 cursor-pointer"
                           onClick={() => handleToggleLineup(lineup.id)}
                         >
@@ -344,17 +220,23 @@ export function LineupSimulatorTab({
                   <input
                     id="numGames"
                     type="number"
-                    min="100"
-                    max="100000"
-                    step="100"
+                    min={SIMULATION_CONFIG.MIN_GAMES}
+                    max={SIMULATION_CONFIG.MAX_GAMES}
+                    step={SIMULATION_CONFIG.STEP_SIZE}
                     value={numGames}
                     onChange={(e) =>
-                      setNumGames(parseInt(e.target.value) || 20000)
+                      setNumGames(
+                        parseInt(e.target.value) ||
+                          SIMULATION_CONFIG.DEFAULT_NUM_GAMES
+                      )
                     }
                     className="px-3 py-2 border border-gray-300 rounded-md w-32"
                     disabled={simulating}
                   />
-                  <span className="text-xs text-gray-500">(rec: 20,000)</span>
+                  <span className="text-xs text-gray-500">
+                    (rec: {SIMULATION_CONFIG.RECOMMENDED_GAMES.toLocaleString()}
+                    )
+                  </span>
                 </div>
               </div>
 
@@ -390,7 +272,7 @@ export function LineupSimulatorTab({
                   <div className="bg-primary h-2.5 rounded-full animate-pulse w-full"></div>
                 </div>
                 <p className="text-sm text-gray-600 animate-pulse text-center">
-                  {statusMessage || "Initializing simulation..."}
+                  {statusMessage || UI_MESSAGES.INITIALIZING}
                 </p>
               </div>
             )}
