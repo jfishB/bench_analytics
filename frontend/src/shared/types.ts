@@ -19,3 +19,4 @@ export type Player = {
   k_percent?: number;
   barrel_batted_rate?: number;
 }
+

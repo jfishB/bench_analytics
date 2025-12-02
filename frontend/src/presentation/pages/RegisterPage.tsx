@@ -17,25 +17,13 @@ export default function Register() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${AUTH_BASE}/register/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, email, password }),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        setMessage("✅ Registration successful! You can now log in.");
-        setUsername("");
-        setEmail("");
-        setPassword("");
-      } else {
-        setMessage(`❌ ${data.error || "Registration failed"}`);
-      }
-    } catch (err) {
-      setMessage("❌ Network error. Please try again.");
+      await authService.register({ username, password });
+      setMessage("✅ Registration successful! You can now log in.");
+      setUsername("");
+      setEmail("");
+      setPassword("");
+    } catch (err: any) {
+      setMessage(`❌ ${err.message || "Registration failed"}`);
     }
   };
 

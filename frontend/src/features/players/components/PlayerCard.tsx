@@ -1,7 +1,6 @@
 import React from "react";
-import PlayerCardUI from "../../../ui/components/player-card";
-
-import type { Player } from "../../../shared/types";
+import PlayerCardUI from "ui/components/player-card";
+import type { Player } from "shared";
 
 interface PlayerCardProps {
   player: Pick<Player, "name" | "team">;
@@ -16,10 +15,6 @@ interface PlayerCardProps {
  */
 export function PlayerCard({ player }: PlayerCardProps) {
   return (
-    <PlayerCardUI
-      name={player.name}
-      teamName={player.team}
-      className="mb-3"
-    />
+    <PlayerCardUI name={player.name} teamName={player.team} className="mb-3" />
   );
 }

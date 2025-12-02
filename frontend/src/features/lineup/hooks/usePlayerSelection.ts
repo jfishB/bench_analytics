@@ -4,7 +4,7 @@
  */
 
 import { useState } from "react";
-import { Player } from "../../../shared/types";
+import { Player } from "shared";
 
 export function usePlayerSelection() {
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<Set<number>>(

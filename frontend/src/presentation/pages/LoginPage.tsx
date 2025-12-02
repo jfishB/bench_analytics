@@ -19,29 +19,19 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const response = await fetch(`${AUTH_BASE}/login/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
+      const data = await authService.login({ username, password });
 
-      if (!response.ok) {
-        setMessage("Login failed!");
-        return;
-      }
-
-      const data = await response.json();
       // Save token in localStorage
       localStorage.setItem("access", data.access);
       localStorage.setItem("refresh", data.refresh);
-      localStorage.setItem("username", data.username); // TODO Not working currently
+      localStorage.setItem("username", data.username);
       setMessage("Login successful!");
 
       login(username); // sets the user in context
       navigate("/"); // redirect to homepage or lineup
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setMessage("Something went wrong.");
+      setMessage(err.message || "Something went wrong.");
     }
   };
 

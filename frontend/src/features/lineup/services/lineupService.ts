@@ -3,7 +3,7 @@
  * Centralizes all HTTP requests for better testability and maintainability.
  */
 
-import { Player } from "../../../shared/types";
+import { Player } from "shared";
 
 const API_BASE =
   process.env.REACT_APP_API_BASE || "http://localhost:8000/api/v1";
