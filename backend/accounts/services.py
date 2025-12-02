@@ -26,9 +26,6 @@ def register_user(username, email, password) -> User:
     if not all([username, email, password]):
         raise MissingFieldsError("Username, email, and password are required.")
 
-    if User.objects.filter(username=username).exists():
-        raise UserAlreadyExistsError("Username already exists.")
-
     if User.objects.filter(email=email).exists():
         raise EmailAlreadyExistsError("Email already exists.")
 
