@@ -91,7 +91,7 @@ def logout(request):
     except TokenError:
         return Response({"error": "Invalid or already blacklisted token."},
                         status=status.HTTP_400_BAD_REQUEST)
-    except Exception as e:
+    except Exception:
         logger.exception("Unexpected error in logout")
         return Response({"error": "Unexpected server error."},
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR)

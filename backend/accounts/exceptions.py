@@ -23,7 +23,7 @@ class UserAlreadyExistsError(DomainError):
     pass
 
 
-class UsernameConflictError(DomainError):
+class UserConflictError(DomainError):
     """Raised when a username conflict occurs due to a race condition."""
 
     pass

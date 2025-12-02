@@ -2,7 +2,7 @@
 - This file contains tests for the accounts module
 - Covers:
     - domain/application services in `backend/accounts/services.py`
-    - API views in `backend/accounts/views.py` 
+    - API views in `backend/accounts/views.py`
     - Views are wired via `backend/accounts/urls.py`
 - Notation shortned for style check (HTTP status codes used in tests):
     - 200 - HTTP_200_OK
@@ -21,7 +21,7 @@ from django.urls import reverse
 from django.db import IntegrityError
 from .exceptions import (
     EmailAlreadyExistsError, InvalidCredentialsError, MissingFieldsError,
-    UserAlreadyExistsError, UsernameConflictError,
+    UserAlreadyExistsError, UserConflictError,
 )
 from .services import login_user, register_user
 
@@ -77,11 +77,11 @@ class AccountServiceTests(TestCase):
         with self.assertRaises(UserAlreadyExistsError):
             register_user("testuser", "test@example.com", "password")
 
-    def test_register_user_race_condition_raises_username_conflict(self):
-        # Simulate DB IntegrityError during user creation -> UsernameConflictError
-        with patch("accounts.services.User.objects.create_user") as mock_create_user:
-            mock_create_user.side_effect = IntegrityError("duplicate")
-            with self.assertRaises(UsernameConflictError):
+    def test_register_user_race_condition_raises_user_conflict(self):
+        # Simulate DB IntegrityError during user creation -> UserConflictError
+        with patch("accounts.services.User.objects.create_user") as mock_user:
+            mock_user.side_effect = IntegrityError("duplicate")
+            with self.assertRaises(UserConflictError):
                 register_user("raceuser", "race@example.com", "password123")
 
     # --- login_user tests ---
