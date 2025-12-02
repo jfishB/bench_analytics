@@ -33,7 +33,8 @@ export const About: React.FC = () => {
     },
     {
       name: "Ilya Kononov",
-      background: "Computer Science and Mathematics major interested in cloud development and optimization",
+      background:
+        "Computer Science and Mathematics major interested in cloud development and optimization",
     },
     {
       name: "Luke Pan",
@@ -49,19 +50,10 @@ export const About: React.FC = () => {
 
   return (
     <div className="px-4 md:px-12 lg:px-24 space-y-8">
-      {/* ---------- Page Header ---------- */}
-      <div className="text-center">
-        <h1 className="text-3xl mb-2 text-primary">About Bench Analytics</h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
-          We're passionate about helping coaches make data-driven decisions that
-          lead to more wins on the field.
-        </p>
-      </div>
-
       {/* ---------- Mission Statement ---------- */}
       <section className="text-center py-8">
         <div className="max-w-3xl mx-auto space-y-6">
-          <h2 className="text-2xl text-primary">Our Mission</h2>
+          <h1 className="text-5xl mb-2 text-primary">Our Mission</h1>
           <p className="text-lg text-muted-foreground">
             To democratize advanced baseball analytics and give every coach,
             regardless of budget or technical expertise, access to the same

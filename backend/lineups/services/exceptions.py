@@ -1,54 +1,39 @@
-##########################################
 """
-- This file contains the custom exceptions
-- used in lineup validator.
+- This file defines domain-level exceptions for the lineups module.
+- Imported by:
+  - backend/lineups/services/validator.py
+  - backend/lineups/views.py
 """
-###########################################
 
 
-class TeamNotFound(Exception):
+class DomainError(Exception):
+    """Base class for all lineup domain exceptions."""
+    def __init__(self, detail: str = "Domain error occurred."):
+        super().__init__(detail)
+        self.detail = detail
+
+
+class TeamNotFound(DomainError):
     def __init__(self, detail: str = "Unknown team."):
         super().__init__(detail)
-        self.detail = detail
 
 
-class PlayersNotFound(Exception):
+class PlayersNotFound(DomainError):
     def __init__(self, detail: str = "Players not found."):
         super().__init__(detail)
-        self.detail = detail
 
 
-class PlayersWrongTeam(Exception):
+class PlayersWrongTeam(DomainError):
     def __init__(self, detail: str = "Players must belong to the same team."):
         super().__init__(detail)
-        self.detail = detail
 
 
-class BadBattingOrder(Exception):
-    def __init__(self, detail: str = "Batting orders must be unique and between 1 and n."):
+class BadBattingOrder(DomainError):
+    def __init__(self, detail: str = "Batting orders must be unique and\
+                  between 1 and n."):
         super().__init__(detail)
-        self.detail = detail
 
 
-class OpponentPitcherNotFound(Exception):
-    def __init__(self, detail: str = "Opponent pitcher not found."):
-        super().__init__(detail)
-        self.detail = detail
-
-
-class OpponentTeamMismatch(Exception):
-    def __init__(self, detail: str = "Opponent team mismatch."):
-        super().__init__(detail)
-        self.detail = detail
-
-
-class PitcherInBatters(Exception):
-    def __init__(self, detail: str = "Opponent pitcher cannot appear in batting lineup."):
-        super().__init__(detail)
-        self.detail = detail
-
-
-class NoCreator(Exception):
+class NoCreator(DomainError):
     def __init__(self, detail: str = "No creator found"):
         super().__init__(detail)
-        self.detail = detail

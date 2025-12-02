@@ -10,7 +10,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import {
   BarChart3,
-  TrendingUp,
   Target,
   Zap,
   Award,
@@ -47,23 +46,24 @@ const Home: React.FC = () => {
     {
       title: "Player Performance Tracking",
       description:
-        "Track hits, OBP, plate appearances, and more for every player on your roster.",
+        "Preview hits, OBP, plate appearances, and more for every player on your roster.",
       icon: BarChart3,
     },
     {
       title: "Matchup Analysis",
       description:
-        "Optimize lineups based on opposing pitcher handedness, historical matchup data, and platoon advantages.",
+        "Generate optimized lineups based on each batter’s statistical profile.",
       icon: Target,
     },
     {
-      title: "Real-time Adjustments",
+      title: "Quick Adjustments",
       description:
-        "Make in-game lineup changes and substitutions based on live game situations and player performance.",
+        "Update player statistics to have the algorithm generate lineups based on the latest performance data",
       icon: SquarePen,
     },
   ];
 
+  // List of benefits coaches gain from using the platform
   const benefits: DisplayItem[] = [
     {
       icon: Award,
@@ -74,11 +74,6 @@ const Home: React.FC = () => {
       icon: Clock,
       title: "Save Time",
       description: "Generate lineups in seconds, not hours.",
-    },
-    {
-      icon: TrendingUp,
-      title: "Player Development",
-      description: "Identify strengths and optimize roles.",
     },
     {
       icon: Repeat,
@@ -182,10 +177,8 @@ const Home: React.FC = () => {
       {/* Displays our benefits in block */}
 
       <section className="bg-gray-100/50 rounded-lg p-8 max-w-6xl mx-auto">
-        <h2 className="text-3xl mb-8 text-center text-primary">
-          Why Coaches Love Us
-        </h2>
-        <div className="grid md:grid-cols-4 gap-6">
+        <h2 className="text-3xl mb-8 text-center text-primary">Key Benefits</h2>
+        <div className="grid md:grid-cols-3 gap-6">
           {benefits.map((benefit, index) => {
             const Icon = benefit.icon;
             return (

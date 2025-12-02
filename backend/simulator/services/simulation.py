@@ -3,7 +3,7 @@ runs monte carlo baseball simulations using bram stoker's baseball-simulator lib
 source: https://github.com/BramStoker/baseball-simulator
 
 converts batterstats dtos to batter probability objects,
-runs thousands of game simulations (default 10k),
+runs thousands of game simulations in parallel using multiprocessing (default 10k),
 calculates aggregate statistics (mean, median, std dev),
 and returns simulationresult dto.
 called by views.py after player_service.py fetches data.
@@ -18,20 +18,24 @@ from typing import List
 
 from .dto import BatterStats, SimulationResult
 
-lib_path = os.path.join(os.path.dirname(__file__), "..", "..", "lib", "baseball-simulator")
+lib_path = os.path.join(
+    os.path.dirname(__file__), "..", "..", "lib", "baseball-simulator"
+)
 if lib_path not in sys.path:
     sys.path.insert(0, lib_path)
 
-from baseball import Game  # type: ignore
 from batter import Batter  # type: ignore
+from parallel_game import ParallelGame  # type: ignore
 
 
 class SimulationService:
     """Service for running baseball game simulations."""
 
-    def simulate_lineup(self, batter_stats: List[BatterStats], num_games: int = 10000) -> SimulationResult:
+    def simulate_lineup(
+        self, batter_stats: List[BatterStats], num_games: int = 10000
+    ) -> SimulationResult:
         """
-        Simulate multiple games with the given lineup.
+        Simulate multiple games with the given lineup using parallel processing.
 
         Args:
             batter_stats: List of exactly 9 BatterStats objects
@@ -44,7 +48,9 @@ class SimulationService:
             ValueError: If lineup doesn't have exactly 9 batters
         """
         if len(batter_stats) != 9:
-            raise ValueError(f"Lineup must have exactly 9 batters, got {len(batter_stats)}")
+            raise ValueError(
+                f"Lineup must have exactly 9 batters, got {len(batter_stats)}"
+            )
 
         # Convert domain entities to simulator Batter objects
         lineup = []
@@ -53,14 +59,11 @@ class SimulationService:
             batter = Batter(probabilities=probabilities, name=stats.name)
             lineup.append(batter)
 
-        # Run simulations - reuse Game object for efficiency
-        # Creating new Game objects each iteration wastes memory for large simulations
-        game = Game(lineup=lineup, printing=False)
-        scores = []
-        for _ in range(num_games):
-            game.reset_game_state()
-            game.play()
-            scores.append(game.get_score())
+        # Run simulations in parallel across multiple CPU cores
+        # This provides ~4x speedup on 4-core machines (or more on higher core counts)
+        parallel_game = ParallelGame(lineup=lineup, num_games=num_games)
+        parallel_game.play()
+        scores = parallel_game.get_scores()
 
         # Calculate statistics
         avg_score = statistics.mean(scores)

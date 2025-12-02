@@ -125,16 +125,19 @@ export async function sortPlayersByWOBA(
   return lineupPlayers.map((p) => p.id);
 }
 
-/** 
- * Helper: add Authorization header and retry once after refresh 
+/**
+ * Helper: add Authorization header and retry once after refresh
  */
-async function authenticatedFetch(input: RequestInfo, init?: RequestInit, allowRetry = true): Promise<Response> {
+async function authenticatedFetch(
+  input: RequestInfo,
+  init?: RequestInit,
+  allowRetry = true
+): Promise<Response> {
   const headers = new Headers(init?.headers || {});
   if (!headers.has("Content-Type"))
     headers.set("Content-Type", "application/json");
   const access = localStorage.getItem("access");
-  if (access)
-    headers.set("Authorization", `Bearer ${access}`);
+  if (access) headers.set("Authorization", `Bearer ${access}`);
 
   let res = await fetch(input, { ...init, headers });
   if (res.status === 401 && allowRetry) {
@@ -163,7 +166,6 @@ export async function fetchSavedLineups(): Promise<SavedLineup[]> {
 export async function saveLineup(
   payload: SaveLineupPayload
 ): Promise<SavedLineup> {
-  
   const makeRequest = async () =>
     fetch(`${LINEUPS_BASE}/`, {
       method: "POST",
@@ -196,9 +198,7 @@ export async function saveLineup(
 /**
  * Delete a lineup from the database (manual or sabermetrics mode).
  */
-export async function deleteLineup(
-  lineupId: number
-): Promise<void> {
+export async function deleteLineup(lineupId: number): Promise<void> {
   const url = `${LINEUPS_BASE}/${lineupId}/`;
 
   const makeRequest = async () =>
@@ -284,31 +284,10 @@ export async function runSimulation(
     num_games: numGames,
   };
 
-  // First attempt
-  let res = await fetch(`${SIMULATOR_BASE}/simulate-by-ids/`, {
+  const res = await authenticatedFetch(`${SIMULATOR_BASE}/simulate-by-ids/`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("access")}`,
-    },
     body: JSON.stringify(payload),
   });
-
-  // If 401, try to refresh token and retry
-  if (res.status === 401) {
-    const refreshed = await refreshAccessToken();
-    if (refreshed) {
-      // Retry with new token
-      res = await fetch(`${SIMULATOR_BASE}/simulate-by-ids/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access")}`,
-        },
-        body: JSON.stringify(payload),
-      });
-    }
-  }
 
   if (!res.ok) {
     const errorText = await res.text();

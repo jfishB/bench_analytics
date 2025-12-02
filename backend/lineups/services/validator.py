@@ -1,26 +1,28 @@
-##########################################
 """
-- This file contains the validation logic
-- used in views
+- This file defines validation logic for lineup data and models.
+- Imported by:
+  - backend/lineups/views.py
+  - backend/lineups/services/lineup_creation_handler.py
+  - backend/lineups/services/algorithm_logic.py
+  - backend/lineups/interactor.py
 """
-###########################################
-
 from django.contrib.auth import get_user_model
-
-from roster.models import Player, Team
-
-from .exceptions import BadBattingOrder, NoCreator, PlayersNotFound, PlayersWrongTeam, TeamNotFound
-from .input_data import LineupPlayerInput
+from .databa_access import fetch_players_by_ids, fetch_team_by_id
+from .exceptions import (BadBattingOrder, NoCreator,
+                         PlayersNotFound, PlayersWrongTeam, TeamNotFound)
+from .utils import get
 
 
 def validate_batting_orders(players):
     """Validate that batting orders are unique and cover positions 1-9.
 
     Args:
-        players: List of LineupPlayerInput objects or similar objects with batting_order attribute
+        players: List of LineupPlayerInput objects or similar objects with
+        batting_order attribute
 
     Raises:
-        BadBattingOrder: If batting orders are invalid (missing, not unique, or don't cover 1-9)
+        BadBattingOrder: If batting orders are invalid (missing, not unique,
+        or don't cover 1-9)
     """
     # Extract batting orders
     batting_orders = []
@@ -34,91 +36,68 @@ def validate_batting_orders(players):
             bo = None
 
         if bo is None:
-            raise BadBattingOrder("All players must have a batting order assigned")
+            raise BadBattingOrder("All players must have a \
+                                  batting order assigned")
         batting_orders.append(bo)
 
     # Check that we have exactly 9 players
     if len(batting_orders) != 9:
-        raise BadBattingOrder(f"Lineup must have exactly 9 players, got {len(batting_orders)}")
+        raise BadBattingOrder(f"Lineup must have exactly 9 players, got "
+                              f"{len(batting_orders)}")
 
     # Check for uniqueness
     if len(set(batting_orders)) != len(batting_orders):
         raise BadBattingOrder("Batting orders must be unique")
 
-    # Check that orders cover exactly 1-9
+    # Explicitly check that batting orders are exactly 1-9
+    # for defensive programming.
     if sorted(batting_orders) != list(range(1, 10)):
-        raise BadBattingOrder("Batting orders must cover positions 1 through 9")
+        raise BadBattingOrder("Batting orders must be the numbers 1 through 9,\
+        each used exactly once")
 
 
 def validate_data(payload, require_creator: bool = True):
-    """Validate the lineup data for creating a lineup."""
+    """Validate the lineup data structure and domain rules.
 
-    # Helper to read either dataclass attributes or dict keys
-    def _get(obj, name, default=None):
-        if obj is None:
-            return default
-        if hasattr(obj, name):
-            return getattr(obj, name)
-        if isinstance(obj, dict):
-            return obj.get(name, default)
-        return default
-
-    team_obj = Team.objects.filter(pk=_get(payload, "team_id")).first()
+    Performs validation with necessary database lookups (e.g., team and player
+      existence).
+    Raises domain exceptions if validation fails; returns nothing if valid.
+    """
+    team_obj = fetch_team_by_id(get(payload, "team_id"))
     if not team_obj:
         raise TeamNotFound()
 
-    # Extract player ids from input (position field has been removed from the model)
+    # Extract player ids from input
     ids = []
-    for p in _get(payload, "players", []):
-        # support either raw int ids or LineupPlayerInput/dataclass/dict
-        pid = _get(p, "player_id") if not isinstance(p, (int,)) else p
+    for p in get(payload, "players", []):
+        pid = get(p, "player_id") if not isinstance(p, (int,)) else p
         if pid is None:
             raise PlayersNotFound()
         ids.append(pid)
 
-    players_qs = list(Player.objects.filter(id__in=ids).select_related("team"))
-    if len(players_qs) != len(ids):
+    # We expect exactly 9 players
+    if len(ids) != 9:
+        raise BadBattingOrder("Exactly 9 players are required")
+
+    # Fetch players to validate they exist and belong to correct team
+    try:
+        players_qs = fetch_players_by_ids(ids)
+    except ValueError:
         raise PlayersNotFound()
-
-    # Re-order players to match the input order and attach requested positions
-    players_by_id = {p.id: p for p in players_qs}
-    ordered_players = []
-    for pid in ids:
-        player_obj = players_by_id.get(pid)
-        if player_obj is None:
-            raise PlayersNotFound()
-        # attach helper attributes expected by the algorithm
-        setattr(player_obj, "player_id", player_obj.id)
-        ordered_players.append(player_obj)
-
-    players_qs = ordered_players
 
     # Ensure all players belong to the stated team
     if any(p.team_id != team_obj.id for p in players_qs):
         raise PlayersWrongTeam()
 
-    # Note: Batting order validation for manual/sabermetrics saves is handled
-    # by validate_batting_orders() function before calling validate_data().
-    # Algorithm-only mode doesn't require batting orders on input.
-
-    # Determine created_by: prefer provided requested_user_id on payload
-    created_by_id = _get(payload, "requested_user_id")
+    # Validate creator requirement
+    created_by_id = get(payload, "requested_user_id")
     User = get_user_model()
-    if not created_by_id:
-        # When callers need a creator for persistence, enforce existence
-        if require_creator:
-            created_by_id = User.objects.filter(is_superuser=True).values_list("id", flat=True).first()
-            if created_by_id is None:
-                raise NoCreator()
-        else:
-            # Algorithm/generate-only mode doesn't require a creator — return None
-            created_by_id = None
-
-    return {
-        "team": team_obj,
-        "players": players_qs,
-        "created_by_id": created_by_id,
-    }
+    if not created_by_id and require_creator:
+        # Check that a superuser exists to be used as creator
+        created_by_id = User.objects.filter(is_superuser=True)\
+            .values_list("id", flat=True).first()
+        if created_by_id is None:
+            raise NoCreator()
 
 
 def validate_lineup_model(lineup):
@@ -128,15 +107,6 @@ def validate_lineup_model(lineup):
     produced model is invalid. This protects the API from buggy
     algorithm implementations.
     """
-    # Import here to avoid import cycles
-    from .exceptions import (
-        BadBattingOrder,
-        OpponentPitcherNotFound,
-        OpponentTeamMismatch,
-        PitcherInBatters,
-        PlayersNotFound,
-        PlayersWrongTeam,
-    )
 
     if lineup is None:
         raise PlayersNotFound()
@@ -161,18 +131,3 @@ def validate_lineup_model(lineup):
         raise BadBattingOrder()
     if sorted(orders) != list(range(1, len(orders) + 1)):
         raise BadBattingOrder()
-
-    # Opponent pitcher validation (optional)
-    opp_pid = getattr(lineup, "opponent_pitcher_id", None)
-    if opp_pid is not None:
-        # If opponent_team_id is set, it must match the pitcher's team
-        opp_team_id = getattr(lineup, "opponent_team_id", None)
-        if opp_team_id is not None:
-            from roster.models import Player as RosterPlayer
-
-            pitcher = RosterPlayer.objects.filter(pk=opp_pid).first()
-            if pitcher and pitcher.team_id != opp_team_id:
-                raise OpponentTeamMismatch()
-
-    # All checks passed — return True for convenience
-    return True

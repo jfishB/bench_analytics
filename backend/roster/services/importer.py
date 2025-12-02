@@ -36,7 +36,7 @@ def import_from_csv(path: str, team_id: Optional[int] = None, dry_run: bool = Fa
     """
     messages: List[str] = []
     try:
-        f = open(path, newline="", encoding="utf-8")
+        f = open(path, newline="", encoding="utf-8-sig")
     except FileNotFoundError:
         raise
 

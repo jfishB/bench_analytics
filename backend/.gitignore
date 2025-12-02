@@ -54,9 +54,10 @@ pip-wheel-metadata/
 .mypy_cache/
 .pytest_cache/
 .coverage
+coverage.xml
 htmlcov/
 
-# ---- Node (ignore if you don’t use it; harmless if you do)
+# ---- Node (ignore if you don't use it; harmless if you do)
 node_modules/
 npm-debug.log*
 yarn-debug.log*

@@ -1,3 +1,5 @@
+import json
+
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -101,5 +103,34 @@ def players_ranked(request):
 
         return JsonResponse({"players": result})
 
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def sort_players_by_woba(request):
+    """API endpoint to sort a list of player IDs by wOBA (descending).
+
+    Request body should be JSON: {"player_ids": [1, 2, 3, ...]}
+    Returns: {"player_ids": [sorted_ids...]} with highest wOBA first
+    """
+    try:
+        data = json.loads(request.body)
+        player_ids = data.get("player_ids", [])
+
+        if not player_ids:
+            return JsonResponse({"error": "player_ids is required"}, status=400)
+
+        # Fetch players with the given IDs and sort by xwoba descending
+        players = Player.objects.filter(id__in=player_ids).order_by("-xwoba")
+
+        # Return the sorted player IDs
+        sorted_ids = [player.id for player in players]
+
+        return JsonResponse({"player_ids": sorted_ids})
+
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Invalid JSON"}, status=400)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)

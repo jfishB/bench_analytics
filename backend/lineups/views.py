@@ -1,88 +1,130 @@
+"""
+- This file defines the API views for lineup creation, retrieval,
+ and management.
+- Imported by:
+  - backend/lineups/urls.py
+"""
+
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .interactor import LineupCreationInteractor
 from .models import Lineup, LineupPlayer
-from .serializers import LineupModelSerializer, LineupOut, LineupPlayerOut
+from .serializers import (
+    LineupModelSerializer, LineupOut,
+    LineupPlayerOut, LineupCreate
+)
 from .services.auth_user import authorize_lineup_deletion
+from .services.exceptions import DomainError
 from .services.lineup_creation_handler import (
     determine_request_mode,
-    generate_suggested_lineup,
-    handle_lineup_save,
-
 )
 #############################################################################
 # lineups endpoint
 #############################################################################
+
+
 class LineupCreateView(APIView):
     """Create or generate a lineup.
-
-    Supports two modes:
-    1. Manual/Sabermetrics save: Accepts full payload with players and batting orders,
-       saves to database, returns HTTP 201 with saved lineup.
-    2. Algorithm-only generation: Accepts only team_id, generates suggested lineup
-       without saving to database, returns HTTP 201 with suggested lineup.
-
-    Both modes return HTTP 201 Created for API consistency.
+    URL:
+      POST /api/v1/lineups/ -> create or generate lineup
+    Delegates to interactor for use case handling.
     """
+    permission_classes = [permissions.AllowAny]
 
-    permission_classes = [permissions.AllowAny]  # keep generation public if needed
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.interactor = LineupCreationInteractor()
 
     def post(self, request):
-        # Determine request mode and get validated data if applicable
-        mode, data = determine_request_mode(request.data)
+        # 1. Deserialize HTTP request
+        serializer = LineupCreate(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        # 2. Determine mode
+        mode, _ = determine_request_mode(data)
+        # 3. Call appropriate interactor method
+        try:
+            if mode == "manual_save":
+                # Check authentication for save operations
+                if not getattr(request.user, "is_authenticated", False):
+                    return Response(
+                        {"detail": "Authentication "
+                         "required to save a lineup."},
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+                lineup, lineup_players = self.interactor.create_manual_lineup(
+                    team_id=data["team_id"],
+                    players_data=data.get("players"),
+                    user_id=request.user.id,
+                    name=data.get("name")
+                )
+                return self._build_saved_response(lineup, lineup_players)
+            else:
+                # Extract optional player IDs for algorithm
+                selected_ids = self._extract_player_ids(data)
 
-        if mode == "manual_save":
-            if not getattr(request.user, "is_authenticated", False):
-                return Response({"detail": "Authentication required to save a lineup."}, status=status.HTTP_403_FORBIDDEN)
+                if data.get("team_id") is None:
+                    return Response(
+                        {"detail": "team_id is required to generate"
+                         " a suggested lineup."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                suggested_players = self.interactor.generate_suggested_lineup(
+                    team_id=data.get("team_id"),
+                    selected_player_ids=selected_ids
+                )
+                return self._build_suggested_response(data.get("team_id"),
+                                                      suggested_players)
+        except DomainError as e:
+            return Response({"detail": str(e)},
+                            status=status.HTTP_400_BAD_REQUEST)
 
-            # Manual or sabermetrics save - process and save to database
-            lineup, lineup_players = handle_lineup_save(data, request.user) #extract lineup save 
-
-            # Build response
-            out = LineupOut(
+    # Helper methods
+    def _build_saved_response(self, lineup, lineup_players):
+        """Transform domain objects
+        (lineup, lineup_players) to HTTP Response."""
+        out = LineupOut({
+            "id": lineup.id,
+            "team_id": lineup.team.id,
+            "name": lineup.name,
+            "players": [
                 {
-                    "id": lineup.id,
-                    "team_id": lineup.team.id,
-                    "name": lineup.name,
-                    "players": [
-                        {
-                            "player_id": lp.player.id,
-                            "player_name": lp.player.name,
-                            "batting_order": lp.batting_order,
-                        }
-                        for lp in lineup_players
-                    ],
-                    "created_by": lineup.created_by_id,
-                    "created_at": lineup.created_at,
+                    "player_id": lp.player.id,
+                    "player_name": lp.player.name,
+                    "batting_order": lp.batting_order,
                 }
-            )
-            return Response(out.data, status=status.HTTP_201_CREATED)
-        else:
+                for lp in lineup_players
+            ],
+            "created_by": lineup.created_by_id,
+            "created_at": lineup.created_at,
+        })
+        return Response(out.data, status=status.HTTP_201_CREATED)
 
-            # Extract and validate required team_id for generation
-            team_id = request.data.get("team_id")
-            if team_id is None:
-                return Response({"detail": "team_id is required to generate a suggested lineup"}, status=status.HTTP_400_BAD_REQUEST)
+    def _build_suggested_response(self, team_id, suggested_players):
+        """Transform suggested players to HTTP Response."""
+        out = {
+            "team_id": team_id,
+            "players": suggested_players,
+        }
+        return Response(out, status=status.HTTP_201_CREATED)
 
-            # Extract optional selected player ids if provided
-            players_payload = request.data.get("players")
-            selected_ids = None
-            if isinstance(players_payload, list):
-                selected_ids = [p.get("player_id") for p in players_payload if isinstance(p, dict) and p.get("player_id")]
-
-            # Generate suggested lineup (does not save to database)
-            # Note: generate_suggested_lineup expects (team_id, player_ids=None)
-            suggested_players = generate_suggested_lineup(team_id, selected_ids)
-
-            # Return suggested lineup for frontend to display
-            # Use HTTP 201 Created for consistency with save endpoint
-            out = {
-                "team_id": team_id,
-                "players": suggested_players,
-            }
-            return Response(out, status=status.HTTP_201_CREATED)
+    def _extract_player_ids(self, data):
+        """Extract optional player IDs from validated data.
+        Returns:
+            List of player IDs or None if no players provided
+        """
+        players_payload = data.get("players")
+        if isinstance(players_payload, list):
+            player_ids = [
+                p.get("player_id")
+                for p in players_payload
+                if isinstance(p, dict) and p.get("player_id")
+            ]
+            return player_ids if player_ids else None
+        return None
 
 
 class LineupDeleteView(APIView):
@@ -97,7 +139,8 @@ class LineupDeleteView(APIView):
     def delete(self, request, pk: int):
         """Delete a lineup. Allowed only for the creator or a superuser.
 
-        Returns 204 No Content on success, 401 if not authenticated, 403 if not permitted, 404 if not found.
+        Returns 204 No Content on success, 401 if not authenticated,
+        403 if not permitted, 404 if not found.
         """
         lineup = get_object_or_404(Lineup, pk=pk)
 

@@ -1,3 +1,10 @@
+"""
+- This file defines domain-level exceptions for the accounts module.
+- Imported by:
+  - backend/accounts/services.py
+"""
+
+
 class DomainError(Exception):
     """Base class for predictable business/domain errors."""
 
