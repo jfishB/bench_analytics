@@ -19,7 +19,7 @@ from unittest.mock import patch
 from django.urls import reverse
 
 from .exceptions import (
-    EmailAlreadyExistsError, InvalidCredentialsError, 
+    EmailAlreadyExistsError, InvalidCredentialsError,
     MissingFieldsError, UserAlreadyExistsError
 )
 from .services import login_user, register_user
@@ -324,8 +324,8 @@ class AccountExceptionTests(TestCase):
         refresh = RefreshToken.for_user(self.user)
         access = str(refresh.access_token)
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access}")
-
-        response = self.client.post(self.logout_url, data={"refresh": str(refresh)})
+        data={"refresh": str(refresh)}
+        response = self.client.post(self.logout_url, data=data)
         self.assertEqual(response.status_code, 200)
         self.assertIn("message", response.data)
         self.assertEqual(response.data["message"], "Logout successful.")
@@ -339,8 +339,8 @@ class AccountExceptionTests(TestCase):
         # Patch RefreshToken constructor to raise TokenError
         with patch("accounts.views.RefreshToken") as mock_refresh:
             mock_refresh.side_effect = TokenError("invalid")
-
-            response = self.client.post(self.logout_url, data={"refresh": "bad"})
+            data={"refresh": "bad"}
+            response = self.client.post(self.logout_url, data=data)
             self.assertEqual(response.status_code, 400)
             self.assertIn("error", response.data)
 
@@ -352,7 +352,7 @@ class AccountExceptionTests(TestCase):
 
         with patch("accounts.views.RefreshToken") as mock_refresh:
             mock_refresh.side_effect = Exception("boom")
-
-            response = self.client.post(self.logout_url, data={"refresh": "anything"})
+            data={"refresh": "anything"}
+            response = self.client.post(self.logout_url, data=data)
             self.assertEqual(response.status_code, 500)
             self.assertIn("error", response.data)
