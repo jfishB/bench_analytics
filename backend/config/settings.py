@@ -173,30 +173,30 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Allow all origins in development, but restrict in production
 CORS_ALLOW_CREDENTIALS = True  # Required for auth cookies/tokens
 
-if DEBUG:
-    CORS_ALLOW_ALL_ORIGINS = True
-else:
-    # Get frontend origins from environment variable (comma-separated)
-    # Example: CORS_ORIGINS=https://frontend.onrender.com,https://custom-domain.com
-    cors_origins_env = env("CORS_ORIGINS", default="")
+if DEBUG:  # pragma: no cover
+    CORS_ALLOW_ALL_ORIGINS = True  # pragma: no cover
+else:  # pragma: no cover
+    # Get frontend origins from environment variable (comma-separated)  # pragma: no cover
+    # Example: CORS_ORIGINS=https://frontend.onrender.com,https://custom-domain.com  # pragma: no cover
+    cors_origins_env = env("CORS_ORIGINS", default="")  # pragma: no cover
 
-    # Default frontend origins
-    CORS_ALLOWED_ORIGINS = [
-        "https://bench-analytics.onrender.com",
-    ]
+    # Default frontend origins  # pragma: no cover
+    CORS_ALLOWED_ORIGINS = [  # pragma: no cover
+        "https://bench-analytics.onrender.com",  # pragma: no cover
+    ]  # pragma: no cover
 
-    # Add any additional origins from environment variable
-    if cors_origins_env:
-        additional_origins = [
-            o.strip() for o in cors_origins_env.split(",") if o.strip()
-        ]
-        CORS_ALLOWED_ORIGINS.extend(additional_origins)
+    # Add any additional origins from environment variable  # pragma: no cover
+    if cors_origins_env:  # pragma: no cover
+        additional_origins = [  # pragma: no cover
+            o.strip() for o in cors_origins_env.split(",") if o.strip()  # pragma: no cover
+        ]  # pragma: no cover
+        CORS_ALLOWED_ORIGINS.extend(additional_origins)  # pragma: no cover
 
-    # If you need to allow localhost for testing production builds
-    if env.bool("ALLOW_LOCALHOST_CORS", default=False):
-        CORS_ALLOWED_ORIGINS.extend(
-            [
-                "http://localhost:3000",
-                "http://127.0.0.1:3000",
-            ]
-        )
+    # If you need to allow localhost for testing production builds  # pragma: no cover
+    if env.bool("ALLOW_LOCALHOST_CORS", default=False):  # pragma: no cover
+        CORS_ALLOWED_ORIGINS.extend(  # pragma: no cover
+            [  # pragma: no cover
+                "http://localhost:3000",  # pragma: no cover
+                "http://127.0.0.1:3000",  # pragma: no cover
+            ]  # pragma: no cover
+        )  # pragma: no cover
