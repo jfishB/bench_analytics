@@ -603,6 +603,16 @@ class LineupServiceTests(TestCase):
         with self.assertRaises(PlayersNotFound):
             validate_data(payload_none)
 
+    def test_validate_batting_orders_wrong_range(self):
+        """Test validate_batting_orders rejects unique orders with wrong range."""
+        from lineups.services.validator import validate_batting_orders
+        from lineups.services.exceptions import BadBattingOrder
+        
+        # Test with orders [0, 1, 2, 3, 4, 5, 6, 7, 8] - unique, 9 items, but wrong range
+        players_wrong_range = [{"batting_order": i} for i in range(0, 9)]
+        with self.assertRaises(BadBattingOrder) as cm:
+            validate_batting_orders(players_wrong_range)
+        self.assertIn("numbers 1 through 9", str(cm.exception))
 
 class LineupAlgorithmTests(TestCase):
     """Tests for algorithm-specific edge cases."""
