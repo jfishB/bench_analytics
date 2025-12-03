@@ -22,8 +22,7 @@ from .services.player_service import PlayerService
 from .services.simulation import SimulationService
 
 # Add baseball-simulator library to path for game simulator tests
-lib_path = Path(__file__).resolve().parent.parent / \
-    "lib" / "baseball-simulator"
+lib_path = Path(__file__).resolve().parent.parent / "lib" / "baseball-simulator"
 if str(lib_path) not in sys.path:
     sys.path.insert(0, str(lib_path))
 
@@ -135,27 +134,75 @@ class SimulationServiceTestCase(TestCase):
         self.assertIn("exactly 9 batters", str(context.exception))
 
     def test_simulate_lineup_deterministic_stats(self):
-        """Test that more games produces more stable statistics."""
+        """Test that more games produces more stable statistics (lower standard error)."""
         # Run with few games
-        result_small = self.service.simulate_lineup(self.lineup, num_games=50)
+        result_small = self.service.simulate_lineup(self.lineup, num_games=10)
 
         # Run with many games
-        result_large = self.service.simulate_lineup(
-            self.lineup, num_games=1000)
+        result_large = self.service.simulate_lineup(self.lineup, num_games=1000)
 
-        # Larger sample should have more stable (lower) std dev relative to mean
-        cv_small = result_small.std_dev / \
-            result_small.avg_score if result_small.avg_score > 0 else 0
-        cv_large = result_large.std_dev / \
-            result_large.avg_score if result_large.avg_score > 0 else 0
+        # Calculate Standard Error of the Mean (SEM)
+        # SEM = std_dev / sqrt(n)
+        # This represents the uncertainty in the average score and should decrease with N
+        sem_small = result_small.std_dev / np.sqrt(result_small.num_games)
+        sem_large = result_large.std_dev / np.sqrt(result_large.num_games)
 
-        # Verify both simulations produced valid results
-        self.assertGreater(result_small.avg_score, 0)
-        self.assertGreater(result_large.avg_score, 0)
+        # Larger sample should have lower standard error (more precise mean)
+        self.assertGreater(sem_small, sem_large)
 
-        # Large sample should have lower coefficient of variation
-        # Using a lenient check since this is probabilistic
-        self.assertLess(cv_large, cv_small * 2.0)
+
+class SimulationFlowTestCase(TestCase):
+    """Test SimulationService.run_simulation_flow orchestration."""
+
+    def setUp(self):
+        self.service = SimulationService()
+        self.team = Team.objects.create(id=1)
+        self.players = []
+        for i in range(9):
+            p = Player.objects.create(
+                name=f"P{i}",
+                team=self.team,
+                pa=500,
+                hit=100,
+                double=20,
+                triple=2,
+                home_run=10,
+                strikeout=100,
+                walk=50
+            )
+            self.players.append(p)
+
+    def test_flow_by_ids(self):
+        """Test flow with IDs."""
+        ids = [p.id for p in self.players]
+        result = self.service.run_simulation_flow(ids, num_games=10, fetch_method="ids")
+        self.assertIsInstance(result, SimulationResult)
+        self.assertEqual(len(result.lineup_names), 9)
+
+    def test_flow_by_names(self):
+        """Test flow with names."""
+        names = [p.name for p in self.players]
+        result = self.service.run_simulation_flow(names, num_games=10, fetch_method="names")
+        self.assertIsInstance(result, SimulationResult)
+
+    def test_flow_by_team(self):
+        """Test flow with team ID."""
+        result = self.service.run_simulation_flow(self.team.id, num_games=10, fetch_method="team")
+        self.assertIsInstance(result, SimulationResult)
+
+    def test_flow_invalid_method(self):
+        """Test invalid fetch method."""
+        with self.assertRaises(ValueError):
+            self.service.run_simulation_flow([], 10, "invalid")
+
+    def test_flow_team_not_enough_players(self):
+        """Test team with insufficient players."""
+        empty_team = Team.objects.create(id=2)
+        # Add one player so we don't get "No players found" error
+        Player.objects.create(name="Lonely Player", team=empty_team, pa=100)
+        with self.assertRaises(ValueError) as ctx:
+            self.service.run_simulation_flow(empty_team.id, 10, "team")
+        self.assertIn("Need exactly 9", str(ctx.exception))
 
 
 class PlayerServiceTestCase(TestCase):
@@ -195,8 +242,7 @@ class PlayerServiceTestCase(TestCase):
 
     def test_get_players_by_ids_maintains_order(self):
         """Test that player order is preserved."""
-        player_ids = [self.players[5].id,
-                      self.players[2].id, self.players[8].id]
+        player_ids = [self.players[5].id, self.players[2].id, self.players[8].id]
         batter_stats = self.service.get_players_by_ids(player_ids)
 
         self.assertEqual(batter_stats[0].name, "Test Player 6")
@@ -284,8 +330,7 @@ class SimulatorAPITestCase(APITestCase):
     def test_simulate_by_ids_invalid_count(self):
         """Test that endpoint rejects wrong number of players."""
         url = "/api/v1/simulator/simulate-by-ids/"
-        data = {"player_ids": [self.players[0].id],
-                "num_games": 100}  # Only 1 player
+        data = {"player_ids": [self.players[0].id], "num_games": 100}  # Only 1 player
 
         response = self.client.post(url, data, format="json")
 
@@ -315,12 +360,44 @@ class SimulatorAPITestCase(APITestCase):
     def test_simulate_by_names_success(self):
         """Test simulation by player names endpoint."""
         url = "/api/v1/simulator/simulate-by-names/"
-        data = {"player_names": [
-            p.name for p in self.players], "num_games": 100}
+        data = {"player_names": [p.name for p in self.players], "num_games": 100}
 
         response = self.client.post(url, data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_simulate_by_ids_player_not_found(self):
+        """Test simulation with non-existent player ID."""
+        url = "/api/v1/simulator/simulate-by-ids/"
+        invalid_ids = [99999] * 9  # 9 non-existent IDs
+        data = {"player_ids": invalid_ids, "num_games": 100}
+
+        response = self.client.post(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
+
+    def test_simulate_by_names_player_not_found(self):
+        """Test simulation with non-existent player name."""
+        url = "/api/v1/simulator/simulate-by-names/"
+        invalid_names = ["NonExistent Player"] * 9
+        data = {"player_names": invalid_names, "num_games": 100}
+
+        response = self.client.post(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
+
+    def test_simulate_by_team_no_players(self):
+        """Test simulation with team that has no players."""
+        empty_team = Team.objects.create(id=999)
+        url = "/api/v1/simulator/simulate-by-team/"
+        data = {"team_id": empty_team.id, "num_games": 100}
+
+        response = self.client.post(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("error", response.data)
 
 
 class ParallelGameIntegrationTests(TestCase):
@@ -396,13 +473,11 @@ class ParallelGameIntegrationTests(TestCase):
 
         # Run with 1 process vs multiple processes
         # We can't easily time this in tests, but we can verify both work
-        game_single = self.ParallelGame(
-            lineup=lineup, num_games=100, num_processes=1)
+        game_single = self.ParallelGame(lineup=lineup, num_games=100, num_processes=1)
         game_single.play()
         scores_single = game_single.get_scores()
 
-        game_multi = self.ParallelGame(
-            lineup=lineup, num_games=100, num_processes=4)
+        game_multi = self.ParallelGame(lineup=lineup, num_games=100, num_processes=4)
         game_multi.play()
         scores_multi = game_multi.get_scores()
 
@@ -419,3 +494,131 @@ class ParallelGameIntegrationTests(TestCase):
         self.assertGreater(avg_multi, 6.0)
         self.assertLess(avg_single, 16.0)
         self.assertLess(avg_multi, 16.0)
+
+
+from unittest.mock import MagicMock, patch
+from simulator.views import _handle_simulation_request
+
+class SimulatorViewsCoverageTest(TestCase):
+    """Targeted tests for simulator/views.py coverage."""
+
+    def setUp(self):
+        self.client = APIClient()
+
+    @patch("simulator.views.SimulationService")
+    def test_handle_simulation_request_empty_results(self, mock_service_cls):
+        """Test _handle_simulation_request when simulation returns no scores."""
+        # Setup mock service
+        mock_service = MagicMock()
+        mock_service_cls.return_value = mock_service
+
+        # Setup mock result with empty scores
+        mock_result = MagicMock()
+        mock_result.all_scores = []  # Empty list triggers the error
+        mock_service.run_simulation_flow.return_value = mock_result
+
+        # Call the helper directly
+        response = _handle_simulation_request([1, 2, 3], 100, "ids")
+
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertIn("Simulation produced no results", response.data["error"])
+
+    @patch("simulator.views.SimulationService")
+    def test_handle_simulation_request_unexpected_error(self, mock_service_cls):
+        """Test _handle_simulation_request when an unexpected exception occurs."""
+        # Setup mock to raise generic exception
+        mock_service = MagicMock()
+        mock_service_cls.return_value = mock_service
+        mock_service.run_simulation_flow.side_effect = Exception("Unexpected boom")
+
+        # Call the helper directly
+        response = _handle_simulation_request([1, 2, 3], 100, "ids")
+
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertIn("An unexpected error occurred", response.data["error"])
+        self.assertIn("Unexpected boom", response.data["detail"])
+
+    def test_simulate_by_player_names_invalid_serializer(self):
+        """Test simulate_by_player_names with invalid data."""
+        # Missing player_names
+        data = {"num_games": 100}
+        
+        # We need a user to authenticate
+        user = User.objects.create_user(username="testuser_cov", password="password")
+        self.client.force_authenticate(user=user)
+
+        url = "/api/v1/simulator/simulate-by-names/"
+        response = self.client.post(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("player_names", response.data)
+
+    def test_simulate_by_team_invalid_serializer(self):
+        """Test simulate_by_team with invalid data."""
+        # Missing team_id
+        data = {"num_games": 100}
+        
+        user = User.objects.create_user(username="testuser2_cov", password="password")
+        self.client.force_authenticate(user=user)
+
+        url = "/api/v1/simulator/simulate-by-team/"
+        response = self.client.post(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("team_id", response.data)
+
+
+class SimulatorServicesCoverageTest(TestCase):
+    """Targeted tests for simulator services coverage."""
+
+    def test_batter_stats_invalid_probabilities(self):
+        """Test that BatterStats raises ValueError when probabilities sum > 1.0."""
+        # Create stats that will result in probabilities > 1.0
+        stats = BatterStats(
+            name="Impossible Player",
+            plate_appearances=10,
+            hits=5,
+            doubles=0,
+            triples=0,
+            home_runs=0,
+            strikeouts=6,  # 5 + 6 = 11 > 10
+            walks=0
+        )
+        
+        with self.assertRaises(ValueError) as cm:
+            stats.to_probabilities()
+        
+        self.assertIn("Invalid data for player", str(cm.exception))
+        self.assertIn("probabilities sum to", str(cm.exception))
+
+    def test_convert_to_batter_stats_zero_pa(self):
+        """Test _convert_to_batter_stats with 0 plate appearances."""
+        service = PlayerService()
+        
+        # Mock a player object
+        mock_player = MagicMock()
+        mock_player.name = "Bench Warmer"
+        mock_player.pa = 0
+        
+        with self.assertRaises(ValueError) as cm:
+            service._convert_to_batter_stats(mock_player)
+            
+        self.assertIn("has no plate appearances", str(cm.exception))
+
+    def test_batter_stats_zero_pa_default(self):
+        """Test BatterStats.to_probabilities with 0 PA returns default outs."""
+        stats = BatterStats(
+            name="No PA Player",
+            plate_appearances=0,
+            hits=0,
+            doubles=0,
+            triples=0,
+            home_runs=0,
+            strikeouts=0,
+            walks=0
+        )
+        
+        probs = stats.to_probabilities()
+        # Should be [K, out, walk, 1B, 2B, 3B, HR]
+        # Default is [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self.assertEqual(probs, [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0])
