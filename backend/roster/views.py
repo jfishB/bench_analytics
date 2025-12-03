@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from .models import Player, Team
 from .serializer import PlayerSerializer, TeamSerializer
-from .services.player_ranking import PlayerRankingService
+
 
 
 class TeamViewSet(viewsets.ModelViewSet):
@@ -31,22 +31,7 @@ class PlayerViewSet(viewsets.ModelViewSet):
     queryset = Player.objects.all()
     serializer_class = PlayerSerializer
 
-    @action(detail=False, methods=["post"], url_path="sort-by-woba")
-    def sort_by_woba(self, request):
-        """
-        Sort a list of player IDs by wOBA (descending).
-        Body: {"player_ids": [1, 2, 3, ...]}
-        """
-        player_ids = request.data.get("player_ids", [])
 
-        if not player_ids:
-            return Response({"error": "player_ids is required"}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            sorted_ids = PlayerRankingService.get_ids_sorted_by_woba(player_ids)
-            return Response({"player_ids": sorted_ids})
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(detail=False, methods=["get"])
     def ranked(self, request):

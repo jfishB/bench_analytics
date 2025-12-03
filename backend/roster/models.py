@@ -36,8 +36,6 @@ class Player(models.Model):
     walk = models.PositiveIntegerField(null=True, blank=True)  # Walks - BB
     k_percent = models.FloatField(null=True, blank=True)  # Frequency of strikeouts per plate appearance - K% = (SO / PA) * 100
     bb_percent = models.FloatField(null=True, blank=True)  # Frequency of walks per plate appearance - BB% = (BB / PA) * 100
-    xwoba = models.FloatField(null=True, blank=True)  # Expected Weighted On-Base Average
-    barrel_batted_rate = models.FloatField(null=True, blank=True)  # Barrel %
     slg_percent = models.FloatField(
         null=True, blank=True
     )  # Measures total bases per at-bat, emphasizes extra-base hits - SLG = (1B + 2*2B + 3*3B + 4*HR) / AB

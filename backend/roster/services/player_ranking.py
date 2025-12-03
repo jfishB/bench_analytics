@@ -11,29 +11,7 @@ from typing import Any, Dict, List, Optional
 from roster.models import Player, Team
 
 
-class PlayerRankingService:
-    """Service for player ranking operations."""
 
-    @staticmethod
-    def get_ids_sorted_by_woba(player_ids: List[int]) -> List[int]:
-        """
-        Sort a list of player IDs by their xwoba (descending).
-
-        Args:
-            player_ids: List of player IDs to sort
-
-        Returns:
-            List of player IDs sorted by xwoba
-        """
-        if not player_ids:
-            return []
-
-        # Fetch players with the given IDs and sort by xwoba descending
-        # We use filter(id__in=...) to get the objects, then order_by
-        players = Player.objects.filter(id__in=player_ids).order_by("-xwoba")
-
-        # Return the sorted player IDs
-        return [player.id for player in players]
 
 
 def get_all_players_with_stats() -> List[Dict[str, Any]]:

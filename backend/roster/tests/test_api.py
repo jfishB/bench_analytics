@@ -11,9 +11,7 @@ class PlayerAPITests(APITestCase):
         self.player = Player.objects.create(
             name="Aaron Judge",
             team=self.team,
-            xwoba=0.476,
             bb_percent=18.3,
-            barrel_batted_rate=24.7,
             k_percent=23.6,
         )
 
