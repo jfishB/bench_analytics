@@ -54,13 +54,15 @@ The project is split into two main services frontend and backend each organized 
 - **Top-level structure**:
 
   - `bash app/` — Next.js routing and server/client entry points
-  - `bash core/` — global configuration (API client, auth helpers, global providers)
-  - `bash features/` — every domain feature is isolated
-    - `bash players/` — fetching, listing, player UI components
-    - `bash lineup/` — lineup builder UI, forms, logic
-  - `bash services/` — API service wrappers (players API, lineup API, auth API)
-  - `bash shared/` — reusable UI components and utilities
-  - `bash @types/` — shared TypeScript types and interfaces
+  - `app/` — React routing and application entry points
+  - `presentation/` — page components and UI orchestration layer
+  - `features/` — domain-specific modules with isolated business logic
+    - `lineup/` — lineup creation, optimization, and simulation features
+    - `players/` — player management and roster components
+  - `services/` — authentication context and external API integrations
+  - `ui/` — reusable design system components and layout elements
+  - `shared/` — common types, utilities, and cross-feature constants
+
 - Naming conventions:
   - **Components**: PascalCase with descriptive names (`PlayerCard`, `LineupOptimizerPage`)
   - **Hooks**: camelCase with `use` prefix (`useRosterData`, `usePlayerSelection`)
