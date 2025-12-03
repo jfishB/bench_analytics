@@ -1,14 +1,15 @@
 import json
-from pathlib import Path
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 from rest_framework import viewsets
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAdminUser
 
 from .models import Player, Team
 from .serializer import PlayerSerializer, TeamSerializer
-from .services.importer import import_from_csv
+from .services.sample_data_loader import load_sample_players as load_sample_data
 
 
 # TODO: implement post as well for clarity
@@ -63,7 +64,9 @@ def player_detail(request, player_id):
         player = Player.objects.get(id=player_id)
         player_name = player.name
         player.delete()
-        return JsonResponse({"message": f"Player '{player_name}' deleted successfully"})
+        return JsonResponse(
+            {"message": f"Player '{player_name}' deleted successfully"}
+        )
     except Player.DoesNotExist:
         return JsonResponse({"error": "Player not found"}, status=404)
     except Exception as e:
@@ -116,96 +119,45 @@ def sort_players_by_woba(request):
 
 
 @csrf_exempt
-@require_http_methods(["GET", "POST"])
-def load_sample_players(request):
-    """API endpoint to load sample players from the CSV file.
-
-    GET: Check if players already exist and return status
-    POST: Load players from CSV if none exist
+@require_http_methods(["GET"])
+def check_sample_players_status(request):
+    """Check if sample players are loaded (public endpoint).
 
     Returns:
         - already_loaded: True if players already exist
         - players_count: Number of players in database
         - team_id: The team ID that players belong to
-        - loaded: Number of players loaded (POST only)
     """
     players_count = Player.objects.count()
-
-    # Get or create a default team for the sample players
     default_team, _ = Team.objects.get_or_create(pk=1)
 
-    if request.method == "GET":
-        return JsonResponse(
-            {
-                "already_loaded": players_count > 0,
-                "players_count": players_count,
-                "team_id": default_team.id,
-            }
-        )
+    return JsonResponse(
+        {
+            "already_loaded": players_count > 0,
+            "players_count": players_count,
+            "team_id": default_team.id,
+        }
+    )
 
-    # POST: Load players from CSV
-    if players_count > 0:
-        # Assign existing players without a team to the default team
-        players_without_team = Player.objects.filter(team__isnull=True)
-        updated_count = players_without_team.update(team=default_team)
 
-        return JsonResponse(
-            {
-                "already_loaded": True,
-                "players_count": players_count,
-                "team_id": default_team.id,
-                "players_assigned_to_team": updated_count,
-                "message": (
-                    f"Players are already loaded. Assigned {updated_count} players to team."
-                    if updated_count > 0
-                    else "Players are already loaded."
-                ),
-            }
-        )
+@api_view(["POST"])
+@permission_classes([IsAdminUser])
+def load_sample_players(request):
+    """Load sample players from CSV (admin only).
 
-    # Find the CSV file - check multiple possible locations
-    csv_candidates = [
-        # From repo root (Render)
-        Path("data/test_dataset_monte_carlo_bluejays.csv"),
-        Path(
-            "../data/test_dataset_monte_carlo_bluejays.csv"
-        ),  # From backend/ dir (local)
-    ]
+    This endpoint requires admin authentication.
+    Regular users should not be able to load data into the database.
 
-    csv_path = None
-    for candidate in csv_candidates:
-        if candidate.exists():
-            csv_path = str(candidate)
-            break
+    Returns:
+        - success: bool
+        - already_loaded: bool
+        - players_count: Number of players in database
+        - team_id: The team ID that players belong to
+        - loaded/updated counts
+    """
+    result = load_sample_data(team_id=1)
 
-    if not csv_path:
-        return JsonResponse(
-            {
-                "error": "CSV file not found. Looked in: "
-                + ", ".join(str(c) for c in csv_candidates),
-            },
-            status=404,
-        )
+    if not result.get("success"):
+        return JsonResponse(result, status=500)
 
-    try:
-        # Import players and assign them to the default team
-        result = import_from_csv(csv_path, team_id=default_team.id)
-
-        return JsonResponse(
-            {
-                "success": True,
-                "already_loaded": False,
-                "players_count": Player.objects.count(),
-                "team_id": default_team.id,
-                "loaded": result.get("created", 0),
-                "updated": result.get("updated", 0),
-                "messages": result.get("messages", []),
-            }
-        )
-    except Exception as e:
-        return JsonResponse(
-            {
-                "error": f"Failed to load players: {str(e)}",
-            },
-            status=500,
-        )
+    return JsonResponse(result)

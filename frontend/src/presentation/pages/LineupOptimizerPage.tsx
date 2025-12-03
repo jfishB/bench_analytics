@@ -60,7 +60,7 @@ export function LineupOptimizer() {
   }, [activeTab]);
 
   // Custom hooks (domain/business logic layer)
-  const { loading, players, error, setError, teamId, loadSamplePlayers, loadingSamplePlayers } = useRosterData();
+  const { loading, players, error, setError, teamId } = useRosterData();
 
   const {
     selectedPlayerIds,
@@ -161,15 +161,6 @@ export function LineupOptimizer() {
       await generateSabermetricsLineup(selectedIdsArr);
     } catch (err: any) {
       setError(err?.message || "Failed to generate lineup");
-    }
-  };
-
-  // Handle loading sample players
-  const handleLoadSamplePlayers = async () => {
-    try {
-      await loadSamplePlayers();
-    } catch (err: any) {
-      setError(err?.message || "Failed to load sample players");
     }
   };
 
@@ -280,18 +271,11 @@ export function LineupOptimizer() {
                         <Users className="h-12 w-12 text-blue-600" />
                       </div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                        No Players Loaded
+                        No Players Available
                       </h3>
-                      <p className="text-sm text-gray-600 mb-4 max-w-xs">
-                        Load sample Blue Jays player data to get started with lineup optimization.
+                      <p className="text-sm text-gray-600 max-w-xs">
+                        Player data has not been loaded yet. Please contact an administrator.
                       </p>
-                      <Button
-                        onClick={handleLoadSamplePlayers}
-                        disabled={loadingSamplePlayers}
-                        className="bg-blue-700 hover:bg-blue-800"
-                      >
-                        {loadingSamplePlayers ? "Loading..." : "Load Sample Players"}
-                      </Button>
                     </div>
                   ) : (
                     <>

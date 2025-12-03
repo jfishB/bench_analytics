@@ -12,7 +12,6 @@ export function useRosterData() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [teamId, setTeamId] = useState<number | undefined>(undefined);
-  const [loadingSamplePlayers, setLoadingSamplePlayers] = useState(false);
 
   const fetchPlayers = useCallback(async () => {
     setLoading(true);
@@ -25,9 +24,10 @@ export function useRosterData() {
         const first = raw[0];
         // Handle team as string or number
         if (first.team) {
-          const parsedTeamId = typeof first.team === "number" 
-            ? first.team 
-            : parseInt(String(first.team), 10);
+          const parsedTeamId =
+            typeof first.team === "number"
+              ? first.team
+              : parseInt(String(first.team), 10);
           if (!isNaN(parsedTeamId) && parsedTeamId > 0) {
             setTeamId(parsedTeamId);
           } else {
@@ -46,33 +46,10 @@ export function useRosterData() {
     }
   }, [teamId]);
 
-  // Load sample players from CSV
-  const loadSamplePlayers = useCallback(async () => {
-    setLoadingSamplePlayers(true);
-    setError(null);
-    try {
-      const result = await lineupService.loadSamplePlayers();
-      if (result.success || result.already_loaded) {
-        // Set team_id directly from response if available
-        if (result.team_id) {
-          setTeamId(result.team_id);
-        }
-        // Refresh the players list
-        await fetchPlayers();
-      }
-      return result;
-    } catch (err: any) {
-      setError(err?.message ?? String(err));
-      throw err;
-    } finally {
-      setLoadingSamplePlayers(false);
-    }
-  }, [fetchPlayers]);
-
   useEffect(() => {
     fetchPlayers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Empty dependency array - teamId is auto-detected from fetched data, not a trigger for refetch
+  }, []); // Empty dependency array - teamId is auto-detected from fetched data
 
   return {
     loading,
@@ -80,8 +57,6 @@ export function useRosterData() {
     error,
     setError,
     teamId,
-    loadSamplePlayers,
-    loadingSamplePlayers,
     refreshPlayers: fetchPlayers,
   };
 }
