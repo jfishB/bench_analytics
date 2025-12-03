@@ -18,7 +18,8 @@ export default function Register() {
       setEmail("");
       setPassword("");
     } catch (err: any) {
-      setMessage(`❌ ${err.message || "Registration failed"}`);
+      // Slices Message to remove "Error: " prefix and trailing }
+      setMessage(`❌ ${err.message.slice(9, -1) || "Registration failed"}`);
     }
   };
 

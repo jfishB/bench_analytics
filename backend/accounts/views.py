@@ -42,7 +42,7 @@ def register(request):
         )
 
     except DomainError as e:
-        return Response(str(e), status=e.status_code)
+        return Response({"error": str(e)}, status=e.status_code)
     except Exception:
         logger.exception("Unexpected error in register")
         return Response(
