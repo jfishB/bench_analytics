@@ -13,8 +13,8 @@ sys.path.insert(0, os.path.dirname(__file__))
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
-from simulator.services.dto import BatterStats
-from simulator.services.simulation import SimulationService
+from simulator.services.dto import BatterStats  # noqa: E402
+from simulator.services.simulation import SimulationService  # noqa: E402
 
 
 def main():
@@ -54,7 +54,10 @@ def main():
 
         # Show player stats
         avg = hits / pa if pa > 0 else 0
-        print(f"{i}. {name:30s} PA:{pa:3d}  AVG:.{int(avg*1000):03d}  HR:{hrs:2d}  K:{ks:3d}  BB:{walks:2d}")
+        print(
+            f"{i}. {name:30s} PA:{pa:3d}  AVG:.{int(avg*1000):03d}  "
+            f"HR:{hrs:2d}  K:{ks:3d}  BB:{walks:2d}"
+        )
 
     # Run simulation
     print("\n" + "=" * 70)
@@ -75,7 +78,8 @@ def main():
     print(f"Average Score:      {result.avg_score:.2f} runs/game")
     print(f"Median Score:       {result.median_score:.1f} runs/game")
     print(f"Std Deviation:      {result.std_dev:.2f}")
-    print(f"Score Range:        {min(result.all_scores)} - {max(result.all_scores)} runs")
+    print(
+        f"Score Range:        {min(result.all_scores)} - {max(result.all_scores)} runs")
 
     # Show score distribution
     print("\n📈 SCORE DISTRIBUTION (Top 15):")

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { authService } from "./authService";
 
 interface AuthContextType {
   user: string | null;
@@ -10,13 +11,12 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const navigate = useNavigate();
-
-  const AUTH_BASE =
-    process.env.REACT_APP_API_BASE || "http://127.0.0.1:8000/api/v1/auth";
 
   // --- Initialize auth state on mount ---
   useEffect(() => {
@@ -42,20 +42,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // --- Logout (handles API call, cleanup, and navigation) ---
   const logout = async () => {
     const refresh = localStorage.getItem("refresh");
+    const access = localStorage.getItem("access");
 
-    if (refresh) {
-      try {
-        await fetch(`${AUTH_BASE}/logout/`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access")}`,
-          },
-          body: JSON.stringify({ refresh }),
-        });
-      } catch (err) {
-        console.error("Logout API error:", err);
-      }
+    if (refresh && access) {
+      await authService.logout(refresh, access);
     }
 
     // Clear all auth data

@@ -2,7 +2,12 @@
   "compilerOptions": {
     "baseUrl": "src",
     "paths": {
-      "@/*": ["*"]
+      "@/*": ["*"],
+      "@/shared/*": ["shared/*"],
+      "@/ui/*": ["ui/*"],
+      "@/features/*": ["features/*"],
+      "@/services/*": ["services/*"],
+      "@/presentation/*": ["presentation/*"]
     },
 
     /* Visit https://aka.ms/tsconfig to read more about this file */

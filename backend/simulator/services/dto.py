@@ -2,7 +2,7 @@
 data transfer objects for moving data between layers.
 batterstats converts raw player stats into simulation probabilities.
 simulationresult holds monte carlo output (avg, median, std dev, all scores).
-used by player_service.py (creates batterstats from db) and 
+used by player_service.py (creates batterstats from db) and
 simulation.py (creates simulationresult from games).
 """
 
@@ -52,13 +52,15 @@ class BatterStats:
         prob_homerun = self.home_runs / pa
 
         # Calculate sum to validate data quality
-        prob_sum = prob_strikeout + prob_walk + prob_single + prob_double + prob_triple + prob_homerun
+        prob_sum = prob_strikeout + prob_walk + prob_single + \
+            prob_double + prob_triple + prob_homerun
 
         # Check for data inconsistency (probabilities exceeding 1.0)
         if prob_sum > 1.0 + 1e-8:  # Allow tiny floating point error
             raise ValueError(
-                f"Invalid data for player '{self.name}': outcome probabilities sum to {prob_sum:.6f} (> 1.0). "
-                f"This indicates counting stats exceed plate appearances. Check data integrity."
+                f"Invalid data for player '{self.name}': "
+                f"probabilities sum to {prob_sum:.6f} (> 1.0). "
+                f"Check data integrity."
             )
 
         # Remaining probability is in-play outs

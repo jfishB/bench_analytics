@@ -9,3 +9,5 @@ psycopg-binary==3.2.10
 sqlparse==0.5.3
 setuptools<81
 numpy>=1.26,<3
+gunicorn>=21.0.0
+dj-database-url>=2.0.0

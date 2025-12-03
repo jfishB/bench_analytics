@@ -1,4 +1,6 @@
-from .settings import *
+"""Test settings for backend."""
+
+from .settings import *  # noqa: F401, F403
 
 DATABASES = {
     "default": {

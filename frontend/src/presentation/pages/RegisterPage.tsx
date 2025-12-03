@@ -1,10 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-// API base for auth endpoints. Prefer env var when available so it can be
-// overridden per-deployment (REACT_APP_API_BASE). Falls back to localhost.
-const AUTH_BASE =
-  process.env.REACT_APP_API_BASE || "http://127.0.0.1:8000/api/v1/auth";
+import { authService } from "../../services/authService";
 
 export default function Register() {
   const [username, setUsername] = useState("");
@@ -16,25 +12,13 @@ export default function Register() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${AUTH_BASE}/register/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, email, password }),
-      });
-
-      const data = await response.json();
-      if (response.ok) {
-        setMessage("✅ Registration successful! You can now log in.");
-        setUsername("");
-        setEmail("");
-        setPassword("");
-      } else {
-        setMessage(`❌ ${data.error || "Registration failed"}`);
-      }
-    } catch (err) {
-      setMessage("❌ Network error. Please try again.");
+      await authService.register({ username, email, password });
+      setMessage("✅ Registration successful! You can now log in.");
+      setUsername("");
+      setEmail("");
+      setPassword("");
+    } catch (err: any) {
+      setMessage(`❌ ${err.message || "Registration failed"}`);
     }
   };
 

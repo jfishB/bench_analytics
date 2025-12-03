@@ -162,6 +162,7 @@ class LineupAPITests(TestCase):
 class LineupModelTests(TestCase):
     """Tests for Lineup and LineupPlayer models.
     Covers basic creation and __str__ methods."""
+
     def setUp(self):
         self.team = Team.objects.create()
         self.player = Player.objects.create(name="Player 1", team=self.team)
@@ -236,7 +237,7 @@ class LineupValidationTests(TestCase):
                 {"player_id": self.players[0].id, "batting_order": 1},
                 # duplicate
                 {"player_id": self.players[1].id, "batting_order": 1},
-            ] + [{"player_id": p.id, "batting_order": i+3} for i,
+            ] + [{"player_id": p.id, "batting_order": i + 3} for i,
                  p in enumerate(self.players[2:])],
         }
         resp = client.post("/api/v1/lineups/", payload, format="json")
@@ -246,7 +247,7 @@ class LineupValidationTests(TestCase):
         payload = {
             "team_id": self.team.id,
             "name": "Invalid Range",
-            "players": [{"player_id": p.id, "batting_order": i+2} for i,
+            "players": [{"player_id": p.id, "batting_order": i + 2} for i,
                         p in enumerate(self.players)],
         }
         resp = client.post("/api/v1/lineups/", payload, format="json")
@@ -255,7 +256,7 @@ class LineupValidationTests(TestCase):
         payload = {
             "team_id": self.team.id,
             "name": "Too Few Players",
-            "players": [{"player_id": p.id, "batting_order": i+1} for i,
+            "players": [{"player_id": p.id, "batting_order": i + 1} for i,
                         p in enumerate(self.players[:2])],
         }
         resp = client.post("/api/v1/lineups/", payload, format="json")
@@ -270,7 +271,7 @@ class LineupValidationTests(TestCase):
         payload = {
             "team_id": 99999,
             "name": "Bad Team",
-            "players": [{"player_id": p.id, "batting_order": i+1}
+            "players": [{"player_id": p.id, "batting_order": i + 1}
                         for i, p in enumerate(self.players)],
         }
         resp = client.post("/api/v1/lineups/", payload, format="json")
@@ -280,9 +281,9 @@ class LineupValidationTests(TestCase):
         payload = {
             "team_id": self.team.id,
             "name": "Bad Players",
-            "players": [{"player_id": 99999, "batting_order": 1}] +
-                       [{"player_id": p.id, "batting_order": i+2}
-                        for i, p in enumerate(self.players[1:])],
+            "players": [{"player_id": 99999, "batting_order": 1}]
+            + [{"player_id": p.id, "batting_order": i + 2}
+               for i, p in enumerate(self.players[1:])],
         }
         resp = client.post("/api/v1/lineups/", payload, format="json")
         self.assertEqual(resp.status_code, 400)
@@ -296,8 +297,8 @@ class LineupValidationTests(TestCase):
         payload = {
             "team_id": self.team.id,
             "name": "Mixed Teams",
-            "players": [{"player_id": wrong_player.id, "batting_order": 1}] +
-                    [{"player_id": p.id, "batting_order": i+2} for i,
+            "players": [{"player_id": wrong_player.id, "batting_order": 1}]
+                    + [{"player_id": p.id, "batting_order": i + 2} for i,
                         p in enumerate(self.players[1:])],
         }
         resp = client.post("/api/v1/lineups/", payload, format="json")
@@ -666,8 +667,8 @@ class LineupAlgorithmTests(TestCase):
         """Test calculate_player_baserun_values returns 0 when
           b+c is 0 (line 143)."""
         from lineups.services.algorithm_logic import (
-                        calculate_player_baserun_values
-                        )
+            calculate_player_baserun_values
+        )
         # Create players with all zero stats that result in b+c = 0
         players = []
         for i in range(9):
@@ -701,7 +702,7 @@ class LineupAlgorithmTests(TestCase):
         from lineups.services.algorithm_logic import algorithm_create_lineup
         from lineups.services.input_data import (
             CreateLineupInput, LineupPlayerInput
-            )
+        )
         from unittest.mock import patch
         # Create players with b_game=0 so no valid runs can be calculated
         players = []
@@ -723,7 +724,7 @@ class LineupAlgorithmTests(TestCase):
         )
         # Mock permutations to return empty to trigger line 176
         with patch('lineups.services.algorithm_logic.permutations') \
-             as mock_perms:
+                as mock_perms:
             mock_perms.return_value = []  # No permutations
             result = algorithm_create_lineup(payload)
             self.assertEqual(result, tuple())  # Empty tuple
@@ -920,6 +921,7 @@ class LineupInteractorTests(TestCase):
 
 class LineupDatabaseTests(TestCase):
     """Tests for database access layer functionality."""
+
     def setUp(self):
         self.team = Team.objects.create()
         self.players = []
@@ -943,7 +945,7 @@ class LineupDatabaseTests(TestCase):
         from lineups.services.databa_access import fetch_lineup_data
         from lineups.services.input_data import (
             CreateLineupInput, LineupPlayerInput
-            )
+        )
         # Test with all fields provided
         payload_full = CreateLineupInput(
             team_id=self.team.id,

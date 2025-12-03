@@ -23,6 +23,12 @@ class UserAlreadyExistsError(DomainError):
     pass
 
 
+class UserConflictError(DomainError):
+    """Raised when a username conflict occurs due to a race condition."""
+
+    pass
+
+
 class EmailAlreadyExistsError(DomainError):
     """Raised when an email is already taken."""
 

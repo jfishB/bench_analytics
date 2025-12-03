@@ -138,8 +138,9 @@ export function LineupOptimizer() {
     setActiveTab("manual");
     try {
       clearGeneratedLineup?.();
+    } catch {
+      /* ignore */
     }
-    catch { /* ignore */ }
   };
 
   // Wrapper handlers for save operations with error handling
@@ -263,6 +264,18 @@ export function LineupOptimizer() {
                       <Button onClick={() => window.location.reload()}>
                         Retry
                       </Button>
+                    </div>
+                  ) : players.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <div className="p-4 bg-blue-50 rounded-full mb-4">
+                        <Users className="h-12 w-12 text-blue-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        No Players Available
+                      </h3>
+                      <p className="text-sm text-gray-600 max-w-xs">
+                        Player data has not been loaded yet. Please contact an administrator.
+                      </p>
                     </div>
                   ) : (
                     <>
@@ -487,6 +500,7 @@ export function LineupOptimizer() {
           <LineupSimulatorTab
             savedLineups={savedLineups}
             loading={loadingLineups}
+            onLineupDeleted={fetchSavedLineups}
           />
         </TabsContent>
       </Tabs>

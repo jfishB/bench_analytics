@@ -1,0 +1,24 @@
+[flake8]
+max-line-length = 127
+max-complexity = 10
+exclude = 
+    venv,
+    env,
+    .venv,
+    .env,
+    __pycache__,
+    migrations,
+    node_modules,
+    .git,
+    build,
+    dist,
+    *.egg-info,
+    backend/lib/baseball-simulator
+ignore =
+    W503,
+    C901
+per-file-ignores =
+    backend/config/settings_test.py: F401, F403
+    backend/simulator/services/simulation.py: E402
+    backend/test_sim_standalone.py: E402
+    backend/test_simulation.py: E402
