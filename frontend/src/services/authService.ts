@@ -12,6 +12,12 @@ export interface LoginCredentials {
   password: string;
 }
 
+export interface RegisterCredentials {
+  username: string;
+  email: string;
+  password: string;
+}
+
 export interface AuthTokens {
   access: string;
   refresh: string;
@@ -50,7 +56,7 @@ export const authService = {
   /**
    * Register a new user account
    */
-  async register(credentials: LoginCredentials): Promise<AuthTokens> {
+  async register(credentials: RegisterCredentials): Promise<AuthTokens> {
     const response = await fetch(`${AUTH_BASE}/register/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
