@@ -75,10 +75,8 @@ class PlayerRankedSerializer(PlayerSerializer):
             "id",
             "name",
             "team",
-            "xwoba",
             "bb_percent",
             "k_percent",
-            "barrel_batted_rate",
             "wos_score",
         ]
 

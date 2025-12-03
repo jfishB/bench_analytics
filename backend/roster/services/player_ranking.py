@@ -11,6 +11,9 @@ from typing import Any, Dict, List, Optional
 from roster.models import Player, Team
 
 
+
+
+
 def get_all_players_with_stats() -> List[Dict[str, Any]]:
     """
     Fetch all players with a subset of their stats as dictionaries.
@@ -30,8 +33,7 @@ def get_all_players_with_stats() -> List[Dict[str, Any]]:
     )
 
 
-def get_ranked_players(ascending: bool = False,
-                       top_n: Optional[int] = None) -> List[Dict[str, Any]]:
+def get_ranked_players(ascending: bool = False, top_n: Optional[int] = None) -> List[Dict[str, Any]]:
     """
     Placeholder ranking: returns all players with a synthetic `wos_score` field.
     """
@@ -52,39 +54,6 @@ def get_ranked_players(ascending: bool = False,
     # sort by wos_score
     result.sort(key=lambda p: p["wos_score"], reverse=not ascending)
     return result
-
-
-# def get_ranked_players(ascending=False, top_n=None) -> List[Dict[str, Any]]:
-#     """
-#     Get players ranked by WOS score.
-
-#     TODO: Implement actual WOS ranking algorithm.
-#     For now, returns all players without ranking.
-
-#     Args:
-#         ascending: Sort order (False = highest first)
-#         top_n: Optional limit on number of results
-
-#     Returns:
-#         List of player dictionaries with wos_score field added.
-#     """
-#     players = get_all_players_with_stats()
-
-#     if not players:
-#         return []
-
-#     # TODO: Replace with actual WOS ranking logic from lineups/services/algorithm_logic.py
-#     result = []
-#     for player in players:
-#         player_data = dict(player)
-#         player_data["wos_score"] = 0.0  # Placeholder
-#         result.append(player_data)
-
-#     # Apply limit if specified
-#     if top_n:
-#         result = result[:top_n]
-
-#     return result
 
 
 def create_player_with_stats(name: str, **stats) -> Player:
