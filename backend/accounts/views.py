@@ -9,10 +9,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
-from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .exceptions import DomainError
-from .serializers import CustomTokenObtainPairSerializer
 from .services import login_user, register_user
 
 logger = logging.getLogger(__name__)
@@ -93,16 +91,7 @@ def logout(request):
     except TokenError:
         return Response({"error": "Invalid or already blacklisted token."},
                         status=status.HTTP_400_BAD_REQUEST)
-    except Exception as e:
-        print("Logout error:", e)
+    except Exception:
+        logger.exception("Unexpected error in logout")
         return Response({"error": "Unexpected server error."},
                         status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class CustomTokenObtainPairView(TokenObtainPairView):
-    """
-    Custom login view using CustomTokenObtainPairSerializer
-    to include username/email in the response.
-    """
-
-    serializer_class = CustomTokenObtainPairSerializer
