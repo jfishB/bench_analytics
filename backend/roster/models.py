@@ -13,7 +13,7 @@ class Team(models.Model):
 
 
 class Player(models.Model):
-    """Basic player model storing player information."""                                                          
+    """Basic player model storing player information."""
 
     name = models.CharField(max_length=100, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
