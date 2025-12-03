@@ -37,6 +37,29 @@ Built with amateur and youth coaches in mind, the tool gives teams without dedic
 
 ## Code Architecture
 
+The project is split into two main services—frontend and backend—each organized according to the conventions of its respective framework.
+
+**Backend (Django REST Framework)**:
+- The backend follows a modular, app-based architecture, as this is the recommended Django practice to help maintain consistent naming conventions and independent testability.
+- Each domain feature is encapsulated in its own Django app, functioning as a “mini-project” with its own models, serializers, views, and tests.
+- Examples include:
+  - `bash accounts/` — authentication, user management, JWT integration
+  - `bash lineups/` — lineup creation, updating, and business logic
+  - `bash simulation/` — sabermetrics engine, run-expectancy calculations, player projections
+
+**Frontend (TypeScript + React/Next.js)**:
+- The frontend uses a feature-based folder architecture, where related UI components, hooks, types, and services live together.
+- Top-level structure:
+  - `bash app/` — Next.js routing and server/client entry points
+  - `bash core/` — global configuration (API client, auth helpers, global providers)
+  - `bash features/` — every domain feature is isolated
+    - `bash players/` — fetching, listing, player UI components
+    - `bash lineup/` — lineup builder UI, forms, logic
+  - `bash services/` — API service wrappers (players API, lineup API, auth API)
+  - `bash shared/` — reusable UI components and utilities
+  - `bash @types/` — shared TypeScript types and interfaces
+- Naming conventions:
+
 ## SOLID Principles
 
 **1. Single Responsibility Principle**
