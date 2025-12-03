@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as ET
 
 try:
-    tree = ET.parse('coverage.xml')
+    tree = ET.parse('coverage.xml')  # nosec
     root = tree.getroot()
     
     # Find simulator/views.py

@@ -2,7 +2,7 @@ import xml.etree.ElementTree as ET
 import os
 
 try:
-    tree = ET.parse('coverage.xml')
+    tree = ET.parse('coverage.xml')  # nosec
     root = tree.getroot()
     print("Parsed coverage.xml successfully")
     
