@@ -6,7 +6,7 @@ Two workflows run automatically when you push code or open a pull request:
 
 Runs these checks in order:
 
-1. **Lint** - Checks code style (flake8, black, isort)
+1. **Lint** - Checks code style flake8
 2. **Test** - Runs Django tests with PostgreSQL
 3. **Security** - Scans for vulnerabilities (safety, bandit)
 
