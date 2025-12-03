@@ -7,7 +7,7 @@ from pathlib import Path # pragma: no cover
 from typing import Dict, Any, Optional # pragma: no cover
 
 from roster.models import Player, Team # pragma: no cover
-from roster.services.importer import import_from_csv # pragma: no cover
+from roster.services.player_import import PlayerImportService  # pragma: no cover
 
 
 def get_csv_path() -> Optional[str]:  # pragma: no cover
@@ -17,9 +17,9 @@ def get_csv_path() -> Optional[str]:  # pragma: no cover
     """
     csv_candidates = [
         # From repo root (Render deployment)
-        Path("data/test_dataset_monte_carlo_bluejays.csv"),
+        Path("data/test_data.csv"),
         # From backend/ dir (local development)
-        Path("../data/test_dataset_monte_carlo_bluejays.csv"),
+        Path("../data/test_data.csv"),
     ]
 
     for candidate in csv_candidates:
@@ -77,7 +77,7 @@ def load_sample_players(team_id: int = 1) -> Dict[str, Any]:  # pragma: no cover
         }
 
     # Import players
-    result = import_from_csv(csv_path, team_id=default_team.id)
+    result = PlayerImportService.import_from_csv(csv_path, team_id=default_team.id)
 
     return {
         "success": True,
