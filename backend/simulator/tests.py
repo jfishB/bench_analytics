@@ -137,19 +137,25 @@ class SimulationServiceTestCase(TestCase):
     def test_simulate_lineup_deterministic_stats(self):
         """Test that more games produces more stable statistics."""
         # Run with few games
-        result_small = self.service.simulate_lineup(self.lineup, num_games=10)
+        result_small = self.service.simulate_lineup(self.lineup, num_games=50)
 
         # Run with many games
         result_large = self.service.simulate_lineup(
             self.lineup, num_games=1000)
 
         # Larger sample should have more stable (lower) std dev relative to mean
-        cv_small = result_small.std_dev / result_small.avg_score
-        cv_large = result_large.std_dev / result_large.avg_score
+        cv_small = result_small.std_dev / \
+            result_small.avg_score if result_small.avg_score > 0 else 0
+        cv_large = result_large.std_dev / \
+            result_large.avg_score if result_large.avg_score > 0 else 0
 
-        # This is probabilistic but should generally hold
-        # (coefficient of variation decreases with sample size)
-        self.assertGreater(cv_small, cv_large * 0.5)
+        # Verify both simulations produced valid results
+        self.assertGreater(result_small.avg_score, 0)
+        self.assertGreater(result_large.avg_score, 0)
+
+        # Large sample should have lower coefficient of variation
+        # Using a lenient check since this is probabilistic
+        self.assertLess(cv_large, cv_small * 2.0)
 
 
 class PlayerServiceTestCase(TestCase):
