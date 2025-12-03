@@ -13,8 +13,7 @@ omit =
     config/asgi.py
     config/wsgi.py
     */tests_*.py
-    check_coverage.py
-    show_views_coverage.py
+
 
 [report]
 exclude_lines =
