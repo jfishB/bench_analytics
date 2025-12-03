@@ -47,9 +47,12 @@ The project is split into two main services frontend and backend each organized 
   - `bash lineups/` — lineup creation, updating, and business logic
   - `bash simulation/` — sabermetrics engine, run-expectancy calculations, player projections
 
-**Frontend (TypeScript + React/Next.js)**:
-- The frontend uses a feature-based folder architecture, where related UI components, hooks, types, and services live together.
-- Top-level structure:
+**Frontend (TypeScript + React)**:
+
+- The frontend follows **clean architecture** with feature-based organization, where related UI components, hooks, types, and services are co-located for maintainability and testability.
+
+- **Top-level structure**:
+
   - `bash app/` — Next.js routing and server/client entry points
   - `bash core/` — global configuration (API client, auth helpers, global providers)
   - `bash features/` — every domain feature is isolated
