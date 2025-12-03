@@ -55,3 +55,32 @@ class PlayerSerializerTestCase(TestCase):
         serializer = PlayerPartialUpdateSerializer(player, data=data, partial=True)
         
         self.assertTrue(serializer.is_valid())
+
+    def test_mixin_validate_name_direct(self):
+        """Test PlayerNameValidationMixin.validate_name directly."""
+        from roster.serializer import PlayerNameValidationMixin
+        mixin = PlayerNameValidationMixin()
+        
+        # Test valid name
+        self.assertEqual(mixin.validate_name(" Valid Name "), "Valid Name")
+        
+        # Test empty name raises ValidationError
+        with self.assertRaises(ValidationError):
+            mixin.validate_name("   ")
+
+    def test_partial_update_validate_name_direct(self):
+        """Test PlayerPartialUpdateSerializer.validate_name directly."""
+        serializer = PlayerPartialUpdateSerializer()
+        
+        # Test valid name
+        self.assertEqual(serializer.validate_name(" Valid Name "), "Valid Name")
+        
+        # Test empty name raises ValidationError
+        with self.assertRaises(ValidationError):
+            serializer.validate_name("   ")
+        
+        # Test None/empty value returns as is (if logic allows, though validate_name usually gets value)
+        # The code says: if value and not value.strip(): raise
+        # So if value is None, it returns None
+        self.assertIsNone(serializer.validate_name(None))
+        self.assertEqual(serializer.validate_name(""), "")
