@@ -494,3 +494,131 @@ class ParallelGameIntegrationTests(TestCase):
         self.assertGreater(avg_multi, 6.0)
         self.assertLess(avg_single, 16.0)
         self.assertLess(avg_multi, 16.0)
+
+
+from unittest.mock import MagicMock, patch
+from simulator.views import _handle_simulation_request
+
+class SimulatorViewsCoverageTest(TestCase):
+    """Targeted tests for simulator/views.py coverage."""
+
+    def setUp(self):
+        self.client = APIClient()
+
+    @patch("simulator.views.SimulationService")
+    def test_handle_simulation_request_empty_results(self, mock_service_cls):
+        """Test _handle_simulation_request when simulation returns no scores."""
+        # Setup mock service
+        mock_service = MagicMock()
+        mock_service_cls.return_value = mock_service
+
+        # Setup mock result with empty scores
+        mock_result = MagicMock()
+        mock_result.all_scores = []  # Empty list triggers the error
+        mock_service.run_simulation_flow.return_value = mock_result
+
+        # Call the helper directly
+        response = _handle_simulation_request([1, 2, 3], 100, "ids")
+
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertIn("Simulation produced no results", response.data["error"])
+
+    @patch("simulator.views.SimulationService")
+    def test_handle_simulation_request_unexpected_error(self, mock_service_cls):
+        """Test _handle_simulation_request when an unexpected exception occurs."""
+        # Setup mock to raise generic exception
+        mock_service = MagicMock()
+        mock_service_cls.return_value = mock_service
+        mock_service.run_simulation_flow.side_effect = Exception("Unexpected boom")
+
+        # Call the helper directly
+        response = _handle_simulation_request([1, 2, 3], 100, "ids")
+
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertIn("An unexpected error occurred", response.data["error"])
+        self.assertIn("Unexpected boom", response.data["detail"])
+
+    def test_simulate_by_player_names_invalid_serializer(self):
+        """Test simulate_by_player_names with invalid data."""
+        # Missing player_names
+        data = {"num_games": 100}
+        
+        # We need a user to authenticate
+        user = User.objects.create_user(username="testuser_cov", password="password")
+        self.client.force_authenticate(user=user)
+
+        url = "/api/v1/simulator/simulate-by-names/"
+        response = self.client.post(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("player_names", response.data)
+
+    def test_simulate_by_team_invalid_serializer(self):
+        """Test simulate_by_team with invalid data."""
+        # Missing team_id
+        data = {"num_games": 100}
+        
+        user = User.objects.create_user(username="testuser2_cov", password="password")
+        self.client.force_authenticate(user=user)
+
+        url = "/api/v1/simulator/simulate-by-team/"
+        response = self.client.post(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("team_id", response.data)
+
+
+class SimulatorServicesCoverageTest(TestCase):
+    """Targeted tests for simulator services coverage."""
+
+    def test_batter_stats_invalid_probabilities(self):
+        """Test that BatterStats raises ValueError when probabilities sum > 1.0."""
+        # Create stats that will result in probabilities > 1.0
+        stats = BatterStats(
+            name="Impossible Player",
+            plate_appearances=10,
+            hits=5,
+            doubles=0,
+            triples=0,
+            home_runs=0,
+            strikeouts=6,  # 5 + 6 = 11 > 10
+            walks=0
+        )
+        
+        with self.assertRaises(ValueError) as cm:
+            stats.to_probabilities()
+        
+        self.assertIn("Invalid data for player", str(cm.exception))
+        self.assertIn("probabilities sum to", str(cm.exception))
+
+    def test_convert_to_batter_stats_zero_pa(self):
+        """Test _convert_to_batter_stats with 0 plate appearances."""
+        service = PlayerService()
+        
+        # Mock a player object
+        mock_player = MagicMock()
+        mock_player.name = "Bench Warmer"
+        mock_player.pa = 0
+        
+        with self.assertRaises(ValueError) as cm:
+            service._convert_to_batter_stats(mock_player)
+            
+        self.assertIn("has no plate appearances", str(cm.exception))
+
+    def test_batter_stats_zero_pa_default(self):
+        """Test BatterStats.to_probabilities with 0 PA returns default outs."""
+        stats = BatterStats(
+            name="No PA Player",
+            plate_appearances=0,
+            hits=0,
+            doubles=0,
+            triples=0,
+            home_runs=0,
+            strikeouts=0,
+            walks=0
+        )
+        
+        probs = stats.to_probabilities()
+        # Should be [K, out, walk, 1B, 2B, 3B, HR]
+        # Default is [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self.assertEqual(probs, [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0])
