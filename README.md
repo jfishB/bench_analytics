@@ -37,7 +37,7 @@ Built with amateur and youth coaches in mind, the tool gives teams without dedic
 
 ## Code Architecture
 
-The project is split into two main services—frontend and backend—each organized according to the conventions of its respective framework.
+The project is split into two main services frontend and backend each organized according to the conventions of its respective framework.
 
 **Backend (Django REST Framework)**:
 - The backend follows a modular, app-based architecture, as this is the recommended Django practice to help maintain consistent naming conventions and independent testability.
@@ -59,7 +59,7 @@ The project is split into two main services—frontend and backend—each organi
   - `bash shared/` — reusable UI components and utilities
   - `bash @types/` — shared TypeScript types and interfaces
 - Naming conventions:
-
+  - TODO
 ## SOLID Principles
 
 **1. Single Responsibility Principle**
