@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("roster", "0009_remove_player_position"),
+        ("roster", "0010_load_initial_players"),
     ]
 
     operations = [
