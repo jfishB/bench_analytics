@@ -32,7 +32,6 @@ Built with amateur and youth coaches in mind, the tool gives teams without dedic
 ## Lineup Optimizer Algorithm:
 
 - Lineup optimizer algorithm utilizes modern sabermetric strategies to rate lineups
-  
 - Algorithm works cited and explaination: (https://docs.google.com/document/d/1Ueua5ibYRHZDD7kmZyFevb0vuWYnapy7pMlNSXTEjJo/edit?usp=sharing)
 
 ## Code Architecture
@@ -40,6 +39,7 @@ Built with amateur and youth coaches in mind, the tool gives teams without dedic
 The project is split into two main services frontend and backend each organized according to the conventions of its respective framework.
 
 **Backend (Django REST Framework)**:
+
 - The backend follows a modular, app-based architecture, as this is the recommended Django practice to help maintain consistent naming conventions and independent testability.
 - Each domain feature is encapsulated in its own Django app, functioning as a “mini-project” with its own models, serializers, views, and tests.
 - Examples include:
@@ -59,7 +59,11 @@ The project is split into two main services frontend and backend each organized 
   - `bash shared/` — reusable UI components and utilities
   - `bash @types/` — shared TypeScript types and interfaces
 - Naming conventions:
-  - TODO
+  - **Components**: PascalCase with descriptive names (`PlayerCard`, `LineupOptimizerPage`)
+  - **Hooks**: camelCase with `use` prefix (`useRosterData`, `usePlayerSelection`)
+  - **Services**: camelCase with `Service` suffix (`authService`, `lineupService`)
+  - **Types/Interfaces**: PascalCase (`Player`, `AuthContextType`, `SavedLineup`)
+
 ## SOLID Principles
 
 **1. Single Responsibility Principle**
