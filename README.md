@@ -29,9 +29,15 @@ Built with amateur and youth coaches in mind, the tool gives teams without dedic
 
 - Algorithm Rationale – Explain the reasoning behind suggested lineups for transparency.
 
+## Lineup Optimizer Algorithm:
+
+- Lineup optimizer algorithm utilizes modern sabermetric strategies to rate lineups
+  
+- Algorithm works cited and explaination: (https://docs.google.com/document/d/1Ueua5ibYRHZDD7kmZyFevb0vuWYnapy7pMlNSXTEjJo/edit?usp=sharing)
+
 ## Code Architecture
 
-### SOLID Principles
+## SOLID Principles
 
 **1. Single Responsibility Principle**
 _"A class should have only one reason to change."_
