@@ -24,8 +24,8 @@ lib_path = os.path.join(
 if lib_path not in sys.path:
     sys.path.insert(0, lib_path)
 
-from batter import Batter  # type: ignore
-from parallel_game import ParallelGame  # type: ignore
+from batter import Batter  # type: ignore  # noqa: E402
+from parallel_game import ParallelGame  # type: ignore  # noqa: E402
 
 
 class SimulationService:

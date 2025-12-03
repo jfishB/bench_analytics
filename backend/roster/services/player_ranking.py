@@ -30,7 +30,8 @@ def get_all_players_with_stats() -> List[Dict[str, Any]]:
     )
 
 
-def get_ranked_players(ascending: bool = False, top_n: Optional[int] = None) -> List[Dict[str, Any]]:
+def get_ranked_players(ascending: bool = False,
+                       top_n: Optional[int] = None) -> List[Dict[str, Any]]:
     """
     Placeholder ranking: returns all players with a synthetic `wos_score` field.
     """
@@ -53,27 +54,7 @@ def get_ranked_players(ascending: bool = False, top_n: Optional[int] = None) -> 
     return result
 
 
-def get_all_players_with_stats() -> List[Dict[str, Any]]:
-    """
-    Fetch all players with their stats as dictionaries.
-
-    Returns:
-            List of player dictionaries containing stats.
-    """
-    return list(
-        Player.objects.all().values(
-            "id",
-            "name",
-            "team_id",
-            "bb_percent",
-            "k_percent",
-            "pa",
-            "year",
-        )
-    )
-
-
-# def get_ranked_players(ascending: bool = False, top_n: Optional[int] = None) -> List[Dict[str, Any]]:
+# def get_ranked_players(ascending=False, top_n=None) -> List[Dict[str, Any]]:
 #     """
 #     Get players ranked by WOS score.
 

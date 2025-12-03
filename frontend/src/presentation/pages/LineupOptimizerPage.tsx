@@ -265,6 +265,18 @@ export function LineupOptimizer() {
                         Retry
                       </Button>
                     </div>
+                  ) : players.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <div className="p-4 bg-blue-50 rounded-full mb-4">
+                        <Users className="h-12 w-12 text-blue-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        No Players Available
+                      </h3>
+                      <p className="text-sm text-gray-600 max-w-xs">
+                        Player data has not been loaded yet. Please contact an administrator.
+                      </p>
+                    </div>
                   ) : (
                     <>
                       <div className="mb-2 text-sm">

@@ -29,7 +29,8 @@ def _to_int(v):
             return None
 
 
-def import_from_csv(path: str, team_id: Optional[int] = None, dry_run: bool = False) -> Dict[str, Any]:
+def import_from_csv(path: str, team_id: Optional[int]
+                    = None, dry_run: bool = False) -> Dict[str, Any]:
     """Import players from a CSV file into the roster Player model.
 
     Returns a summary dict with counts and messages.
@@ -53,7 +54,8 @@ def import_from_csv(path: str, team_id: Optional[int] = None, dry_run: bool = Fa
     processed = created = updated = 0
 
     for r in rows:
-        name = r.get('"last_name, first_name"') or r.get("last_name, first_name") or r.get("name")
+        name = r.get('"last_name, first_name"') or r.get(
+            "last_name, first_name") or r.get("name")
         if name is None:
             first = r.get(" first_name") or r.get("first_name")
             last = r.get("last_name")
@@ -113,7 +115,11 @@ def import_from_csv(path: str, team_id: Optional[int] = None, dry_run: bool = Fa
             team_obj, _ = Team.objects.get_or_create(pk=use_team_id)
 
         defaults: Dict[str, Any] = {
-            "savant_player_id": (int(savant_player_id) if savant_player_id and str(savant_player_id).isdigit() else None),
+            "savant_player_id": (
+                int(savant_player_id)
+                if savant_player_id and str(savant_player_id).isdigit()
+                else None
+            ),
             "year": int(year) if year and str(year).isdigit() else None,
             "pa": int(pa) if pa and str(pa).isdigit() else None,
             # Raw counting stats
@@ -142,7 +148,8 @@ def import_from_csv(path: str, team_id: Optional[int] = None, dry_run: bool = Fa
         }
 
         if dry_run:
-            messages.append(f"Would import player: {name} team_id={use_team_id} fields={defaults}")
+            messages.append(
+                f"Would import player: {name} team_id={use_team_id} fields={defaults}")
             processed += 1
             continue
 
@@ -157,5 +164,6 @@ def import_from_csv(path: str, team_id: Optional[int] = None, dry_run: bool = Fa
             updated += 1
 
     f.close()
-    messages.append(f"Processed {processed} rows: created={created} updated={updated}")
+    messages.append(
+        f"Processed {processed} rows: created={created} updated={updated}")
     return {"processed": processed, "created": created, "updated": updated, "messages": messages}

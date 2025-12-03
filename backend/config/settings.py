@@ -14,6 +14,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+import dj_database_url
 import environ
 
 # Paths
@@ -54,7 +55,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "lineups",
-    "accounts", 
+    "accounts",
     "roster",
     "simulator",
     "project_tests",
@@ -70,7 +71,7 @@ REST_FRAMEWORK = {
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "corsheaders.middleware.CorsMiddleware",  
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -109,9 +110,18 @@ DATABASES = {
         "PASSWORD": env("POSTGRES_PASSWORD", default="secret"),
         "HOST": env("DB_HOST", default="localhost"),
         "PORT": env("DB_PORT", default="5432"),
-        "OPTIONS": {"options": "-c search_path=public"},  
+        "OPTIONS": {"options": "-c search_path=public"},
     }
 }
+
+# If DATABASE_URL is provided (Render does this automatically), use it
+# This overrides the above configuration for production
+if "DATABASE_URL" in os.environ:
+    DATABASES["default"] = dj_database_url.config(
+        default=os.environ["DATABASE_URL"],
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -152,6 +162,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -159,4 +170,33 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = True
+# Allow all origins in development, but restrict in production
+CORS_ALLOW_CREDENTIALS = True  # Required for auth cookies/tokens
+
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    # Get frontend origins from environment variable (comma-separated)
+    # Example: CORS_ORIGINS=https://frontend.onrender.com,https://custom-domain.com
+    cors_origins_env = env("CORS_ORIGINS", default="")
+
+    # Default frontend origins
+    CORS_ALLOWED_ORIGINS = [
+        "https://bench-analytics.onrender.com",
+    ]
+
+    # Add any additional origins from environment variable
+    if cors_origins_env:
+        additional_origins = [
+            o.strip() for o in cors_origins_env.split(",") if o.strip()
+        ]
+        CORS_ALLOWED_ORIGINS.extend(additional_origins)
+
+    # If you need to allow localhost for testing production builds
+    if env.bool("ALLOW_LOCALHOST_CORS", default=False):
+        CORS_ALLOWED_ORIGINS.extend(
+            [
+                "http://localhost:3000",
+                "http://127.0.0.1:3000",
+            ]
+        )

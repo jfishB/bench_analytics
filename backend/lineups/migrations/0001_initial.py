@@ -63,7 +63,8 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"db_table": "lineups", "ordering": ["-created_at", "name"]},
+            options={"db_table": "lineups",
+                     "ordering": ["-created_at", "name"]},
         ),
         migrations.CreateModel(
             name="LineupPlayer",
@@ -95,6 +96,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
-            options={"db_table": "lineup_players", "ordering": ["batting_order"]},
+            options={"db_table": "lineup_players",
+                     "ordering": ["batting_order"]},
         ),
     ]

@@ -34,7 +34,7 @@ def determine_request_mode(lineup_data: dict) -> Tuple[str, Optional[dict]]:
 
 
 def handle_lineup_save(val_data: dict, original_batting_orders: list)\
-                                                    -> Tuple[Lineup, list]:
+        -> Tuple[Lineup, list]:
     """Persist a lineup from already val_data.
 
     The view handles all domain validation (batting orders, team/players).

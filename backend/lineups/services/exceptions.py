@@ -8,6 +8,7 @@
 
 class DomainError(Exception):
     """Base class for all lineup domain exceptions."""
+
     def __init__(self, detail: str = "Domain error occurred."):
         super().__init__(detail)
         self.detail = detail

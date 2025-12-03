@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from .models import Player, Team
+from .models import Team
 from .services.player_ranking import get_ranked_players
 
 # @pytest.mark.skip(reason="Requires database migrations with home_run column")

@@ -23,4 +23,10 @@ router.register(r"players", views.PlayerViewSet, basename="player")
 urlpatterns = [
     path("", include(router.urls)),
     path("sort-by-woba/", views.sort_players_by_woba, name="sort-by-woba"),
+    # Public: check if sample players are loaded
+    path("sample-players-status/", views.check_sample_players_status,
+         name="sample-players-status"),
+    # Admin only: load sample players from CSV
+    path("load-sample-players/", views.load_sample_players,
+         name="load-sample-players"),
 ]

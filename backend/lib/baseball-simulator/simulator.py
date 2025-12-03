@@ -43,18 +43,28 @@ def setup_mlb():
 def setup_own():
     lineup = [
         # probabilities for:    K      out   walk    1B     2B     3B     HR
-        Batter(probabilities=[0.150, 0.500, 0.150, 0.150, 0.045, 0.005, 0.000], name="JoeAverage1"),
-        Batter(probabilities=[0.150, 0.500, 0.150, 0.150, 0.045, 0.005, 0.000], name="JoeAverage2"),
-        Batter(probabilities=[0.150, 0.400, 0.150, 0.150, 0.045, 0.005, 0.100], name="MikeHomerun"),
-        Batter(probabilities=[0.150, 0.500, 0.150, 0.150, 0.045, 0.005, 0.000], name="JoeAverage4"),
-        Batter(probabilities=[0.150, 0.500, 0.150, 0.150, 0.045, 0.005, 0.000], name="JoeAverage5"),
-        Batter(probabilities=[0.150, 0.500, 0.150, 0.150, 0.045, 0.005, 0.000], name="JoeAverage6"),
-        Batter(probabilities=[0.150, 0.500, 0.150, 0.150, 0.045, 0.005, 0.000], name="JoeAverage7"),
-        Batter(probabilities=[0.150, 0.500, 0.150, 0.150, 0.045, 0.005, 0.000], name="JoeAverage8"),
-        Batter(probabilities=[0.150, 0.500, 0.150, 0.150, 0.045, 0.005, 0.000], name="JoeAverage9"),
+        Batter(probabilities=[0.150, 0.500, 0.150, 0.150,
+               0.045, 0.005, 0.000], name="JoeAverage1"),
+        Batter(probabilities=[0.150, 0.500, 0.150, 0.150,
+               0.045, 0.005, 0.000], name="JoeAverage2"),
+        Batter(probabilities=[0.150, 0.400, 0.150, 0.150,
+               0.045, 0.005, 0.100], name="MikeHomerun"),
+        Batter(probabilities=[0.150, 0.500, 0.150, 0.150,
+               0.045, 0.005, 0.000], name="JoeAverage4"),
+        Batter(probabilities=[0.150, 0.500, 0.150, 0.150,
+               0.045, 0.005, 0.000], name="JoeAverage5"),
+        Batter(probabilities=[0.150, 0.500, 0.150, 0.150,
+               0.045, 0.005, 0.000], name="JoeAverage6"),
+        Batter(probabilities=[0.150, 0.500, 0.150, 0.150,
+               0.045, 0.005, 0.000], name="JoeAverage7"),
+        Batter(probabilities=[0.150, 0.500, 0.150, 0.150,
+               0.045, 0.005, 0.000], name="JoeAverage8"),
+        Batter(probabilities=[0.150, 0.500, 0.150, 0.150,
+               0.045, 0.005, 0.000], name="JoeAverage9"),
     ]
     # Anthony Rendon:
-    # strike-out: 0.133  in-play-out: 0.474  walk: 0.124  single: 0.144  double: 0.068	 triple: 0.005 	homerun: 0.053
+    # strike-out: 0.133  in-play-out: 0.474  walk: 0.124  single: 0.144
+    # double: 0.068         triple: 0.005  homerun: 0.053
     return lineup
 
 
@@ -62,17 +72,21 @@ def play_multiple_lineups(lineups, nr_games=10_000):
     scores = []
     for idx, lineup in enumerate(lineups):
         print(f"\n=== Playing lineup {idx+1}/{len(lineups)} ===")
-        avg_score, median_score, std_dev = play_many_games(lineup, nr_games=nr_games, print_stats=False)
+        avg_score, median_score, std_dev = play_many_games(
+            lineup, nr_games=nr_games, print_stats=False)
         scores.append((avg_score, median_score, std_dev))
     print("\n=== Summary of all lineups ===")
     for idx, stats in enumerate(scores):
-        print(f"Lineup {idx+1}: avg_score = {stats[0]:.3f}, median = {stats[1]:.3f}, std_dev = {stats[2]:.3f}")
+        print(
+            f"Lineup {idx+1}: avg_score = {stats[0]:.3f}, median = {stats[1]:.3f}, std_dev = {stats[2]:.3f}")
 
 
 def make_multiple_lineups_with_one_power_hitter():
     # probabilities for:                 K      out   walk    1B     2B     3B     HR
-    batter_avg = Batter(probabilities=[0.150, 0.500, 0.150, 0.150, 0.045, 0.005, 0.000], name="JoeAverage")
-    batter_pow = Batter(probabilities=[0.150, 0.400, 0.150, 0.150, 0.045, 0.005, 0.100], name="MikeHomerun")
+    batter_avg = Batter(probabilities=[
+                        0.150, 0.500, 0.150, 0.150, 0.045, 0.005, 0.000], name="JoeAverage")
+    batter_pow = Batter(probabilities=[
+                        0.150, 0.400, 0.150, 0.150, 0.045, 0.005, 0.100], name="MikeHomerun")
 
     # Create 9 lineups with all avg batters except one power hitter at each position
     lineups = []
@@ -119,7 +133,7 @@ def play_one_game(lineup):
     game.play()
     score = game.get_score()
     if score == 1:
-        print(f"\nThe final score is: 1 run.\n")
+        print("\nThe final score is: 1 run.\n")
     else:
         print(f"\nThe final score is: {score} runs.\n")
 
@@ -131,6 +145,6 @@ if __name__ == "__main__":
     # play_many_games(lineup, nr_games=10_000)
     play_one_game(lineup)
 
-    ### To figure out the best position for a power hitter:
+    # To figure out the best position for a power hitter:
     # lineups = make_multiple_lineups_with_one_power_hitter()
     # play_multiple_lineups(lineups, nr_games=10_000)

@@ -89,7 +89,8 @@ class PlayerService:
         Returns:
             List of BatterStats for top players by PA
         """
-        players = self.Player.objects.filter(team_id=team_id).order_by("-pa")[:limit]
+        players = self.Player.objects.filter(
+            team_id=team_id).order_by("-pa")[:limit]
 
         if not players:
             raise ValueError(f"No players found for team {team_id}")
