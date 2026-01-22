@@ -6,6 +6,15 @@ Bench Analytics is a web platform built to give baseball coaches the kind of str
 
 Built with amateur and youth coaches in mind, the tool gives teams without dedicated analysts a practical way to explore matchups, understand how player strengths stack together, and prepare a lineup with confidence.
 
+## Screenshots
+
+![Home](assets/screen_home.png)
+![Optimizer](assets/screen_optimizer.png)
+![Roster](assets/screen_roster.png)
+![Optimized](assets/screen_optimized.png)
+![Results](assets/screen_results.png)
+
+
 ## Authors
 
 - [@jfishB](https://github.com/rashusharda)
