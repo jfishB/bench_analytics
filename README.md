@@ -10,9 +10,10 @@ Built with amateur and youth coaches in mind, the tool gives teams without dedic
 
 ![Home](assets/screen_home.png)
 ![Optimizer](assets/screen_optimizer.png)
+![Roster](assets/screen_roster.png)
 ![Optimized](assets/screen_optimized.png)
 ![Results](assets/screen_results.png)
-![Roster](assets/screen_roster.png)
+
 
 ## Authors
 
