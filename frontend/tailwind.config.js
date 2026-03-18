@@ -3,7 +3,7 @@
  * 
  * - Specifies files to scan for class names (`content`)
  * - Extends the default theme with design tokens
- * - Integrates with our centralized design system
+ * - Integrates with our centralized design system (design-tokens.json)
  */
 /** @type {import('tailwindcss').Config} */
 const config = {
@@ -13,9 +13,11 @@ const config = {
   ],
   theme: {
     extend: {
-      // Colors using CSS variables
+      // Colors using CSS variables (driven by design-tokens.json)
       colors: {
         background: 'var(--background)',
+        surface:    'var(--surface)',
+        subtle:     'var(--subtle)',
         foreground: 'var(--foreground)',
         card: {
           DEFAULT: 'var(--card)',
@@ -27,7 +29,9 @@ const config = {
         },
         primary: {
           DEFAULT: 'var(--primary)',
+          hover:      'var(--primary-hover)',
           foreground: 'var(--primary-foreground)',
+          glow:       'var(--primary-glow)',
         },
         secondary: {
           DEFAULT: 'var(--secondary)',
@@ -42,14 +46,15 @@ const config = {
           foreground: 'var(--accent-foreground)',
           red: 'var(--accent-red)',
           redForeground: 'var(--accent-red-foreground)',
+          glow: 'var(--accent-glow)',
         },
         destructive: {
           DEFAULT: 'var(--destructive)',
           foreground: 'var(--destructive-foreground)',
         },
         border: 'var(--border)',
-        input: 'var(--input)',
-        ring: 'var(--ring)',
+        input:  'var(--input)',
+        ring:   'var(--ring)',
         chart: {
           1: 'var(--chart-1)',
           2: 'var(--chart-2)',
@@ -58,11 +63,20 @@ const config = {
           5: 'var(--chart-5)',
         },
       },
-      // Border radius
+      // Border radius aligned with design-tokens.json
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        sm:  'var(--radius-sm)',   // 6px  – badges / tags
+        md:  'var(--radius-md)',   // 8px  – buttons / inputs
+        lg:  'var(--radius)',      // 12px – cards / panels (default)
+        xl:  'var(--radius-xl)',   // 16px – hero sections
+      },
+      // Box shadows aligned with design-tokens.json
+      boxShadow: {
+        sm:        'var(--shadow-sm)',
+        md:        'var(--shadow-md)',
+        lg:        'var(--shadow-lg)',
+        'glow-blue': 'var(--shadow-glow-blue)',
+        'glow-red':  'var(--shadow-glow-red)',
       },
     },
   },

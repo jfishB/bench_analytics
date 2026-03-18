@@ -3,14 +3,15 @@ import { cn } from "../../utils";
 
 /**
  * Card Component
- * Base container with border, rounded corners, and flexible layout.
+ * Glassmorphism container with frosted-glass background, subtle white border,
+ * and rounded-lg corners — aligned with design-tokens.json.
  */
 function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card"
       className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border",
+        "glass-card glass-card-hover text-card-foreground flex flex-col gap-6 rounded-lg",
         className
       )}
       {...props}
@@ -38,7 +39,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
 
 /**
  * CardTitle
- * Primary heading for the card.
+ * Primary heading for the card — slate-50 for high contrast.
  */
 function CardTitle({
   className,
@@ -48,7 +49,7 @@ function CardTitle({
   return (
     <h4
       data-slot="card-title"
-      className={cn("leading-none", className)}
+      className={cn("leading-none text-foreground font-semibold", className)}
       {...props}
     >
       {children}
@@ -58,13 +59,13 @@ function CardTitle({
 
 /**
  * CardDescription
- * Secondary text or description below the title.
+ * Secondary text — slate-400 for measured contrast against dark background.
  */
 function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <p
       data-slot="card-description"
-      className={cn("text-muted-foreground", className)}
+      className={cn("text-muted-foreground text-sm leading-relaxed", className)}
       {...props}
     />
   );
@@ -124,3 +125,4 @@ export {
   CardDescription,
   CardContent,
 };
+

@@ -9,12 +9,14 @@ import { AuthProvider } from "./services/AuthContext";
  *
  * - Wraps the entire application
  * - Provides consistent layout with Header and Footer
+ * - Applies the Godly-inspired dark theme (slate-950 background, design-tokens.json)
  * - Renders the routed pages inside the main content area
  */
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <div className="min-h-screen flex flex-col">
+      {/* dark class activates the slate-950/900 dark design system */}
+      <div className="dark min-h-screen flex flex-col bg-background text-foreground">
         {/* Global header */}
         <Header />
 
@@ -31,3 +33,4 @@ const App: React.FC = () => {
 };
 
 export default App;
+

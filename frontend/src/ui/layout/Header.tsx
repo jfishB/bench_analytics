@@ -23,7 +23,15 @@ export function Header() {
   )?.id;
 
   return (
-    <header className="border-b bg-card shadow-sm">
+    <header
+      className="fixed top-0 left-0 right-0 z-50"
+      style={{
+        background: "var(--header-bg)",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
+        borderBottom: "1px solid var(--border)",
+      }}
+    >
       <div className="container mx-auto px-4">
         <div className="flex h-20 items-center justify-between">
           {/* --- Logo --- */}
@@ -41,13 +49,17 @@ export function Header() {
                 key={item.id}
                 variant={activeSection === item.id ? "default" : "ghost"}
                 onClick={() => navigate(item.path)}
-                className="px-4"
+                className={
+                  activeSection === item.id
+                    ? "px-4 bg-primary text-white hover:bg-primary/90"
+                    : "px-4 text-muted-foreground hover:text-foreground hover:bg-white/5"
+                }
               >
                 {item.label}
               </Button>
             ))}
 
-            <span className="text-muted-foreground mx-2 select-none text-lg">
+            <span className="text-muted-foreground mx-2 select-none text-lg opacity-30">
               |
             </span>
 
@@ -55,13 +67,13 @@ export function Header() {
             <div className="flex items-center space-x-3">
               {user ? (
                 <>
-                  <span className="text-sm text-gray-700">
-                    Logged in as <strong>{user}</strong>
+                  <span className="text-sm text-muted-foreground">
+                    Logged in as <strong className="text-foreground">{user}</strong>
                   </span>
                   <Button
                     onClick={logout}
                     variant="outline"
-                    className="ml-2 bg-red-600 text-white hover:bg-red-700"
+                    className="ml-2 border-accent/40 text-accent hover:bg-accent/10 hover:border-accent/60"
                   >
                     Logout
                   </Button>
@@ -69,16 +81,16 @@ export function Header() {
               ) : (
                 <>
                   <Button
-                    variant="default"
+                    variant="ghost"
                     onClick={() => navigate("/login")}
-                    className="bg-blue-700 text-white hover:bg-blue-800"
+                    className="text-muted-foreground hover:text-foreground hover:bg-white/5"
                   >
                     Login
                   </Button>
                   <Button
                     variant="default"
                     onClick={() => navigate("/register")}
-                    className="bg-blue-700 text-white hover:bg-blue-800"
+                    className="bg-primary text-white hover:bg-primary/90 shadow-glow-blue"
                   >
                     Register
                   </Button>
@@ -91,3 +103,4 @@ export function Header() {
     </header>
   );
 }
+

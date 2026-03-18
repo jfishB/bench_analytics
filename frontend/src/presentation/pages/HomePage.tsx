@@ -31,6 +31,7 @@ interface DisplayItem {
 /**
  * Home page component — introduces Bench Analytics and highlights
  * its main features to encourage user engagement.
+ * Styled to match the Godly-inspired dark design system (design-tokens.json).
  */
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -52,7 +53,7 @@ const Home: React.FC = () => {
     {
       title: "Matchup Analysis",
       description:
-        "Generate optimized lineups based on each batter’s statistical profile.",
+        "Generate optimized lineups based on each batter's statistical profile.",
       icon: Target,
     },
     {
@@ -84,18 +85,26 @@ const Home: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-16">
       {/* ---------- Hero Section ---------- */}
-      {/* Introduces the platform and main call-to-action buttons */}
-      <section className="relative overflow-hidden rounded-lg flex justify-center items-center min-h-[400px]">
-        <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[calc(100%-1rem)] max-w-6xl h-[400px] bg-gradient-to-r from-blue-900/10 to-red-600/10 rounded-2xl" />
-        <div className="relative text-center space-y-6 p-8 md:p-12 max-w-4xl">
-          <h1 className="text-4xl md:text-6xl text-primary">
-            Your lineup. Our analytics.
+      <section className="relative overflow-hidden rounded-xl flex justify-center items-center min-h-[480px]">
+        {/* Radial gradient background glow */}
+        <div
+          className="absolute inset-0 rounded-xl"
+          style={{
+            background:
+              "radial-gradient(ellipse 80% 60% at 50% 50%, rgba(59,130,246,0.10) 0%, rgba(239,68,68,0.05) 60%, transparent 100%)",
+            border: "1px solid rgba(255,255,255,0.06)",
+          }}
+        />
+        <div className="relative text-center space-y-8 p-10 md:p-16 max-w-4xl">
+          <h1 className="text-5xl md:text-7xl font-extrabold text-foreground tracking-tight">
+            Your lineup.{" "}
+            <span className="text-primary">Our analytics.</span>
             <br />
-            <span className="text-red-600">Their problem.</span>
+            <span className="text-accent">Their problem.</span>
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground">
+          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Stop guessing. Start winning. Our advanced analytics platform helps
             coaches optimize batting orders, analyze matchups, and make smarter
             decisions backed by data.
@@ -104,7 +113,7 @@ const Home: React.FC = () => {
             <Button
               size="lg"
               onClick={() => navigate("/lineup")}
-              className="text-lg px-8 py-6"
+              className="text-base px-8 py-6 bg-primary hover:bg-primary/90 text-white font-semibold shadow-glow-blue"
             >
               Start Optimizing
             </Button>
@@ -112,11 +121,11 @@ const Home: React.FC = () => {
             <Button
               size="lg"
               onClick={() => navigate("/how-to-guide")}
-              className="text-lg px-8 py-6"
+              className="text-base px-8 py-6 font-semibold"
               style={{
-                border: "1px solid rgba(0, 0, 0, 0.2)",
-                color: "rgba(0,0,0,0.7)",
-                backgroundColor: "transparent",
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.12)",
+                color: "var(--foreground)",
               }}
             >
               Learn How
@@ -125,42 +134,46 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* ---------- Features Grid ---------- */}
-      {/* Displays key platform features in a responsive grid of cards */}
-      <div className="space-y-2">
-        <h2 className="text-xl md:text-3xl text-primary text-center">
+      {/* ---------- Features Section Header ---------- */}
+      <div className="space-y-3 text-center">
+        <h2 className="text-3xl md:text-4xl font-bold text-foreground">
           Everything You Need to Win
         </h2>
-        <h3 className="text-base text-center text-muted-foreground">
+        <p className="text-base text-muted-foreground">
           Comprehensive tools designed specifically for baseball coaches.
-        </h3>
+        </p>
       </div>
+
+      {/* ---------- Features Grid ---------- */}
       <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto">
         {features.map((feature, index) => {
           const Icon = feature.icon;
+          const isAccent = index % 2 === 1;
           return (
             <Card
               key={feature.title}
-              className={index % 2 === 1 ? "border-[var(--accent-red)]/20" : ""}
+              style={
+                isAccent
+                  ? { boxShadow: "var(--shadow-glow-red)", borderColor: "rgba(239,68,68,0.18)" }
+                  : {}
+              }
             >
               <CardHeader>
                 <div
-                  className={`w-12 h-12 rounded-lg flex items-center justify-center mb-3 ${
-                    index % 2 === 1 ? "bg-red-600/10" : "bg-blue-900/10"
-                  }`}
+                  className="w-12 h-12 rounded-md flex items-center justify-center mb-3"
+                  style={{
+                    background: isAccent
+                      ? "rgba(239,68,68,0.12)"
+                      : "rgba(59,130,246,0.12)",
+                  }}
                 >
                   <Icon
-                    className={`h-6 w-6 ${
-                      index % 2 === 1 ? "text-red-600" : "text-blue-900"
-                    }`}
+                    className="h-6 w-6"
+                    style={{ color: isAccent ? "#ef4444" : "#3b82f6" }}
                   />
                 </div>
                 <CardTitle
-                  className={
-                    index % 2 === 1
-                      ? "text-[var(--accent-red)]"
-                      : "text-primary"
-                  }
+                  style={{ color: isAccent ? "#ef4444" : "var(--foreground)" }}
                 >
                   {feature.title}
                 </CardTitle>
@@ -173,21 +186,30 @@ const Home: React.FC = () => {
         })}
       </div>
 
-      {/* ---------- Benefits Grid ---------- */}
-      {/* Displays our benefits in block */}
-
-      <section className="bg-gray-100/50 rounded-lg p-8 max-w-6xl mx-auto">
-        <h2 className="text-3xl mb-8 text-center text-primary">Key Benefits</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          {benefits.map((benefit, index) => {
+      {/* ---------- Benefits Section ---------- */}
+      <section
+        className="rounded-xl p-10 max-w-6xl mx-auto"
+        style={{
+          background: "var(--surface)",
+          border: "1px solid var(--border)",
+        }}
+      >
+        <h2 className="text-3xl font-bold mb-10 text-center text-foreground">
+          Key Benefits
+        </h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          {benefits.map((benefit) => {
             const Icon = benefit.icon;
             return (
-              <div key={benefit.title} className="text-center space-y-3">
-                <div className="w-16 h-16 rounded-full bg-blue-900/10 flex items-center justify-center mx-auto">
-                  <Icon className="h-8 w-8 text-blue-900" />
+              <div key={benefit.title} className="text-center space-y-4">
+                <div
+                  className="w-16 h-16 rounded-xl flex items-center justify-center mx-auto"
+                  style={{ background: "rgba(59,130,246,0.12)" }}
+                >
+                  <Icon className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="font-medium">{benefit.title}</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="font-semibold text-foreground">{benefit.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   {benefit.description}
                 </p>
               </div>
@@ -197,21 +219,27 @@ const Home: React.FC = () => {
       </section>
 
       {/* ---------- CTA Section ---------- */}
-      {/* Final call-to-action to encourage signup */}
-      <section className="relative rounded-2xl flex justify-center items-center min-h-[250px]">
-        <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 w-[calc(100%-1rem)] max-w-6xl h-[250px] bg-gradient-to-r from-blue-900/10 to-red-600/10 rounded-2xl" />
-        <div className="relative text-center space-y-6 p-8 md:p-12 max-w-4xl">
-          <h2 className="text-2xl md:text-4xl text-primary">
+      <section className="relative rounded-xl flex justify-center items-center min-h-[280px]">
+        <div
+          className="absolute inset-0 rounded-xl"
+          style={{
+            background:
+              "radial-gradient(ellipse 80% 70% at 50% 50%, rgba(239,68,68,0.10) 0%, rgba(59,130,246,0.05) 60%, transparent 100%)",
+            border: "1px solid rgba(255,255,255,0.06)",
+          }}
+        />
+        <div className="relative text-center space-y-6 p-10 md:p-14 max-w-3xl">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground">
             Ready to Transform Your Team?
           </h2>
-          <p className="text-lg md:text-xl text-muted-foreground">
+          <p className="text-lg text-muted-foreground">
             Start today and unlock tools that make every decision smarter,
             faster, and more confident.
           </p>
           <Button
             size="lg"
             onClick={() => navigate("/lineup")}
-            className="text-lg px-8 py-6 bg-red-600 hover:bg-red-700"
+            className="text-base px-8 py-6 bg-accent hover:bg-accent/90 text-white font-semibold shadow-glow-red"
           >
             Start Building Lineups <MoveRight className="ml-2 h-5 w-5" />
           </Button>

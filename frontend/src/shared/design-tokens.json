@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "name": "Bench Analytics Design System",
+    "version": "2.0.0",
+    "description": "Godly-inspired dark UI design tokens: slate-950/900 backgrounds, glassmorphism cards, subtle glow effects, and high-contrast typography."
+  },
+  "colors": {
+    "background": {
+      "page":    { "value": "#020617", "tailwind": "slate-950", "usage": "Main page / body background" },
+      "surface": { "value": "#0f172a", "tailwind": "slate-900", "usage": "Cards, panels, elevated surfaces" },
+      "header":  { "value": "rgba(2,6,23,0.85)", "usage": "Fixed header glassmorphism background (with backdrop-blur)" },
+      "overlay": { "value": "rgba(15,23,42,0.85)", "usage": "Glassmorphism card background (with backdrop-blur)" },
+      "subtle":  { "value": "#1e293b", "tailwind": "slate-800", "usage": "Hover states, input backgrounds" }
+    },
+    "primary": {
+      "DEFAULT":    { "value": "#3b82f6", "tailwind": "blue-500", "usage": "Primary interactive elements, links" },
+      "hover":      { "value": "#2563eb", "tailwind": "blue-600", "usage": "Primary button hover state" },
+      "foreground": { "value": "#ffffff", "usage": "Text on primary-colored backgrounds" },
+      "glow":       { "value": "rgba(59,130,246,0.35)", "usage": "Blue glow for box-shadow accent" }
+    },
+    "accent": {
+      "red":         { "value": "#ef4444", "tailwind": "red-500", "usage": "Danger, destructive actions, baseball accent" },
+      "redHover":    { "value": "#dc2626", "tailwind": "red-600", "usage": "Red accent hover" },
+      "redGlow":     { "value": "rgba(239,68,68,0.35)", "usage": "Red glow box-shadow" }
+    },
+    "text": {
+      "primary":   { "value": "#f8fafc", "tailwind": "slate-50",  "usage": "Headings, high-emphasis text" },
+      "secondary": { "value": "#94a3b8", "tailwind": "slate-400", "usage": "Body text, descriptions, metadata" },
+      "muted":     { "value": "#64748b", "tailwind": "slate-500", "usage": "Placeholder text, disabled states" }
+    },
+    "border": {
+      "subtle":  { "value": "rgba(255,255,255,0.08)", "usage": "Default card / panel borders" },
+      "medium":  { "value": "rgba(255,255,255,0.12)", "usage": "Focused inputs, hover card borders" },
+      "strong":  { "value": "rgba(255,255,255,0.20)", "usage": "Dividers, emphasized borders" }
+    },
+    "chart": {
+      "1": { "value": "#3b82f6", "tailwind": "blue-500" },
+      "2": { "value": "#10b981", "tailwind": "emerald-500" },
+      "3": { "value": "#f59e0b", "tailwind": "amber-500" },
+      "4": { "value": "#ef4444", "tailwind": "red-500" },
+      "5": { "value": "#8b5cf6", "tailwind": "violet-500" }
+    }
+  },
+  "spacing": {
+    "density": "marketing",
+    "note": "Generous padding/margins typical of modern SaaS marketing pages.",
+    "scale": {
+      "xs":  { "value": "0.25rem",  "px": "4px"  },
+      "sm":  { "value": "0.5rem",   "px": "8px"  },
+      "md":  { "value": "1rem",     "px": "16px" },
+      "lg":  { "value": "1.5rem",   "px": "24px" },
+      "xl":  { "value": "2rem",     "px": "32px" },
+      "2xl": { "value": "3rem",     "px": "48px" },
+      "3xl": { "value": "4rem",     "px": "64px" }
+    },
+    "cardPadding":    { "value": "1.5rem", "px": "24px" },
+    "sectionGap":     { "value": "4rem",   "px": "64px" },
+    "containerMax":   { "value": "80rem",  "px": "1280px" }
+  },
+  "borderRadius": {
+    "note": "Standard rounded corners — not fully circular, not sharp.",
+    "none":   { "value": "0px" },
+    "sm":     { "value": "6px",  "usage": "Small badges, tags" },
+    "md":     { "value": "8px",  "usage": "Buttons, inputs" },
+    "lg":     { "value": "12px", "usage": "Cards, panels (primary radius)" },
+    "xl":     { "value": "16px", "usage": "Hero sections, large containers" },
+    "2xl":    { "value": "24px", "usage": "Modal overlays" },
+    "full":   { "value": "9999px", "usage": "Pills, avatars" }
+  },
+  "effects": {
+    "glassmorphism": {
+      "card": {
+        "background":    "rgba(15,23,42,0.80)",
+        "backdropBlur":  "12px",
+        "border":        "1px solid rgba(255,255,255,0.08)",
+        "boxShadow":     "0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -2px rgba(0,0,0,0.4)"
+      }
+    },
+    "boxShadow": {
+      "sm":        "0 1px 2px rgba(0,0,0,0.4)",
+      "md":        "0 4px 6px -1px rgba(0,0,0,0.4), 0 2px 4px -2px rgba(0,0,0,0.4)",
+      "lg":        "0 10px 15px -3px rgba(0,0,0,0.5), 0 4px 6px -4px rgba(0,0,0,0.4)",
+      "glowBlue":  "0 0 20px rgba(59,130,246,0.25), 0 4px 6px -1px rgba(0,0,0,0.4)",
+      "glowRed":   "0 0 20px rgba(239,68,68,0.25), 0 4px 6px -1px rgba(0,0,0,0.4)"
+    },
+    "ring": {
+      "focus": "0 0 0 2px rgba(59,130,246,0.5)"
+    }
+  },
+  "typography": {
+    "fontFamily": "Inter, system-ui, -apple-system, sans-serif",
+    "scale": {
+      "xs":   { "size": "0.75rem",  "lineHeight": "1rem",    "weight": 400 },
+      "sm":   { "size": "0.875rem", "lineHeight": "1.25rem", "weight": 400 },
+      "base": { "size": "1rem",     "lineHeight": "1.5rem",  "weight": 400 },
+      "lg":   { "size": "1.125rem", "lineHeight": "1.75rem", "weight": 500 },
+      "xl":   { "size": "1.25rem",  "lineHeight": "1.75rem", "weight": 600 },
+      "2xl":  { "size": "1.5rem",   "lineHeight": "2rem",    "weight": 700 },
+      "3xl":  { "size": "1.875rem", "lineHeight": "2.25rem", "weight": 700 },
+      "4xl":  { "size": "2.25rem",  "lineHeight": "2.5rem",  "weight": 800 },
+      "5xl":  { "size": "3rem",     "lineHeight": "1",       "weight": 800 },
+      "6xl":  { "size": "3.75rem",  "lineHeight": "1.1",       "weight": 900 }
+    },
+    "contrastRatio": {
+      "heading-to-body": "slate-50 (#f8fafc) on slate-950 (#020617) — approx 18:1 contrast",
+      "body-to-background": "slate-400 (#94a3b8) on slate-950 (#020617) — approx 7:1 contrast"
+    }
+  }
+}

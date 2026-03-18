@@ -4,14 +4,21 @@ import { useNavigate } from "react-router-dom";
 
 /**
  * Footer Component
- * Displays site-wide footer with navigation links, support info, and company details.
+ * Dark themed footer matching the Godly design system (slate-900 surface,
+ * subtle white borders, muted text).
  */
 export const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear(); // Dynamic year for copyright
   const navigate = useNavigate(); // Used for client-side navigation
 
   return (
-    <footer className="bg-gray-50 border-t border-gray-200 mt-16">
+    <footer
+      className="mt-16"
+      style={{
+        background: "var(--surface)",
+        borderTop: "1px solid var(--border)",
+      }}
+    >
       <div className="max-w-7xl mx-auto px-6 py-10">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           {/* --- Logo + Description --- */}
@@ -19,34 +26,34 @@ export const Footer: React.FC = () => {
             <img
               src={logo}
               alt="Bench Analytics"
-              className="h-10 w-auto cursor-pointer"
+              className="h-10 w-auto cursor-pointer opacity-90 hover:opacity-100 transition-opacity"
               onClick={() => navigate("/")}
             />
-            <p className="text-sm text-gray-500 max-w-xs leading-relaxed">
+            <p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
               Advanced lineup optimization for baseball coaches.
             </p>
           </div>
 
           {/* --- Product Links --- */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-900 mb-3">
+            <h4 className="text-sm font-semibold text-foreground mb-3">
               Product
             </h4>
-            <ul className="space-y-2 text-sm text-gray-500">
+            <ul className="space-y-2 text-sm text-muted-foreground">
               <li
-                className="hover:text-gray-700 cursor-pointer"
+                className="hover:text-foreground cursor-pointer transition-colors"
                 onClick={() => navigate("/lineup")}
               >
                 Lineup Optimizer
               </li>
               <li
-                className="hover:text-gray-700 cursor-pointer"
+                className="hover:text-foreground cursor-pointer transition-colors"
                 onClick={() => navigate("/lineup")}
               >
                 Player Analytics
               </li>
               <li
-                className="hover:text-gray-700 cursor-pointer"
+                className="hover:text-foreground cursor-pointer transition-colors"
                 onClick={() => navigate("/lineup")}
               >
                 Team Management
@@ -56,24 +63,24 @@ export const Footer: React.FC = () => {
 
           {/* --- Support Links --- */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-900 mb-3">
+            <h4 className="text-sm font-semibold text-foreground mb-3">
               Support
             </h4>
-            <ul className="space-y-2 text-sm text-gray-500">
+            <ul className="space-y-2 text-sm text-muted-foreground">
               <li
-                className="hover:text-gray-700 cursor-pointer"
+                className="hover:text-foreground cursor-pointer transition-colors"
                 onClick={() => navigate("/how-to-guide")}
               >
                 How-to Guide
               </li>
               <li
-                className="hover:text-gray-700 cursor-pointer"
+                className="hover:text-foreground cursor-pointer transition-colors"
                 onClick={() => navigate("/how-to-guide")}
               >
                 Documentation
               </li>
               <li
-                className="hover:text-gray-700 cursor-pointer"
+                className="hover:text-foreground cursor-pointer transition-colors"
                 onClick={() => navigate("/how-to-guide")}
               >
                 Contact Support
@@ -83,24 +90,24 @@ export const Footer: React.FC = () => {
 
           {/* --- Company Links --- */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-900 mb-3">
+            <h4 className="text-sm font-semibold text-foreground mb-3">
               Company
             </h4>
-            <ul className="space-y-2 text-sm text-gray-500">
+            <ul className="space-y-2 text-sm text-muted-foreground">
               <li
-                className="hover:text-gray-700 cursor-pointer"
+                className="hover:text-foreground cursor-pointer transition-colors"
                 onClick={() => navigate("/about")}
               >
                 About Us
               </li>
               <li
-                className="hover:text-gray-700 cursor-pointer"
+                className="hover:text-foreground cursor-pointer transition-colors"
                 onClick={() => navigate("/about")}
               >
                 Privacy Policy
               </li>
               <li
-                className="hover:text-gray-700 cursor-pointer"
+                className="hover:text-foreground cursor-pointer transition-colors"
                 onClick={() => navigate("/about")}
               >
                 Terms of Service
@@ -110,10 +117,14 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* --- Divider + Copyright --- */}
-        <div className="border-t border-gray-200 mt-10 pt-6 text-center text-sm text-gray-500">
+        <div
+          className="mt-10 pt-6 text-center text-sm text-muted-foreground"
+          style={{ borderTop: "1px solid var(--border)" }}
+        >
           © {currentYear} Bench Analytics. All rights reserved.
         </div>
       </div>
     </footer>
   );
 };
+
