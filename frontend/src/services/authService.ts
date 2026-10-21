@@ -54,6 +54,24 @@ export const authService = {
   },
 
   /**
+   * Log into the shared demo account (no credentials needed) and store its
+   * tokens. Returns the demo username.
+   */
+  async demoLogin(): Promise<string> {
+    const response = await fetch(`${AUTH_BASE}/demo/`, { method: "POST" });
+
+    if (!response.ok) {
+      throw new Error("Demo is unavailable right now. Please try again later");
+    }
+
+    const data = await response.json();
+    localStorage.setItem("access", data.access);
+    localStorage.setItem("refresh", data.refresh);
+    localStorage.setItem("username", data.user.username);
+    return data.user.username;
+  },
+
+  /**
    * Register a new user account
    */
   async register(credentials: RegisterCredentials): Promise<AuthTokens> {

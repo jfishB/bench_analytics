@@ -18,6 +18,23 @@ from .exceptions import (
 )
 
 
+DEMO_USERNAME = "demo"
+
+
+def demo_login() -> dict:
+    """
+    Logs in the shared demo account, creating it on first use, so visitors
+    can explore the app without registering.
+    """
+
+    user, _ = User.objects.get_or_create(
+        username=DEMO_USERNAME,
+        defaults={"email": "demo@benchanalytics.local"},
+    )
+
+    return _tokens_for(user)
+
+
 def register_user(username, email, password) -> User:
     """
     Handles user registration logic.
@@ -54,6 +71,10 @@ def login_user(username, password) -> dict:
     if user is None:
         raise InvalidCredentialsError("Invalid credentials.")
 
+    return _tokens_for(user)
+
+
+def _tokens_for(user: User) -> dict:
     refresh = RefreshToken.for_user(user)
     return {
         "access": str(refresh.access_token),

@@ -367,3 +367,29 @@ class AccountExceptionTests(TestCase):
             response = self.client.post(self.logout_url, data=data)
             self.assertEqual(response.status_code, 500)
             self.assertIn("error", response.data)
+
+
+class DemoLoginTests(TestCase):
+    """Tests the credential-free demo login."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.url = reverse("accounts:demo")
+
+    def test_demo_creates_user_and_returns_working_token(self):
+        res = self.client.post(self.url)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.data["user"]["username"], "demo")
+        self.assertEqual(User.objects.filter(username="demo").count(), 1)
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f"Bearer {res.data['access']}")
+        protected = self.client.get(reverse("accounts:protected"))
+        self.assertEqual(protected.status_code, 200)
+
+    def test_demo_reuses_the_same_account(self):
+        self.client.post(self.url)
+        self.client.post(self.url)
+
+        self.assertEqual(User.objects.filter(username="demo").count(), 1)

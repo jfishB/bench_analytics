@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 
 from .exceptions import DomainError
-from .services import login_user, register_user
+from .services import demo_login, login_user, register_user
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +69,23 @@ def login(request):
         return Response({"error": str(e)}, status=e.status_code)
     except Exception:
         logger.exception("Unexpected error in login")
+        return Response(
+            {"error": "Unexpected server error."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def demo(request):
+    """
+    Logs the caller into the shared demo account (no credentials needed).
+    """
+    try:
+        return Response(demo_login(), status=status.HTTP_200_OK)
+
+    except Exception:
+        logger.exception("Unexpected error in demo login")
         return Response(
             {"error": "Unexpected server error."},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,

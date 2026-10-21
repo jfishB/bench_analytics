@@ -8,6 +8,8 @@ import {
   CardDescription,
 } from "../../ui/components/card";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../services/AuthContext";
+import { authService } from "../../services/authService";
 import {
   BarChart3,
   Target,
@@ -34,6 +36,17 @@ interface DisplayItem {
  */
 const Home: React.FC = () => {
   const navigate = useNavigate();
+  const { user, login } = useAuth();
+
+  // Lets visitors (e.g. recruiters) explore the app without registering.
+  const startDemo = async () => {
+    try {
+      login(await authService.demoLogin());
+      navigate("/lineup");
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
 
   // List of major platform features shown on the home screen
   const features: DisplayItem[] = [
@@ -108,6 +121,21 @@ const Home: React.FC = () => {
             >
               Start Optimizing
             </Button>
+
+            {!user && (
+              <Button
+                size="lg"
+                onClick={startDemo}
+                className="text-lg px-8 py-6"
+                style={{
+                  border: "1px solid rgba(0, 0, 0, 0.2)",
+                  color: "rgba(0,0,0,0.7)",
+                  backgroundColor: "transparent",
+                }}
+              >
+                Try the Demo
+              </Button>
+            )}
 
             <Button
               size="lg"
