@@ -7,6 +7,8 @@ usage:
     - `login_user` is used by the login view to authenticate and issue tokens
 """
 
+import logging
+
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.db import IntegrityError
@@ -17,6 +19,8 @@ from .exceptions import (
     MissingFieldsError, UserAlreadyExistsError, UserConflictError
 )
 
+logger = logging.getLogger(__name__)
+
 
 DEMO_USERNAME = "demo"
 
@@ -25,12 +29,22 @@ def demo_login() -> dict:
     """
     Logs in the shared demo account, creating it on first use, so visitors
     can explore the app without registering.
+
+    Also seeds the sample roster if the database is still empty, so the
+    optimizer has players to work with on a fresh deployment.
     """
+    # Imported here to keep accounts decoupled from roster at import time.
+    from roster.services.sample_data_loader import load_sample_players
 
     user, _ = User.objects.get_or_create(
         username=DEMO_USERNAME,
         defaults={"email": "demo@benchanalytics.local"},
     )
+
+    result = load_sample_players()
+    if not result.get("success"):
+        # The demo still works for anything that does not need a roster.
+        logger.warning("Demo roster seeding failed: %s", result.get("error"))
 
     return _tokens_for(user)
 
