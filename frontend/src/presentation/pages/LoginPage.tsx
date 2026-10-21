@@ -30,6 +30,15 @@ export default function Login() {
     }
   };
 
+  const handleDemo = async () => {
+    try {
+      login(await authService.demoLogin());
+      navigate("/lineup");
+    } catch (err: any) {
+      setMessage(err.message);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center mt-10">
       <form
@@ -60,6 +69,14 @@ export default function Login() {
           className="bg-blue-700 text-white w-full py-2 rounded hover:bg-blue-800"
         >
           Log In
+        </button>
+
+        <button
+          type="button"
+          onClick={handleDemo}
+          className="border w-full py-2 rounded mt-3 hover:bg-gray-50"
+        >
+          Explore Demo — no account needed
         </button>
 
         {message && (

@@ -312,3 +312,18 @@ This project is licensed under the MIT License.
 ## Support
 
 For support, reach out via email or check the authors’ GitHub profiles.
+
+## Demo Access
+
+Visitors can click **Try the Demo** on the home page (or **Explore Demo** on the
+login page) to explore the full app without registering. It logs into a shared
+`demo` account via `POST /api/v1/auth/demo/`, which creates the account on first
+use. Anything saved from the demo is visible to other demo visitors.
+
+The same endpoint seeds the sample roster (`data/test_data.csv`, 21 players on
+team 1) if the database has no players yet, so the optimizer is usable on a
+fresh deployment. To load it manually instead:
+
+```bash
+python backend/manage.py import_test_data -f data/test_data.csv -t 1
+```
